@@ -1,0 +1,18 @@
+<!-- language file start -->
+ecr_tab_title#:#Electronic Course Reserve
+ecr_title#:#Electronic Course Reserve
+ecr_desc#:#Please click on this link to be redirected to the search system.
+ecr_gpg_homedir#:#Home Directory
+ecr_gpg_homedir_info#:#Please insert the absolute server path to your <span style="font-weight:bold">GnuPG</span> home directory. The key used for signing the data to be transported to the search system is read from that directory. <span style="color:red;font-weight:bold">Important: The directory must be writeable by the user php is executed with (e.g. wwwrun in apache context).</span>
+ecr_sign_key_email#:#Email Address (Key)
+ecr_sign_key_email_info#:#Please enter the key (email address) used for signing the data.
+ecr_sign_key_passphrase#:#Passphrase
+ecr_sign_key_passphrase_info#:#Please insert the passphrase for the key entered above.
+ecr_url_search_system#:#Research System URL
+ecr_url_search_system_info#:#Please enter the URL to the research system.
+ecr_url_search_system_invalid#:#The entered URL ist not valid.
+ecr_crypt_gpg_missing#:#The pear Crypt_GPG package is missing. This package provides an object oriented interface to GNU Privacy Guard (GnuPG). It requires the GnuPG executable to be on the system.
+ecr_sign_error_occured#:#An error occured. Please contact your administrator.
+ecr_soap_activation_required#:#Please <a href="%1$s">enable the administration via SOAP</a>.
+limit_to_groles#:#Limit access to certain global Roles
+global_roles#:#Global Roles

@@ -1,0 +1,18 @@
+<!-- language file start -->
+ecr_tab_title#:#Elektronischer Semesterapparat
+ecr_title#:#Elektronischer Semesterapparat
+ecr_desc#:#Klicken Sie auf diesen Link, um zum Recherchesystem zu gelangen.
+ecr_gpg_homedir#:#Homedir
+ecr_gpg_homedir_info#:#Bitte tragen Sie hier den absoluten Serverpfad zum Homedir von <span style="font-weight:bold">GnuPG</span> ein. Aus diesem Verzeichnis wird der unten anzugebene Schlüssel ausgelesen, um die an das Recherche-System übergebenen Daten zu signieren. <span style="color:red;font-weight:bold">Wichtig: Das Verzeichnis muss für den Benutzer, in dessen Kontext PHP ausgeführt wird (z.B. wwwrun), schreibbar sein.</span>
+ecr_sign_key_email#:#E-Mail-Adresse (Schlüssel)
+ecr_sign_key_email_info#:#Bitte geben Sie hier den Schlüssel ein (im Format einer E-Mail-Adresse), mit dem der Fingerabdruck der zu sendenden Daten erzeugt werden soll.
+ecr_sign_key_passphrase#:#Passphrase
+ecr_sign_key_passphrase_info#:#Bitte geben Sie hier die Passphrase für jenen Schlüssel ein, mit dem der Fingerabdruck der zu sendenden Daten erzeugt werden soll.
+ecr_url_search_system#:#Recherchesystem-URL
+ecr_url_search_system_info#:#Bitte tragen Sie hier einen gültigen URL zum Recherchesystem ein. Die Authentisierungs-Parameter werden von ILIAS an diesen URL angehängt.
+ecr_url_search_system_invalid#:#Der eingetragene URL zum Recherchesystem ist nicht gültig.
+ecr_crypt_gpg_missing#:#Bitte installieren Sie das Pear-Paket Crypt_GPG. Dieses bietet eine objektorientierte Schnittstelle zu GNU Privacy Guard (GnuPG). Crypt_GPG setzt das ausführbare Programm GnuPG voraus.
+ecr_sign_error_occured#:#Es ist ein Fehler aufgetreten. Bitte kontaktieren Sie den Administrator.
+ecr_soap_activation_required#:#Bitte <a href="%1$s">aktivieren Sie SOAP</a>.
+limit_to_groles#:#Zugriff auf bestimmte globale Rollen beschränken
+global_roles#:#Globale Rollen
