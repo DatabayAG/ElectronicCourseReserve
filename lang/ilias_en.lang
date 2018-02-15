@@ -16,3 +16,4 @@ ecr_sign_error_occured#:#An error occured. Please contact your administrator.
 ecr_soap_activation_required#:#Please <a href="%1$s">enable the administration via SOAP</a>.
 limit_to_groles#:#Limit access to certain global Roles
 global_roles#:#Global Roles
+crs_ref_id#:#Course-RefId

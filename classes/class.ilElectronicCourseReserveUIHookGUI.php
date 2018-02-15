@@ -6,8 +6,17 @@ require_once 'Services/Mail/classes/class.ilMailbox.php';
 
 class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 {
+	/**
+	 * @var array
+	 */
+	protected static $modifier_cache = array();
+	
 	public function __construct()
 	{
+		if(!self::$modifier_cache || count(self::$modifier_cache) == 0)
+		{
+			$this->initModifier();
+		}
 	}
 
 	public function getHTML($a_comp, $a_part, $a_par = array())
@@ -24,7 +33,23 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		 * @var $ilSetting ilSetting
 		 */
 		global $ilTabs, $tpl, $lng, $ilCtrl, $ilUser, $ilAccess, $ilLog, $ilSetting;
-
+		
+		if ($a_part != 'template_get')
+		{
+			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
+		}
+		
+		/**
+		 * @var $case ilECRBaseModifier
+		 */
+		foreach(self::$modifier_cache as $modifier)
+		{
+			if($modifier->isModifierRequirementFulfilled($a_comp, $a_part, $a_par))
+			{
+				return $modifier->modifyHtml($a_comp, $a_part, $a_par);
+			}	
+		}
+		
 		if(!isset($_GET['pluginCmd']) || 'Services/PersonalDesktop' != $a_comp || !isset($_GET['ref_id']))
 		{
 			return parent::getHTML($a_comp, $a_part, $a_par);
@@ -118,5 +143,14 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 				$ilCtrl->setParameterByClass('ilPersonalDesktopGUI', 'ref_id', '');
 			}
 		}
+	}
+	protected function initModifier()
+	{
+		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
+		$this->plugin_object->includeClass("modifier/class.ilECRInfoScreenModifier.php");
+		
+		self::$modifier_cache = array(
+			new ilECRInfoScreenModifier()
+		);
 	}
 }
