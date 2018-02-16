@@ -30,3 +30,7 @@ $fields = array(
 $ilDB->createTable('ecr_import_history', $fields);
 $ilDB->addPrimaryKey('ecr_import_history', array('ref_id', 'ts'));
 ?>
+<#2>
+<?php
+//
+?>

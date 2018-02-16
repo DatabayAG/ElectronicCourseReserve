@@ -330,4 +330,12 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
 		return $params;
 	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isPluginRequest()
+	{
+		return isset($_GET['pluginCmd']) && strlen($_GET['pluginCmd']);
+	}
 }
