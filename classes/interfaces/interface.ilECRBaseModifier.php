@@ -12,7 +12,7 @@ interface ilECRBaseModifier
 	 * @param $a_par
 	 * @return bool
 	 */
-	public function isModifierRequirementFulfilled($a_comp, $a_part, $a_par);
+	public function shouldModifyHtml($a_comp, $a_part, $a_par);
 	
 	/**
 	 * @param $a_comp

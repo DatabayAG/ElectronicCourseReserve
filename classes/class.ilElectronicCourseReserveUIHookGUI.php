@@ -81,7 +81,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		 */
 		foreach(self::$modifier_cache as $modifier)
 		{
-			if($modifier->isModifierRequirementFulfilled($a_comp, $a_part, $a_par))
+			if($modifier->shouldModifyHtml($a_comp, $a_part, $a_par))
 			{
 				return  $modifier->modifyHtml($a_comp, $a_part, $a_par);
 			}

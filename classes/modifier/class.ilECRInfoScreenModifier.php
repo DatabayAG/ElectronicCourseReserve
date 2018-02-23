@@ -12,7 +12,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 	
 	}
 	
-	public function isModifierRequirementFulfilled($a_comp, $a_part, $a_par)
+	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
