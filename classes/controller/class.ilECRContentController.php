@@ -7,16 +7,27 @@ ilElectronicCourseReservePlugin::getInstance()->includeClass('controller/class.i
  */
 class ilECRContentController extends ilECRBaseController
 {
+	/**
+	 * @var ilElectronicCourseReservePlugin
+	 */
 	protected $plugin_object;
 	
+	/**
+	 * ilECRContentController constructor.
+	 */
 	public function __construct()
 	{
 		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
 	}
 	
+	/**
+	 * 
+	 */
 	public function executeCommand()
 	{
 		global $DIC;
+		
+		$this->checkPermission('write');
 		
 		$cmd = $DIC->ctrl()->getCmd();
 		if(method_exists($this, $cmd))
@@ -25,17 +36,22 @@ class ilECRContentController extends ilECRBaseController
 		}
 	}
 	
-	public function showLink()
+	/**
+	 * @return string
+	 */
+	public function showECRContent()
 	{
 		global $DIC;
 		
 		$ilCtrl = $DIC->ctrl();
-		$tpl = $DIC->ui()->mainTemplate();
+		$tpl    = $DIC->ui()->mainTemplate();
 		$ilTabs = $DIC->tabs();
-		$lng = $DIC->language();
+		$lng    = $DIC->language();
 		
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		
+		$this->checkPermission('write');
 		
 		$tpl->setTitle($obj->getTitle());
 		$tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
@@ -61,9 +77,14 @@ class ilECRContentController extends ilECRBaseController
 		return $form->getHTML();
 	}
 	
+	/**
+	 * @return string
+	 */
 	public function performRedirect() 
 	{
 		global $DIC;
+		
+		$this->checkPermission('write');
 		
 		try
 		{
@@ -85,6 +106,24 @@ class ilECRContentController extends ilECRBaseController
 				ilUtil::sendFailure($this->plugin_object->txt('ecr_sign_error_occured'));
 			}
 			return '';
+		}
+	}
+	
+	/**
+	 * @param string $permission
+	 */
+	public function checkPermission($permission = 'write')
+	{
+		global $DIC;
+		
+		$ref_id = (int)$_GET['ref_id'];
+		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		
+		if(!($obj instanceof ilObjCourse
+			&& $DIC->access()->checkAccess($permission, '', $obj->getRefId())
+			&& $this->plugin_object->isAssignedToRequiredRole($DIC->user()->getId())))
+		{
+			$DIC['ilErr']->raiseError($DIC->language()->txt("msg_no_perm_read"), $DIC['ilErr']->MESSAGE);
 		}
 	}
 }

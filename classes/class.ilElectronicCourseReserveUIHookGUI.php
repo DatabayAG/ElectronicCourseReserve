@@ -134,7 +134,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 			if($obj instanceof ilObjCourse && $ilAccess->checkAccess('write', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()))
 			{
 				$ilCtrl->setParameter($this, 'pluginCmd', 'pluginCmd');
-				$ilTabs->addTab('ecr_tab_title',$this->getPluginObject()->txt('ecr_tab_title'), $ilCtrl->getLinkTarget($this, 'ilECRContentController.showLink'));
+				$ilTabs->addTab('ecr_tab_title',$this->getPluginObject()->txt('ecr_tab_title'), $ilCtrl->getLinkTarget($this, 'ilECRContentController.showECRContent'));
 			}
 		}
 	}
