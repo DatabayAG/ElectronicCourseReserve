@@ -56,8 +56,8 @@ class ilECRContentController extends ilECRBaseController
 		$tpl->setTitle($obj->getTitle());
 		$tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
 		
-		$ilCtrl->setParameterByClass('ilRepositoryGUI', 'ref_id', $obj->getRefId());
-		$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass('ilRepositoryGUI'));
+		$ilCtrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
+		$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
 		
 		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 		$form = new ilPropertyFormGUI();

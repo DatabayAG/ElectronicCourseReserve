@@ -59,17 +59,10 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	public function getHTML($a_comp, $a_part, $a_par = array())
 	{
 		/**
-		 * @var $ilTabs    ilTabsGUI
-		 * @var $tpl       ilTemplate
-		 * @var $lng       ilLanguage
-		 * @var $ilCtrl    ilCtrl
 		 * @var $ilUser    ilObjUser
-		 * @var $ilCtrl    ilCtrl
 		 * @var $ilAccess  ilAccessHandler
-		 * @var $ilLog     ilLog
-		 * @var $ilSetting ilSetting
 		 */
-		global $ilTabs, $tpl, $lng, $ilCtrl, $ilUser, $ilAccess, $ilLog, $ilSetting;
+		global $ilUser, $ilAccess;
 		
 		if($a_part != 'template_get')
 		{
@@ -83,7 +76,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		{
 			if($modifier->shouldModifyHtml($a_comp, $a_part, $a_par))
 			{
-				return  $modifier->modifyHtml($a_comp, $a_part, $a_par);
+				return $modifier->modifyHtml($a_comp, $a_part, $a_par);
 			}
 		}
 		if(!isset($_GET['pluginCmd']) || 'Services/PersonalDesktop' != $a_comp || !isset($_GET['ref_id']))
@@ -133,8 +126,12 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 			$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 			if($obj instanceof ilObjCourse && $ilAccess->checkAccess('write', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()))
 			{
-				$ilCtrl->setParameter($this, 'pluginCmd', 'pluginCmd');
-				$ilTabs->addTab('ecr_tab_title',$this->getPluginObject()->txt('ecr_tab_title'), $ilCtrl->getLinkTarget($this, 'ilECRContentController.showECRContent'));
+				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
+				$ilTabs->addTab(
+					'ecr_tab_title',
+					$this->getPluginObject()->txt('ecr_tab_title'),
+					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRContent')
+				);
 			}
 		}
 	}
