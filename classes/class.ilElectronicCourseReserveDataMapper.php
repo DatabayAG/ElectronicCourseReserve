@@ -10,12 +10,9 @@ class ilElectronicCourseReserveDataMapper
 
 	public function __construct()
 	{
-		/**
-		 * @var $ilDB ilDB
-		 */
-		global $ilDB;
+		global $DIC;
 
-		$this->db = $ilDB;
+		$this->db = $DIC->database();
 	}
 
 	public function saveHistory(ilElectronicCourseReserveHistoryEntity $entity)

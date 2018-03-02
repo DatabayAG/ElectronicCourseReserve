@@ -114,10 +114,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function setSetting($keyword, $value)
 	{
-		/**
-		 * @var $ilSetting ilSetting
-		 */
-		global $ilSetting;
+		global $DIC;
+		$ilSetting = $DIC->settings();
 
 		$ilSetting->set('ecr_' . $keyword, $value);
 	}
@@ -128,10 +126,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function getSetting($keyword)
 	{
-		/**
-		 * @var $ilSetting ilSetting
-		 */
-		global $ilSetting;
+		global $DIC;
+		$ilSetting = $DIC->settings();
 
 		return $ilSetting->get('ecr_' . $keyword, '');
 	}
@@ -144,10 +140,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function getLinkTarget(array $path, array $params = array(), $cmd)
 	{
-		/**
-		 * @var $ilDB ilDB;
-		 */
-		global $ilDB;
+		global $DIC; 
+		$ilDB = $DIC->database();
 
 		$class_IN_ctrlClasses = $ilDB->in('class', $path, false, 'text');
 
@@ -214,10 +208,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function isAssignedToRequiredRole($usr_id)
 	{
-		/**
-		 * @var $rbacreview ilRbacReview
-		 */
-		global $rbacreview;
+		global $DIC; 
+		$rbacreview = $DIC->rbac()->review();
 
 		$plugin = self::getInstance();
 
@@ -272,11 +264,9 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function getLibraryUrlParameters(ilContainer $container)
 	{
-		/**
-		 * @var $ilSetting ilSetting
-		 * @var $ilUser ilObjUser
-		 */
-		global $ilSetting, $ilUser;
+		global $DIC; 
+		$ilSetting = $DIC->settings(); 
+		$ilUser = $DIC->user();
 
 		$default_auth = $ilSetting->get('auth_mode') ? $ilSetting->get('auth_mode') : AUTH_LOCAL;
 		$usr_id       = $ilUser->getLogin();

@@ -6,7 +6,7 @@ require_once 'Services/Mail/classes/class.ilMailbox.php';
 
 /**
  * Class ilElectronicCourseReserveUIHookGUI
- * @auhtor Nadia Matuschek <nmatuschek@databay.de>
+ * @author Nadia Matuschek <nmatuschek@databay.de>
  * 
  * @ilCtrl_isCalledBy ilElectronicCourseReserveUIHookGUI: ilObjPluginDispatchGUI, ilRepositoryGUI, ilPersonalDesktopGUI 
  * @ilCtrl_Calls ilElectronicCourseReserveUIHookGUI: ilCommonActionDispatcherGUI
@@ -15,14 +15,14 @@ require_once 'Services/Mail/classes/class.ilMailbox.php';
 class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 {
 	/**
-	 * @var array
+	 * @var ilECRBaseModifier[]
 	 */
-	protected static $modifier_cache = array();
+	protected $modifier_cache = array();
 	
 	public function __construct()
 	{
 		parent::getPluginObject();
-		if(!self::$modifier_cache || count(self::$modifier_cache) == 0)
+		if(!$this->modifier || count($this->modifier) == 0)
 		{
 			$this->initModifier();
 		}
@@ -30,7 +30,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	
 	public function executeCommand()
 	{
-		global $tpl, $ilCtrl;
+		global $DIC; 
+		$tpl = $DIC->ui()->mainTemplate(); 
+		$ilCtrl = $DIC->ctrl();
 		
 		$tpl->getStandardTemplate();
 
@@ -58,11 +60,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	 */
 	public function getHTML($a_comp, $a_part, $a_par = array())
 	{
-		/**
-		 * @var $ilUser    ilObjUser
-		 * @var $ilAccess  ilAccessHandler
-		 */
-		global $ilUser, $ilAccess;
+		global $DIC; 
+		$ilUser = $DIC->user();
+		$ilAccess = $DIC->access();
 		
 		if($a_part != 'template_get')
 		{
@@ -70,9 +70,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		}
 		
 		/**
-		 * @var $case ilECRBaseModifier
+		 * @var $modifier ilECRBaseModifier
 		 */
-		foreach(self::$modifier_cache as $modifier)
+		foreach($this->modifier as $modifier)
 		{
 			if($modifier->shouldModifyHtml($a_comp, $a_part, $a_par))
 			{
@@ -112,13 +112,11 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	{
 		if(!isset($_GET['pluginCmd']) && 'tabs' == $a_part && isset($_GET['ref_id']))
 		{
-			/**
-			 * @var $ilTabs   ilTabsGUI
-			 * @var $ilCtrl   ilCtrl
-			 * @var $ilAccess ilAccessHandler
-			 * @var $ilUser   ilObjUser
-			 */
-			global $ilTabs, $ilCtrl, $ilAccess, $ilUser;
+			global $DIC; 
+			$ilTabs = $DIC->tabs(); 
+			$ilCtrl = $DIC->ctrl(); 
+			$ilAccess = $DIC->access(); 
+			$ilUser = $DIC->user();
 
 			$this->getPluginObject()->loadLanguageModule();
 
@@ -140,7 +138,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
 		$this->plugin_object->includeClass("modifier/class.ilECRInfoScreenModifier.php");
 		
-		self::$modifier_cache = array(
+		$this->modifier_cache = array(
 			new ilECRInfoScreenModifier()
 		);
 	}
