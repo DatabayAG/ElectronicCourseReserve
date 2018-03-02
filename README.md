@@ -1,5 +1,5 @@
 # ElectronicCourseReserve
-* For ILIAS versions: 5.1.0 - 5.3.999
+* For ILIAS versions: 5.2.0 - 5.3.999
 
 ## Installation Instructions
 1. Clone this repository to <ILIAS_DIRECTORY>/Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve

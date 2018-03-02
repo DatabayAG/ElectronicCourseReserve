@@ -34,14 +34,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	public function __construct()
 	{
-		/**
-		 * @var $ilLog  ilLog
-		 * @var $ilUser ilObjUser
-		 */
-		global $ilLog, $ilUser;
+		global $DIC;
 
-		$this->logger = $ilLog;
-		$this->user   = $ilUser;
+		$this->logger = $DIC->logger();
+		$this->user   = $DIC->user();
 	}
 
 	/**
@@ -211,10 +207,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function ensureSystemPreconditions()
 	{
-		/**
-		 * @var $ilSetting ilSetting
-		 */
-		global $ilSetting;
+		global $DIC;
+		$ilSetting = $DIC->settings();
 
 		if(!$ilSetting->get('soap_user_administration'))
 		{

@@ -43,11 +43,9 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 */
 	protected function editSettings()
 	{
-		/**
-		 * @var $tpl        ilTemplate
-		 * @var $ilSetting  ilSetting
-		 */
-		global $tpl, $ilSetting;
+		global  $DIC;
+		$tpl = $DIC->ui()->mainTemplate();
+		$ilSetting = $DIC->settings();
 
 		if(!$ilSetting->get('soap_user_administration'))
 		{
@@ -93,13 +91,11 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 */
 	protected function initSettingsForm()
 	{
-		/**
-		 * @var $lng    ilLanguage
-		 * @var $ilCtrl ilCtrl
-		 * @var $ilObjDataCache ilObjectDataCache
-		 * @var $rbacreview ilRbacReview
-		 */
-		global $lng, $ilCtrl, $rbacreview, $ilObjDataCache;
+		global $DIC; 
+		$lng = $DIC->language();
+		$ilCtrl = $DIC->ctrl(); 
+		$rbacreview = $DIC->rbac()->review();
+		$ilObjDataCache = $DIC['ilObjDataCache'];
 
 		if($this->form instanceof ilPropertyFormGUI)
 		{
@@ -159,12 +155,10 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 */
 	public function saveSettings()
 	{
-		/**
-		 * @var $tpl    ilTemplate
-		 * @var $lng    ilLanguage
-		 * @var $ilCtrl ilCtrl
-		 */
-		global $tpl, $lng, $ilCtrl;
+		global $DIC;
+		$tpl = $DIC->ui()->mainTemplate(); 
+		$lng = $DIC->language(); 
+		$ilCtrl = $DIC->ctrl();
 
 		$this->initSettingsForm();
 
