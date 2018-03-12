@@ -63,6 +63,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		{
 			case 'showUseAgreementSettings':
 			case 'editUseAgreements':
+			case 'addUseAgreement':
 				$this->tabs->activateTab('showUseAgreementSettings');
 				$this->tabs->addSubTab('showUseAgreementSettings', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
 				$this->tabs->addSubTab('editUseAgreements', $this->lng->txt('edit_use_agreement'), $this->ctrl->getLinkTarget($this, 'editUseAgreements'));
@@ -139,9 +140,70 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->tpl->setContent($table->getHTML());		
 	}
 	
+	public function initUseAgreementForm()
+	{
+		if($this->form instanceof ilPropertyFormGUI)
+		{
+			return;
+		}
+		
+		$this->form = new ilPropertyFormGUI();
+		$this->form->setFormAction($this->ctrl->getFormAction($this, 'addUseAgreement'));
+		$this->form->setTitle($this->lng->txt('addUseAgreement'));
+		$this->form->addCommandButton('addUseAgreement', $this->lng->txt('add'));
+		$this->form->addCommandButton('editUseAgreements', $this->lng->txt('cancel'));
+		
+		$lang_options  = $this->lng->getInstalledLanguages(); 
+		$lang_select = new ilSelectInputGUI($this->lng->txt('language'), 'lang');
+		$lang_select->setOptions($lang_options);
+		$this->form->addItem($lang_select);
+		
+		
+		$agreement_input = new ilTextAreaInputGUI($this->lng->txt('agreement'), 'agreement_text');
+		$agreement_input->setRequired(true);
+		$agreement_input->setRows(15);
+		$agreement_input->setUseRte(true);
+		
+		$agreement_input->removePlugin('advlink');
+		$agreement_input->setRTERootBlockElement('');
+		$agreement_input->usePurifier(true);
+		$agreement_input->disableButtons(array(
+
+			'charmap',
+			'undo',
+			'redo',
+			'justifyleft',
+			'justifycenter',
+			'justifyright',
+			'justifyfull',
+			'anchor',
+			'fullscreen',
+			'cut',
+			'copy',
+			'paste',
+			'pastetext',
+			'formatselect'
+		));
+		
+		//		 $agreement->getId()
+		// @todo set agreement_id
+		$agreement_input->setRTESupport($agreement_id, 'ecr_ua', 'ecr_ua');
+		
+		// purifier
+		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
+		$agreement_input->setPurifier(ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
+		
+		$this->form->addItem($agreement_input);
+	}
+	
+	
+	#
 	public function addUseAgreement()
 	{
-		// @todo weiter machen .. 
+		$this->tabs->activateSubTab('editUseAgreements');
+		
+		$this->initUseAgreementForm();
+		$this->tpl->setContent($this->form->getHTML());
 	}
 	
 	/**
