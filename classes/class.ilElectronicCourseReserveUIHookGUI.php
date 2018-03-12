@@ -17,7 +17,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	/**
 	 * @var ilECRBaseModifier[]
 	 */
-	protected $modifier_cache = array();
+	protected $modifier = array();
 	
 	public function __construct()
 	{
