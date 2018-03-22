@@ -36,7 +36,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		global $DIC;
 
-		$this->logger = $DIC->logger();
+		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
 	}
 

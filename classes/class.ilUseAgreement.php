@@ -35,7 +35,7 @@ class ilUseAgreement
 		global $DIC;
 		
 		$this->db = $DIC->database();
-		$this->log = $DIC->logger();
+		$this->log = $DIC->logger()->root();
 		$this->user = $DIC->user();
 	}
 	
