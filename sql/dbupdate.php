@@ -99,10 +99,23 @@ if(!$ilDB->tableExists('ecr_user_acceptance'))
 			'default' => 0,
 			'notnull' => true
 		),
+
 	);
 	
 	$ilDB->createTable('ecr_user_acceptance', $fields);
 	$ilDB->addPrimaryKey( 'ecr_user_acceptance', array('ref_id', 'user_id'));
 }
 ?>	
+<#5>
+<?php
+	if(!$ilDB->tableColumnExists('ecr_lang_agreements', 'is_active'))
+	{
+		$ilDB->addTableColumn('ecr_lang_agreements','is_active',  
+		array(
+		'type'    => 'integer',
+		'length'  => 1,
+		'default' => 0,
+		'notnull' => true)); 	
+	}
+?>
 	

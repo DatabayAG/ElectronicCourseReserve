@@ -54,7 +54,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	public function getTabs()
 	{
 		$this->tabs->addTab('configure', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'configure'));
-		$this->tabs->addTab('showUseAgreementSettings', $this->lng->txt('use_agreement'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
+		$this->tabs->addTab('showUseAgreementSettings', $this->pluginObj->txt('use_agreement'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
 	}
 	
 	public function getSubTabs($cmd)
@@ -63,17 +63,19 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		{
 			case 'showUseAgreementSettings':
 			case 'editUseAgreements':
+			case 'editUseAgreement':
 			case 'showUseAgreementForm':
 				$this->tabs->activateTab('showUseAgreementSettings');
 				$this->tabs->addSubTab('showUseAgreementSettings', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
-				$this->tabs->addSubTab('editUseAgreements', $this->lng->txt('edit_use_agreement'), $this->ctrl->getLinkTarget($this, 'editUseAgreements'));
+				$this->tabs->addSubTab('editUseAgreements', $this->pluginObj->txt('edit_use_agreement'), $this->ctrl->getLinkTarget($this, 'editUseAgreements'));
 
 				break;
 		}
-		
 	}
 	
-	
+	/**
+	 * 
+	 */
 	public function initUseAgreementSettingsForm()
 	{
 		if($this->form instanceof ilPropertyFormGUI)
@@ -99,9 +101,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->tpl->setContent($this->form->getHTML());
 		
 	}
-	/**
-	 *
-	 */
+	
 	public function saveUseAgreementSettings()
 	{
 		$this->initUseAgreementSettingsForm();
@@ -118,7 +118,6 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->tpl->setContent($this->form->getHTML());
 	}
 	
-	
 	public function editUseAgreements()
 	{
 		global $DIC;
@@ -127,15 +126,18 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		
 		require_once 'Services/UIComponent/Button/classes/class.ilLinkButton.php';
 		$button = ilLinkButton::getInstance();
-		$button->setCaption($this->lng->txt('add_use_agreement'));
+		$button->setCaption($this->pluginObj->txt('add_use_agreement'), false);
 		$button->setUrl($this->ctrl->getLinkTarget($this, 'showUseAgreementForm'));
 		$toolbar->addButtonInstance($button);
 		
 		$this->tabs->activateSubTab('editUseAgreements');
 		
 		$this->pluginObj->includeClass('tables/class.ilUseAgreementTableGUI.php');
+		$this->pluginObj->includeClass('tables/class.ilUseAgreementTableProvider.php');
 		
 		$table = new ilUseAgreementTableGUI($this);
+		$provider = new ilUseAgreementTableProvider();
+		$table->setData($provider->getTableData());
 		
 		$this->tpl->setContent($table->getHTML());		
 	}
@@ -155,8 +157,6 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form = new ilPropertyFormGUI();
 		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveUseAgreement'));
 		$this->form->setTitle($this->lng->txt('addUseAgreement'));
-		$this->form->addCommandButton('saveUseAgreement', $this->lng->txt('add'));
-		$this->form->addCommandButton('editUseAgreements', $this->lng->txt('cancel'));
 		
 		$installed_langs  = $this->lng->getInstalledLanguages();
 		$this->lng->loadLanguageModule('meta');
@@ -195,14 +195,14 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			'formatselect'
 		));
 		
-		//		 $agreement->getId()
-		// @todo set agreement_id
 		$agreement_input->setRTESupport($DIC->user()->getId(), 'ecr_ua', 'ecr_ua');
 		
 		// purifier
 		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
 		$agreement_input->setPurifier(ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
 		
+		$this->form->addCommandButton('saveUseAgreement', $this->lng->txt('add'));
+		$this->form->addCommandButton('editUseAgreements', $this->lng->txt('cancel'));
 		$this->form->addItem($agreement_input);
 	}
 	
@@ -212,7 +212,6 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	public function showUseAgreementForm()
 	{
 		$this->tabs->activateSubTab('editUseAgreements');
-		
 		$this->initUseAgreementForm();
 		$this->tpl->setContent($this->form->getHTML());
 	}
@@ -235,7 +234,36 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			$agreement_obj->setAgreement($agreement_text);
 				
 			$agreement_obj->saveAgreement();
+			$this->ctrl->redirect($this, 'editUseAgreements');
 		}
+	}
+	
+	/**
+	 * 
+	 */	
+	public function editUseAgreement()
+	{
+		$ecr_lang = $_GET['ecr_lang'];
+		$this->tabs->activateSubTab('editUseAgreements');
+		$this->initUseAgreementForm();
+
+		$this->getUseAgreementValues($ecr_lang);
+		$this->tpl->setContent($this->form->getHTML());
+	}
+	
+	/**
+	 * @param $ecr_lang
+	 */
+	public function getUseAgreementValues($ecr_lang)
+	{
+		$this->pluginObj->includeClass('class.ilUseAgreement.php');
+		$use_agreement = new ilUseAgreement();
+		$use_agreement->loadByLang($ecr_lang);
+		
+		$values['lang'] = $use_agreement->getLang();
+		$values['agreement'] = $use_agreement->getAgreement();
+		
+		$this->form->setValuesByArray($values);
 	}
 	
 	/**
@@ -390,4 +418,5 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form->setValuesByPost();
 		$tpl->setContent($this->form->getHTML());
 	}
+
 }

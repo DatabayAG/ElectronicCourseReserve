@@ -17,3 +17,8 @@ ecr_soap_activation_required#:#Please <a href="%1$s">enable the administration v
 limit_to_groles#:#Limit access to certain global Roles
 global_roles#:#Global Roles
 crs_ref_id#:#Course-RefId
+use_agreement#:#Use Agreement
+use_agreements#:#Use Agreements
+edit_use_agreement#:#Edit Use Agreement 
+add_use_agreement#:#Add Use Agreement 
+enable_use_agreement#:#Enable Use Agreement 
