@@ -12,12 +12,28 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	protected $plugin_object;
 	
+	protected $tpl;
+	protected $ctrl;
+	protected $tabs;
+	protected $lng;
+	protected $logger;
+	protected $settings;
+	
 	/**
 	 * ilECRContentController constructor.
 	 */
 	public function __construct()
 	{
+		global $DIC;
+		
 		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
+		
+		$this->ctrl = $DIC->ctrl();
+		$this->tpl = $DIC->ui()->mainTemplate();
+		$this->tabs = $DIC->tabs();
+		$this->lng = $DIC->language();
+		$this->logger = $DIC->logger()->root();
+		$this->settings = $DIC->settings();
 	}
 	
 	/**
@@ -25,39 +41,75 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	public function executeCommand()
 	{
-		global $DIC;
-		
 		$this->checkPermission('write');
 		
-		$cmd = $DIC->ctrl()->getCmd();
+		$cmd = $this->ctrl()->getCmd();
 		if(method_exists($this, $cmd))
 		{
 			$this->$cmd();
 		}
 	}
 	
+	// @todo nadia: evtl in eigenen controller auslagern
+	private function checkUseAgreementCondition()
+	{
+		$is_use_agreement_enabled = $this->settigns->get('ecr_enable_use_agreement', 0);
+		
+		if($is_use_agreement_enabled)
+		{
+			$this->checkUserAcceptance();
+		}
+		else
+		{
+			return true;
+		}	
+	}
+ // @todo nadia: evtl in eigenen controller auslagern
+	private function checkUserAcceptance()
+	{
+		$ref_id = (int)$_GET['ref_id'];
+		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		
+		$this->plugin_object->includeClass('class.ilUserAcceptance.php');
+
+		
+		$ilUserAcceptance = new ilUserAcceptance($obj->getRefId());
+		if($ilUserAcceptance->hasUserAcceptedAgreement())
+		{
+			return true;
+		}
+		
+		$this->showUseAgreement($ref_id);
+	}
+
+ // @todo nadia: evtl in eigenen controller auslagern
+	private function showUseAgreement()
+	{
+		global $DIC;
+		$this->plugin_object->includeClass('class.ilUseAgreement.php');
+		
+		$agreement = new ilUseAgreement();
+		$agreement->loadByLang($DIC->user()->getLanguage());
+		
+		
+	}
+	
+	
 	/**
 	 * @return string
 	 */
 	public function showECRContent()
 	{
-		global $DIC;
-		
-		$ilCtrl = $DIC->ctrl();
-		$tpl    = $DIC->ui()->mainTemplate();
-		$ilTabs = $DIC->tabs();
-		$lng    = $DIC->language();
-		
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 		
 		$this->checkPermission('write');
 		
-		$tpl->setTitle($obj->getTitle());
-		$tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
+		$this->tpl->setTitle($obj->getTitle());
+		$this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
 		
-		$ilCtrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
-		$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
+		$this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
+		$this->tabs->setBackTarget($this->lng->txt('back'), $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
 		
 		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 		$form = new ilPropertyFormGUI();
@@ -68,7 +120,7 @@ class ilECRContentController extends ilECRBaseController
 		$form->addItem($crs_ref_id);
 		
 		$link = new ilNonEditableValueGUI('', 'ecr', true);
-		$url = $ilCtrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.performRedirect');
+		$url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.performRedirect');
 		$link->setValue('<a href="'.$url.'&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>');
 		
 		$link->setInfo($this->plugin_object->txt('ecr_desc'));
@@ -82,7 +134,6 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	public function performRedirect() 
 	{
-		global $DIC;
 		
 		$this->checkPermission('write');
 		
@@ -102,7 +153,7 @@ class ilECRContentController extends ilECRBaseController
 			}
 			else
 			{
-				$DIC->logger()->write($e->getMessage());
+				$this->logger->write($e->getMessage());
 				ilUtil::sendFailure($this->plugin_object->txt('ecr_sign_error_occured'));
 			}
 			return '';
