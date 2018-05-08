@@ -114,8 +114,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function setSetting($keyword, $value)
 	{
-		global $DIC;
-		$ilSetting = $DIC->settings();
+		global $ilSetting;
 
 		$ilSetting->set('ecr_' . $keyword, $value);
 	}
@@ -126,8 +125,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function getSetting($keyword)
 	{
-		global $DIC;
-		$ilSetting = $DIC->settings();
+		global $ilSetting;
 
 		return $ilSetting->get('ecr_' . $keyword, '');
 	}
@@ -264,8 +262,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function getLibraryUrlParameters(ilContainer $container)
 	{
-		global $DIC; 
-		$ilSetting = $DIC->settings(); 
+		global $DIC, $ilSetting; 
 		$ilUser = $DIC->user();
 
 		$default_auth = $ilSetting->get('auth_mode') ? $ilSetting->get('auth_mode') : AUTH_LOCAL;

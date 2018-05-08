@@ -43,9 +43,8 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 */
 	protected function editSettings()
 	{
-		global  $DIC;
+		global  $DIC, $ilSetting;
 		$tpl = $DIC->ui()->mainTemplate();
-		$ilSetting = $DIC->settings();
 
 		if(!$ilSetting->get('soap_user_administration'))
 		{

@@ -18,7 +18,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	 * @var ilECRBaseModifier[]
 	 */
 	protected $modifier_cache = array();
-	
+
+	protected $modifier = null;
+
 	public function __construct()
 	{
 		parent::getPluginObject();
@@ -60,7 +62,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	 */
 	public function getHTML($a_comp, $a_part, $a_par = array())
 	{
-		global $DIC; 
+		global $DIC;
 		$ilUser = $DIC->user();
 		$ilAccess = $DIC->access();
 		
@@ -72,13 +74,17 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		/**
 		 * @var $modifier ilECRBaseModifier
 		 */
-		foreach($this->modifier as $modifier)
+		if(is_array($this->modifier))
 		{
-			if($modifier->shouldModifyHtml($a_comp, $a_part, $a_par))
+			foreach($this->modifier as $modifier)
 			{
-				return $modifier->modifyHtml($a_comp, $a_part, $a_par);
+				if($modifier->shouldModifyHtml($a_comp, $a_part, $a_par))
+				{
+					return $modifier->modifyHtml($a_comp, $a_part, $a_par);
+				}
 			}
 		}
+
 		if(!isset($_GET['pluginCmd']) || 'Services/PersonalDesktop' != $a_comp || !isset($_GET['ref_id']))
 		{
 			return parent::getHTML($a_comp, $a_part, $a_par);
