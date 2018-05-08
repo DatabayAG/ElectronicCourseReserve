@@ -207,8 +207,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function ensureSystemPreconditions()
 	{
-		global $DIC;
-		$ilSetting = $DIC->settings();
+		global $ilSetting;
 
 		if(!$ilSetting->get('soap_user_administration'))
 		{
