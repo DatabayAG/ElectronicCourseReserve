@@ -4,8 +4,11 @@
 require_once 'Services/WebServices/SOAP/classes/class.ilSoapClient.php';
 require_once 'Services/Xml/classes/class.ilXmlWriter.php';
 require_once 'Services/WebServices/Rest/classes/class.ilRestFileStorage.php';
+require_once 'Services/Cron/classes/class.ilCronJobResult.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveDataMapper.php';
+require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
+
 
 class ilElectronicCourseReserveDigitizedMediaImporter
 {
@@ -92,7 +95,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			ilUtil::makeDirParents(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::IMPORT_DIR);
 			$iter = new RegexIterator(
 				new DirectoryIterator(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::IMPORT_DIR),
-				'/(\d+)_(.*).pdf$/'
+				'/(\d+)_(.*).xml/'
 			);
 			foreach($iter as $fileinfo)
 			{
@@ -113,7 +116,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$crs_ref_id = null;
 				$job_nr     = null;
 				$matches    = null;
-				preg_match('/^(\d+)_(.*).pdf$/i', $filename, $matches);
+				preg_match('/^(\d+)_(.*).xml/i', $filename, $matches);
 
 				if(is_array($matches) && isset($matches[1]) && is_numeric($matches[1]))
 				{
@@ -132,6 +135,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->logger->write('MD5 checksum: ' . md5($content));
 				$this->logger->write('SHA1 checksum: ' . sha1($content));
 
+				$parser = new ilElectronicCourseReserveParser($pathname);
+				$parser->startParsing();
+				$parsed_item = $parser->getElectronicCourseReserveContainer();
 				$xml = new ilXmlWriter();
 				$xml->xmlStartTag('File', array('type' => 'application/pdf'));
 				$xml->xmlElement('Filename', array(), $filename);
