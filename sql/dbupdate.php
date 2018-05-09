@@ -79,4 +79,21 @@ if(!$ilDB->tableExists('ecr_description'))
 	$ilDB->addPrimaryKey('ecr_description', array('ref_id', 'version'));
 }
 ?>
-
+<#5>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if($ilDB->tableExists('ecr_description'))
+{
+	if(!$ilDB->tableColumnExists('ecr_description', 'raw_xml'))
+	{
+		$ilDB->addTableColumn('ecr_description', 'raw_xml',
+									array(
+										"type"    => "clob",
+										"notnull" => false,
+										"default" => null
+									));
+	}
+}
+?>

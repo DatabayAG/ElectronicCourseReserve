@@ -159,11 +159,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->logger->write('Starting item creation...');
 				if($parsed_item->getType() === self::ITEM_TYPE_FILE)
 				{
-					$this->createFileItem($parsed_item, $crs_ref_id);
+					$this->createFileItem($parsed_item, $crs_ref_id, $content);
 				}
 				else if($parsed_item->getType() === self::ITEM_TYPE_URL)
 				{
-					$this->createWebResourceItem($parsed_item, $crs_ref_id);
+					$this->createWebResourceItem($parsed_item, $crs_ref_id, $content);
 				}
 				$this->logger->write('...item creation done.');
 			/**	$xml = new ilXmlWriter();
@@ -238,12 +238,33 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @return bool
+	 */
+	protected function checkCourseAndFolderStructure($parsed_item)
+	{
+		$crs_ref_id = $parsed_item->getCrsRefId();
+		$folder_import_id = $parsed_item->getFolderImportId();
+
+		if($crs_ref_id === 0 || $folder_import_id === 0)
+		{
+			//Todo: send mail
+			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was noot set', $folder_import_id, $crs_ref_id));
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * @param ilElectronicCourseReserveContainer $parsed_item
 	 * @param $crs_ref_id
+	 * @param $raw_xml
 	 * @throws ilFileUtilsException
 	 */
-	protected function createFileItem($parsed_item, $crs_ref_id)
+	protected function createFileItem($parsed_item, $crs_ref_id, $raw_xml)
 	{
-		if(file_exists($parsed_item->getItem()->getFile()))
+		if(file_exists($parsed_item->getItem()->getFile()) &&
+			$this->checkCourseAndFolderStructure($parsed_item)
+		)
 		{
 			$new_file = new ilObjFile();
 			$new_file->setTitle($parsed_item->getLabel());
@@ -263,7 +284,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->setFilename($new_file->getFileName());
 			$new_file->addNewsNotification("file_updated");
 			$new_file->update();
-			$this->writeDescriptionToDB($new_file->getRefId(), $parsed_item);
+			$this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml);
 		}
 		else
 		{
@@ -274,10 +295,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
 	 * @param $crs_ref_id
+	 * @param $raw_xml
 	 */
-	protected function createWebResourceItem($parsed_item, $crs_ref_id)
+	protected function createWebResourceItem($parsed_item, $crs_ref_id, $raw_xml)
 	{
-		if(strlen($parsed_item->getItem()->getUrl()) > 0)
+		if(strlen($parsed_item->getItem()->getUrl()) > 0 &&
+			$this->checkCourseAndFolderStructure($parsed_item))
 		{
 			$new_link = new ilObjLinkResource();
 			$new_link->setTitle($parsed_item->getLabel());
@@ -298,7 +321,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					"replace",
 					$new_link->getTitle().",". $new_link()
 				);*/
-			$this->writeDescriptionToDB($new_link->getRefId(), $parsed_item);
+			$this->writeDescriptionToDB($parsed_item, $new_link->getRefId(), $raw_xml);
 		}
 		else
 		{
@@ -307,17 +330,18 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 * @param $ref_id
 	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param $crs_ref_id
+	 * @param $raw_xml
 	 */
-	protected function writeDescriptionToDB($ref_id, $parsed_item)
+	protected function writeDescriptionToDB($parsed_item, $crs_ref_id, $raw_xml)
 	{
 		global $DIC;
 		$version = 1;
 		$res = $DIC->database()->queryF(
 			'SELECT version FROM ecr_description WHERE ref_id = %s',
 			array('integer'),
-			array($ref_id)
+			array($crs_ref_id)
 		);
 		$row = $DIC->database()->fetchAssoc($res);
 		if(is_array($row) && array_key_exists('version', $row))
@@ -325,11 +349,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$version = $row['version'] + 1;
 		}
 		$DIC->database()->insert('ecr_description', array(
-			'ref_id'      => array('integer', $ref_id),
+			'ref_id'      => array('integer', $crs_ref_id),
 			'version'     => array('integer', $version),
 			'timestamp'   => array('integer', strtotime($parsed_item->getTimestamp())),
 			'icon'        => array('text', $parsed_item->getItem()->getIcon()),
-			'description' => array('text', $parsed_item->getItem()->getDescription())
+			'description' => array('text', $parsed_item->getItem()->getDescription()),
+			'raw_xml'     => array('text', $raw_xml)
 		));
 	}
 
