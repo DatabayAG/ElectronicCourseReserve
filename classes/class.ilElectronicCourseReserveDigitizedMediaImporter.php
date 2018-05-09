@@ -212,7 +212,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		if($obj_id > 0 && $ilObjDataCache->lookupType($obj_id) === 'crs')
 		{
 			$this->logger->write(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
-			//Todo: check if folder is in right course
 			$object_id = ilObject::_lookupObjIdByImportId($folder_import_id);
 			if($object_id === 0)
 			{
