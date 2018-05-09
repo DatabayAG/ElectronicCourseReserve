@@ -241,6 +241,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				}
 			}
 		}
+		else if($obj_id > 0)
+		{
+			$this->logger->write(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.', $crs_ref_id, $ilObjDataCache->lookupType($obj_id)));
+		}
 		return false;
 	}
 
