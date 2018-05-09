@@ -5,6 +5,9 @@ require_once 'Services/WebServices/SOAP/classes/class.ilSoapClient.php';
 require_once 'Services/Xml/classes/class.ilXmlWriter.php';
 require_once 'Services/WebServices/Rest/classes/class.ilRestFileStorage.php';
 require_once 'Services/Cron/classes/class.ilCronJobResult.php';
+require_once 'Modules/File/classes/class.ilObjFile.php';
+require_once 'Modules/WebResource/classes/class.ilObjLinkResource.php';
+require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveDataMapper.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
@@ -12,6 +15,9 @@ require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCo
 
 class ilElectronicCourseReserveDigitizedMediaImporter
 {
+	const ITEM_TYPE_FILE = 'file';
+	const ITEM_TYPE_URL = 'url';
+
 	/**
 	 * @var string
 	 */
@@ -31,6 +37,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 * @var $user ilObjUser
 	 */
 	protected $user;
+
+	/**
+	 * @var array 
+	 */
+	protected $valid_items = array(self::ITEM_TYPE_FILE, self::ITEM_TYPE_URL);
 
 	/**
 	 *
@@ -138,7 +149,24 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$parser = new ilElectronicCourseReserveParser($pathname);
 				$parser->startParsing();
 				$parsed_item = $parser->getElectronicCourseReserveContainer();
-				$xml = new ilXmlWriter();
+
+				if(! in_array($parsed_item->getType(), $this->valid_items))
+				{
+					$this->logger->write(sprintf('Type of item (%s) is unknown, skipping item.', $parsed_item->getType() ));
+					continue;
+				}
+
+				$this->logger->write('Starting item creation...');
+				if($parsed_item->getType() === self::ITEM_TYPE_FILE)
+				{
+					$this->createFileItem($parsed_item, $crs_ref_id);
+				}
+				else if($parsed_item->getType() === self::ITEM_TYPE_URL)
+				{
+					$this->createWebResourceItem($parsed_item, $crs_ref_id);
+				}
+				$this->logger->write('...item creation done.');
+			/**	$xml = new ilXmlWriter();
 				$xml->xmlStartTag('File', array('type' => 'application/pdf'));
 				$xml->xmlElement('Filename', array(), $filename);
 				$xml->xmlElement('Title', array(), $filename);
@@ -184,7 +212,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				catch(SoapFault $e)
 				{
 					$this->logger->write('Skipped file.' . $e->getMessage());
-				}
+				}*/
 			}
 		}
 		catch(SoapFault $e)
@@ -206,6 +234,60 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 
 		$this->logger->write('Digitized media import script finished');
+	}
+
+	/**
+	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param $crs_ref_id
+	 * @throws ilFileUtilsException
+	 */
+	protected function createFileItem($parsed_item, $crs_ref_id)
+	{
+		$new_file = new ilObjFile();
+		$new_file->create();
+		$new_file->getUploadFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg');
+		ilUtil::makeDirParents($new_file->getDirectory());
+		ilUtil::moveUploadedFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg', $new_file->getDirectory(1) . '/' . $new_file->getFileName(), true, 'copy');
+		$new_file->createReference();
+		$new_file->putInTree($crs_ref_id);
+		$new_file->setPermissions($crs_ref_id);
+		require_once("./Services/History/classes/class.ilHistory.php");
+		/*ilHistory::_createEntry(
+			$new_file->getId(),
+			"replace",
+			$new_file->getFileName().",".$this->$new_file()
+		);*/
+		$new_file->setFilename($new_file->getFileName());
+		$new_file->addNewsNotification("file_updated");
+
+		$new_file->update();
+	}
+
+	/**
+	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param $crs_ref_id
+	 */
+	protected function createWebResourceItem($parsed_item, $crs_ref_id)
+	{
+		$new_link = new ilObjLinkResource();
+		$new_link->setTitle($parsed_item->getLabel());
+		$new_link->create();
+		$new_link->createReference();
+		$new_link->putInTree($crs_ref_id);
+		$new_link->setPermissions($crs_ref_id);
+		$link_resource = new ilLinkResourceItems($new_link->getId());
+		$link_resource->setTitle($parsed_item->getItem()->getLabel());
+		$link_resource->setActiveStatus(1);
+		$link_resource->setValidStatus(1);
+		$link_resource->setTarget($parsed_item->getItem()->getUrl());
+		$link_resource->setInternal(false);
+		$link_resource->add();
+		require_once("./Services/History/classes/class.ilHistory.php");
+		/*	ilHistory::_createEntry(
+				$new_link->getId(),
+				"replace",
+				$new_link->getTitle().",". $new_link()
+			);*/
 	}
 
 	/**
