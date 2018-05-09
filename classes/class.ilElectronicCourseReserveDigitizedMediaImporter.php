@@ -50,7 +50,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		global $DIC;
 
-		$this->logger = $DIC->logger();
+		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
 	}
 
@@ -243,24 +243,32 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function createFileItem($parsed_item, $crs_ref_id)
 	{
-		$new_file = new ilObjFile();
-		$new_file->create();
-		$new_file->getUploadFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg');
-		ilUtil::makeDirParents($new_file->getDirectory());
-		ilUtil::moveUploadedFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg', $new_file->getDirectory(1) . '/' . $new_file->getFileName(), true, 'copy');
-		$new_file->createReference();
-		$new_file->putInTree($crs_ref_id);
-		$new_file->setPermissions($crs_ref_id);
-		require_once("./Services/History/classes/class.ilHistory.php");
-		/*ilHistory::_createEntry(
-			$new_file->getId(),
-			"replace",
-			$new_file->getFileName().",".$this->$new_file()
-		);*/
-		$new_file->setFilename($new_file->getFileName());
-		$new_file->addNewsNotification("file_updated");
+		if(file_exists($parsed_item->getItem()->getFile()))
+		{
+			$new_file = new ilObjFile();
+			$new_file->setTitle($parsed_item->getLabel());
+			$new_file->create();
+			$new_file->getUploadFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg');
+			ilUtil::makeDirParents($new_file->getDirectory());
+			ilUtil::moveUploadedFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg', $new_file->getDirectory(1) . '/' . $new_file->getFileName(), true, 'copy');
+			$new_file->createReference();
+			$new_file->putInTree($crs_ref_id);
+			$new_file->setPermissions($crs_ref_id);
+			require_once("./Services/History/classes/class.ilHistory.php");
+			/*ilHistory::_createEntry(
+				$new_file->getId(),
+				"replace",
+				$new_file->getFileName().",".$this->$new_file()
+			);*/
+			$new_file->setFilename($new_file->getFileName());
+			$new_file->addNewsNotification("file_updated");
 
-		$new_file->update();
+			$new_file->update();
+		}
+		else
+		{
+			$this->logger->write(sprintf('File %s not found for item %s skipping creation.', $parsed_item->getItem()->getFile(),  $parsed_item->getLabel()));
+		}
 	}
 
 	/**
@@ -269,25 +277,32 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function createWebResourceItem($parsed_item, $crs_ref_id)
 	{
-		$new_link = new ilObjLinkResource();
-		$new_link->setTitle($parsed_item->getLabel());
-		$new_link->create();
-		$new_link->createReference();
-		$new_link->putInTree($crs_ref_id);
-		$new_link->setPermissions($crs_ref_id);
-		$link_resource = new ilLinkResourceItems($new_link->getId());
-		$link_resource->setTitle($parsed_item->getItem()->getLabel());
-		$link_resource->setActiveStatus(1);
-		$link_resource->setValidStatus(1);
-		$link_resource->setTarget($parsed_item->getItem()->getUrl());
-		$link_resource->setInternal(false);
-		$link_resource->add();
-		require_once("./Services/History/classes/class.ilHistory.php");
-		/*	ilHistory::_createEntry(
-				$new_link->getId(),
-				"replace",
-				$new_link->getTitle().",". $new_link()
-			);*/
+		if(strlen($parsed_item->getItem()->getUrl()) > 0)
+		{
+			$new_link = new ilObjLinkResource();
+			$new_link->setTitle($parsed_item->getLabel());
+			$new_link->create();
+			$new_link->createReference();
+			$new_link->putInTree($crs_ref_id);
+			$new_link->setPermissions($crs_ref_id);
+			$link_item = new ilLinkResourceItems($new_link->getId());
+			$link_item->setTitle($parsed_item->getItem()->getLabel());
+			$link_item->setActiveStatus(1);
+			$link_item->setValidStatus(1);
+			$link_item->setTarget($parsed_item->getItem()->getUrl());
+			$link_item->setInternal(false);
+			$link_item->add();
+			require_once("./Services/History/classes/class.ilHistory.php");
+			/*	ilHistory::_createEntry(
+					$new_link->getId(),
+					"replace",
+					$new_link->getTitle().",". $new_link()
+				);*/
+		}
+		else
+		{
+			$this->logger->write(sprintf('No url given for %s, skipping creation.', $parsed_item->getLabel()));
+		}
 	}
 
 	/**
