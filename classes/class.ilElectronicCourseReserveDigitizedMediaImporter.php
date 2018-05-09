@@ -262,8 +262,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			);*/
 			$new_file->setFilename($new_file->getFileName());
 			$new_file->addNewsNotification("file_updated");
-
 			$new_file->update();
+			$this->writeDescriptionToDB($new_file->getRefId(), $parsed_item);
 		}
 		else
 		{
@@ -298,11 +298,39 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					"replace",
 					$new_link->getTitle().",". $new_link()
 				);*/
+			$this->writeDescriptionToDB($new_link->getRefId(), $parsed_item);
 		}
 		else
 		{
 			$this->logger->write(sprintf('No url given for %s, skipping creation.', $parsed_item->getLabel()));
 		}
+	}
+
+	/**
+	 * @param $ref_id
+	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 */
+	protected function writeDescriptionToDB($ref_id, $parsed_item)
+	{
+		global $DIC;
+		$version = 1;
+		$res = $DIC->database()->queryF(
+			'SELECT version FROM ecr_description WHERE ref_id = %s',
+			array('integer'),
+			array($ref_id)
+		);
+		$row = $DIC->database()->fetchAssoc($res);
+		if(is_array($row) && array_key_exists('version', $row))
+		{
+			$version = $row['version'] + 1;
+		}
+		$DIC->database()->insert('ecr_description', array(
+			'ref_id'      => array('integer', $ref_id),
+			'version'     => array('integer', $version),
+			'timestamp'   => array('integer', strtotime($parsed_item->getTimestamp())),
+			'icon'        => array('text', $parsed_item->getItem()->getIcon()),
+			'description' => array('text', $parsed_item->getItem()->getDescription())
+		));
 	}
 
 	/**
