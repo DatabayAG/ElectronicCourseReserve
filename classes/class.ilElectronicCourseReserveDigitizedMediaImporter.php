@@ -8,6 +8,8 @@ require_once 'Services/Cron/classes/class.ilCronJobResult.php';
 require_once 'Modules/File/classes/class.ilObjFile.php';
 require_once 'Modules/WebResource/classes/class.ilObjLinkResource.php';
 require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
+require_once 'Modules/Course/classes/class.ilObjCourse.php';
+require_once 'Modules/Folder/classes/class.ilObjFolder.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveDataMapper.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
@@ -159,65 +161,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->logger->write('Starting item creation...');
 				if($parsed_item->getType() === self::ITEM_TYPE_FILE)
 				{
-					$this->createFileItem($parsed_item, $crs_ref_id, $content);
+					$this->createFileItem($parsed_item, $content);
 				}
 				else if($parsed_item->getType() === self::ITEM_TYPE_URL)
 				{
-					$this->createWebResourceItem($parsed_item, $crs_ref_id, $content);
+					$this->createWebResourceItem($parsed_item, $content);
 				}
 				$this->logger->write('...item creation done.');
-			/**	$xml = new ilXmlWriter();
-				$xml->xmlStartTag('File', array('type' => 'application/pdf'));
-				$xml->xmlElement('Filename', array(), $filename);
-				$xml->xmlElement('Title', array(), $filename);
-
-				$xml->xmlElement('Content', array('mode' => 'FS_COPY'), $pathname);
-
-				$xml->xmlEndTag('File');
-
-				//@todo: process xml file if existing
-
-				try
-				{
-					$ref_id = $soap_client->__soapCall('addFile', array($sid, $crs_ref_id, $xml->xmlDumpMem()));
-					if(is_numeric($ref_id))
-					{
-						$entity = new ilElectronicCourseReserveHistoryEntity();
-						$entity->setRefId($ref_id);
-						$entity->setTargetRefId($crs_ref_id);
-						$entity->setTimestamp(time());
-						$entity->setJobNumber($job_nr);
-						$mapper->saveHistory($entity);
-
-						$this->logger->write('Created a new file object with ref_id: ' . $ref_id);
-
-						$file = ilObjectFactory::getInstanceByRefId($ref_id, false);
-						if($file instanceof ilObjFile)
-						{
-							$file = $file->getFile();
-							$this->logger->write('Checking final file object: ' . $file);
-							$content = @file_get_contents($file);
-							$this->logger->write('MD5 checksum: ' . md5($content));
-							$this->logger->write('SHA1 checksum: ' . sha1($content));
-						}
-
-						@unlink($fileinfo->getPathname());
-						@unlink(str_replace('.pdf', '.xml', $pathname));
-					}
-					else
-					{
-						$this->logger->write('Could not create file object.');
-					}
-				}
-				catch(SoapFault $e)
-				{
-					$this->logger->write('Skipped file.' . $e->getMessage());
-				}*/
 			}
-		}
-		catch(SoapFault $e)
-		{
-			$this->logger->write($e->getMessage());
 		}
 		catch(ilException $e)
 		{
@@ -247,23 +198,66 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 		if($crs_ref_id === 0 || $folder_import_id === 0)
 		{
-			//Todo: send mail
-			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was noot set', $folder_import_id, $crs_ref_id));
+			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was not set', $folder_import_id, $crs_ref_id));
 			return false;
 		}
-		return true;
+
+		/**
+		 * @var $ilObjDataCache ilObjectDataCache
+		 */
+		global $ilObjDataCache;
+
+		$obj_id =  (int) $ilObjDataCache->lookupObjId($crs_ref_id);
+		if($obj_id > 0 && $ilObjDataCache->lookupType($obj_id) === 'crs')
+		{
+			$this->logger->write(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
+			//Todo: check if folder is in right course
+			$object_id = ilObject::_lookupObjIdByImportId($folder_import_id);
+			if($object_id === 0)
+			{
+				$this->logger->write(sprintf('Folder with Import id (%s) not found creating new folder.', $folder_import_id));
+				return $this->createFolder($parsed_item, $folder_import_id, $crs_ref_id);
+			}
+			else
+			{
+				$this->logger->write(sprintf('Found folder with Import id (%s) updating title.', $folder_import_id));
+				$fold = new ilObjFolder($object_id, false);
+				$fold->setTitle($parsed_item->getItem()->getLabel());
+				$fold->update();
+				return $fold->getRefId();
+			}
+		}
+		return false;
 	}
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param $folder_import_id
 	 * @param $crs_ref_id
-	 * @param $raw_xml
+	 * @return int
+	 */
+	protected function createFolder($parsed_item, $folder_import_id, $crs_ref_id)
+	{
+		$fold = new ilObjFolder();
+		$fold->setTitle($parsed_item->getItem()->getLabel());
+		$fold->setImportId($folder_import_id);
+		$fold->create();
+		$fold->createReference();
+		$fold->putInTree($crs_ref_id);
+		$fold->setPermissions($crs_ref_id);
+		return $fold->getRefId();
+	}
+
+	/**
+	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param string $raw_xml
 	 * @throws ilFileUtilsException
 	 */
-	protected function createFileItem($parsed_item, $crs_ref_id, $raw_xml)
+	protected function createFileItem($parsed_item, $raw_xml)
 	{
+		$ref_id = $this->checkCourseAndFolderStructure($parsed_item);
 		if(file_exists($parsed_item->getItem()->getFile()) &&
-			$this->checkCourseAndFolderStructure($parsed_item)
+			$ref_id != 0
 		)
 		{
 			$new_file = new ilObjFile();
@@ -273,8 +267,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			ilUtil::makeDirParents($new_file->getDirectory());
 			ilUtil::moveUploadedFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg', $new_file->getDirectory(1) . '/' . $new_file->getFileName(), true, 'copy');
 			$new_file->createReference();
-			$new_file->putInTree($crs_ref_id);
-			$new_file->setPermissions($crs_ref_id);
+			$new_file->putInTree($ref_id);
+			$new_file->setPermissions($ref_id);
 			require_once("./Services/History/classes/class.ilHistory.php");
 			/*ilHistory::_createEntry(
 				$new_file->getId(),
@@ -294,20 +288,20 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @param $crs_ref_id
-	 * @param $raw_xml
+	 * @param string $raw_xml
 	 */
-	protected function createWebResourceItem($parsed_item, $crs_ref_id, $raw_xml)
+	protected function createWebResourceItem($parsed_item, $raw_xml)
 	{
+		$ref_id = $this->checkCourseAndFolderStructure($parsed_item);
 		if(strlen($parsed_item->getItem()->getUrl()) > 0 &&
-			$this->checkCourseAndFolderStructure($parsed_item))
+			$ref_id != 0)
 		{
 			$new_link = new ilObjLinkResource();
 			$new_link->setTitle($parsed_item->getLabel());
 			$new_link->create();
 			$new_link->createReference();
-			$new_link->putInTree($crs_ref_id);
-			$new_link->setPermissions($crs_ref_id);
+			$new_link->putInTree($ref_id);
+			$new_link->setPermissions($ref_id);
 			$link_item = new ilLinkResourceItems($new_link->getId());
 			$link_item->setTitle($parsed_item->getItem()->getLabel());
 			$link_item->setActiveStatus(1);
@@ -331,8 +325,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @param $crs_ref_id
-	 * @param $raw_xml
+	 * @param int $crs_ref_id
+	 * @param string $raw_xml
 	 */
 	protected function writeDescriptionToDB($parsed_item, $crs_ref_id, $raw_xml)
 	{
@@ -344,10 +338,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			array($crs_ref_id)
 		);
 		$row = $DIC->database()->fetchAssoc($res);
+
 		if(is_array($row) && array_key_exists('version', $row))
 		{
 			$version = $row['version'] + 1;
 		}
+
 		$DIC->database()->insert('ecr_description', array(
 			'ref_id'      => array('integer', $crs_ref_id),
 			'version'     => array('integer', $version),
