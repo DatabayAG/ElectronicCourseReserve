@@ -3,6 +3,7 @@
 
 require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once 'Services/Component/classes/class.ilPluginConfigGUI.php';
+require_once 'Services/User/classes/class.ilUserAutoComplete.php';
 
 class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 {
@@ -24,6 +25,9 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 		switch($cmd)
 		{
+			case 'doUserAutoComplete':
+				$this->doUserAutoComplete();
+				break;
 			default:
 				$this->$cmd();
 				break;
@@ -81,7 +85,9 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			'sign_key_email'      => $this->pluginObj->getSetting('sign_key_email'),
 			'limit_to_groles'     => $this->pluginObj->getSetting('limit_to_groles'),
 			'global_roles'        => explode(',', $this->pluginObj->getSetting('global_roles')),
-			'url_search_system'   => $this->pluginObj->getSetting('url_search_system')
+			'url_search_system'   => $this->pluginObj->getSetting('url_search_system'),
+			'is_mail_enabled'     => $this->pluginObj->getSetting('is_mail_enabled'),
+			'recipients'          => explode(',', $this->pluginObj->getSetting('mail_recipients'))
 		));
 	}
 
@@ -145,6 +151,21 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form->addItem($form_key_passphrase);
 		$this->form->addItem($form_search_system_url);
 		$this->form->addItem($form_limit_to_groles);
+
+		$mail = new ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail'), 'is_mail_enabled');
+		$mail->setInfo($this->getPluginObject()->txt('notification_mail_info'));
+
+		// RECIPIENT
+		$dsDataLink = $DIC->ctrl()->getLinkTarget($this, 'doUserAutoComplete', '', true);
+		$recipients = new ilTextInputGUI($this->getPluginObject()->txt('recipients'), 'recipients');
+		$recipients->setRequired(true);
+		$recipients->setValue(array());
+		$recipients->setDataSource($dsDataLink);
+		$recipients->setMaxLength(null);
+		$recipients->setMulti(true);
+		$recipients->setInfo($this->getPluginObject()->txt('recipients_info'));
+		$mail->addSubItem($recipients);
+		$this->form->addItem($mail);
 		
 	}
 
@@ -163,10 +184,14 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 
 		if($this->form->checkInput())
 		{
+			$recipients = $this->form->getInput('recipients');
 			$this->pluginObj->setSetting('limit_to_groles', (int)$this->form->getInput('limit_to_groles'));
 			$this->pluginObj->setSetting('global_roles', implode(',', (array)$this->form->getInput('global_roles')));
 			$this->pluginObj->setSetting('gpg_homedir', $this->form->getInput('gpg_homedir'));
 			$this->pluginObj->setSetting('sign_key_email', $this->form->getInput('sign_key_email'));
+			$this->pluginObj->setSetting('is_mail_enabled', $this->form->getInput('is_mail_enabled'));
+			$this->pluginObj->setSetting('mail_recipients', implode(',', $recipients));
+
 			if($this->form->getInput('sign_key_passphrase'))
 			{
 				$this->pluginObj->setSetting('sign_key_passphrase', ilElectronicCourseReservePlugin::encrypt($this->form->getInput('sign_key_passphrase')));
@@ -179,5 +204,32 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 
 		$this->form->setValuesByPost();
 		$tpl->setContent($this->form->getHTML());
+	}
+
+	/**
+	 * Do auto completion
+	 * @return void
+	 */
+	public function doUserAutoComplete()
+	{
+
+		if(!isset($_GET['autoCompleteField']))
+		{
+			$a_fields = array('login','firstname','lastname','email', 'recipients');
+			$result_field = 'login';
+		}
+		else
+		{
+			$a_fields = array((string) $_GET['autoCompleteField']);
+			$result_field = (string) $_GET['autoCompleteField'];
+		}
+
+		$GLOBALS['ilLog']->write(print_r($a_fields,true));
+		$auto = new ilUserAutoComplete();
+		$auto->setSearchFields($a_fields);
+		$auto->setResultField($result_field);
+		$auto->enableFieldSearchableCheck(true);
+		echo $auto->getList($_REQUEST['term']);
+		exit();
 	}
 }

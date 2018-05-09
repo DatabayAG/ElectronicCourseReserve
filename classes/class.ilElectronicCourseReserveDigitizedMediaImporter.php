@@ -233,6 +233,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					}
 					else
 					{
+						// Todo:  $tree->moveTree();
 						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
 					}
 				}
@@ -288,6 +289,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$ref_id != 0
 		)
 		{
+			//Todo: Fix this
 			$new_file = new ilObjFile();
 			$new_file->setTitle($parsed_item->getLabel());
 			$new_file->create();

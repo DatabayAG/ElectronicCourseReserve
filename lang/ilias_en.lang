@@ -17,3 +17,7 @@ ecr_soap_activation_required#:#Please <a href="%1$s">enable the administration v
 limit_to_groles#:#Limit access to certain global Roles
 global_roles#:#Global Roles
 crs_ref_id#:#Course-RefId
+notification_mail#:#Notification Mail
+notification_mail_info#:#Wenn activated, an email notification with import summary will be sent.
+recipients#:#Recipients
+recipients_info#:#Please insert the login names of the recipients.

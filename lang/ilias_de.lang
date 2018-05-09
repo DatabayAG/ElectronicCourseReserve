@@ -17,3 +17,7 @@ ecr_soap_activation_required#:#Bitte <a href="%1$s">aktivieren Sie SOAP</a>.
 limit_to_groles#:#Zugriff auf bestimmte globale Rollen beschränken
 global_roles#:#Globale Rollen
 crs_ref_id#:#Kurs-RefId
+notification_mail#:#Benachrichtigungs Mail
+notification_mail_info#:#Wenn aktiviert, wird eine Benachrichtigung per E-Mail versendet.
+recipients#:#Empfänger
+recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
