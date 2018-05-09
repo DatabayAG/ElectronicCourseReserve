@@ -131,3 +131,13 @@ if(!$ilDB->tableExists('ecr_folder'))
 	$ilDB->addPrimaryKey('ecr_folder', array('ref_id', 'crs_ref_id'));
 }
 ?>
+<#7>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if($ilDB->tableColumnExists('ecr_folder', 'obj_id'))
+{
+	$ilDB->dropTableColumn('ecr_folder', 'obj_id');
+}
+?>
