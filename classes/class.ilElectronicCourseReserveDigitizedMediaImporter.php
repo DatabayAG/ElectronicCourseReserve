@@ -204,8 +204,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 		/**
 		 * @var $ilObjDataCache ilObjectDataCache
+		 * @var $tree ilTree
 		 */
-		global $ilObjDataCache;
+		global $ilObjDataCache, $tree;
 
 		$obj_id =  (int) $ilObjDataCache->lookupObjId($crs_ref_id);
 		if($obj_id > 0 && $ilObjDataCache->lookupType($obj_id) === 'crs')
@@ -220,11 +221,27 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 			else
 			{
+				
 				$this->logger->write(sprintf('Found folder with Import id (%s) updating title.', $folder_import_id));
+				$ref_ids = ilObject::_getAllReferences($object_id);
+				$ref_id  = current($ref_ids);
 				$fold = new ilObjFolder($object_id, false);
 				$fold->setTitle($parsed_item->getItem()->getLabel());
 				$fold->update();
-				return $fold->getRefId();
+				if($ref_id != null && $ref_id > 0)
+				{
+					$parent = $tree->getParentId($ref_id);
+					if($parent === $crs_ref_id)
+					{
+						// Folder is at correct place
+						return true;
+					}
+					else
+					{
+						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
+					}
+				}
+
 			}
 		}
 		return false;
@@ -245,6 +262,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$fold->createReference();
 		$fold->putInTree($crs_ref_id);
 		$fold->setPermissions($crs_ref_id);
+		$fold->update();
 		return $fold->getRefId();
 	}
 
