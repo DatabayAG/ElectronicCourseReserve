@@ -223,16 +223,13 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->logger->write(sprintf('Found folder with Import id (%s) updating title.', $folder_import_id));
 				$ref_ids = ilObject::_getAllReferences($object_id);
 				$ref_id  = current($ref_ids);
-				$fold = new ilObjFolder($ref_id);
-				$fold->setTitle($parsed_item->getItem()->getLabel());
-				$fold->update();
+				$this->updateFolder($parsed_item, $ref_id);
 				if($ref_id != null && $ref_id > 0)
 				{
 					$parent = $tree->getParentId($ref_id);
-					if($parent === $crs_ref_id)
+					if($parent == $crs_ref_id)
 					{
-						// Folder is at correct place
-						return true;
+						return $ref_id;
 					}
 					else
 					{
@@ -265,6 +262,17 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$fold->setPermissions($crs_ref_id);
 		$fold->update();
 		return $fold->getRefId();
+	}
+
+	/**
+	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param $ref_id
+	 */
+	protected function updateFolder($parsed_item, $ref_id)
+	{
+		$fold = new ilObjFolder($ref_id);
+		$fold->setTitle($parsed_item->getItem()->getLabel());
+		$fold->update();
 	}
 
 	/**
