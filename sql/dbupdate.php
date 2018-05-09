@@ -97,3 +97,37 @@ if($ilDB->tableExists('ecr_description'))
 	}
 }
 ?>
+<#6>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableExists('ecr_folder'))
+{
+	$fields = array(
+		'ref_id'      => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'obj_id'     => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'import_id' => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'crs_ref_id'  => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		)
+	);
+
+	$ilDB->createTable('ecr_folder', $fields);
+	$ilDB->addPrimaryKey('ecr_folder', array('ref_id', 'crs_ref_id'));
+}
+?>

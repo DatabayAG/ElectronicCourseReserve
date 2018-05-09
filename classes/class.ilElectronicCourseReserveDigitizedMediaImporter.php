@@ -261,6 +261,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$fold->putInTree($crs_ref_id);
 		$fold->setPermissions($crs_ref_id);
 		$fold->update();
+		$this->writeFolderCreationToDB($fold->getRefId(), $folder_import_id, $crs_ref_id);
 		return $fold->getRefId();
 	}
 
@@ -378,6 +379,22 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			'icon'        => array('text', $parsed_item->getItem()->getIcon()),
 			'description' => array('text', $parsed_item->getItem()->getDescription()),
 			'raw_xml'     => array('text', $raw_xml)
+		));
+	}
+
+	/**
+	 * @param $ref_id
+	 * @param $import_id
+	 * @param $crs_ref_id
+	 */
+	protected function writeFolderCreationToDB($ref_id, $import_id, $crs_ref_id)
+	{
+		global $DIC;
+
+		$DIC->database()->insert('ecr_folder', array(
+			'ref_id'     => array('integer', $ref_id),
+			'import_id'  => array('integer', $import_id),
+			'crs_ref_id' => array('integer', $crs_ref_id)
 		));
 	}
 
