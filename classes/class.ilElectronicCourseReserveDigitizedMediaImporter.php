@@ -220,11 +220,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 			else
 			{
-				
 				$this->logger->write(sprintf('Found folder with Import id (%s) updating title.', $folder_import_id));
 				$ref_ids = ilObject::_getAllReferences($object_id);
 				$ref_id  = current($ref_ids);
-				$fold = new ilObjFolder($object_id, false);
+				$fold = new ilObjFolder($ref_id);
 				$fold->setTitle($parsed_item->getItem()->getLabel());
 				$fold->update();
 				if($ref_id != null && $ref_id > 0)
@@ -240,7 +239,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
 					}
 				}
-
 			}
 		}
 		return false;
