@@ -404,17 +404,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
 		if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs')
 		{
-			if(strlen($parsed_item->getLabel()) > 0)
-			{
-				$crs = new ilObjCourse($crs_ref_id);
-				if($crs->getTitle() !== $parsed_item->getLabel())
-				{
-					$this->logger->write(sprintf('Updated course with ref_id (%s) to new title (%s), old title was (%s).', $crs_ref_id, $parsed_item->getLabel(), $crs->getTitle()));
-					$crs->setTitle($parsed_item->getLabel());
-					$crs->update();
-				}
-			}
-
 			$this->logger->write(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
 			$folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id);
 			if($folder_obj_id === 0)
