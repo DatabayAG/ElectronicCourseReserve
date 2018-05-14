@@ -28,6 +28,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	/**
 	 * @var string
 	 */
+	const BACKUP_DIR = 'ecr_import_backup';
+
+	/**
+	 * @var string
+	 */
 	const LOCK_FILENAME = 'ecr.lock';
 
 	/**
@@ -144,6 +149,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					$this->createWebResourceItem($parsed_item, $content);
 				}
 				$this->logger->write('...item creation done.');
+				$this->moveXmlToBackupFolder($pathname);
 			}
 		}
 		catch(ilException $e)
@@ -161,6 +167,39 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 
 		$this->logger->write('Digitized media import script finished');
+	}
+
+	/**
+	 * @param string $path_to_file
+	 * @return bool
+	 */
+	protected function moveXmlToBackupFolder($path_to_file)
+	{
+		if(file_exists($path_to_file))
+		{
+			$dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . selF::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
+			if( ! is_dir($dir))
+			{
+				ilUtil::makeDirParents($dir);
+			}
+			try
+			{
+				//Todo uncomment
+				//ilUtil::moveUploadedFile($path_to_file, basename($path_to_file), $dir . DIRECTORY_SEPARATOR . basename($path_to_file), true, 'copy');
+				//unlink($path_to_file);
+				return true;
+			}
+			catch(ilException $e)
+			{
+				$this->logger->write($e->getMessage());
+				return false;
+			}
+		}
+		else
+		{
+			$this->logger->write(sprintf('File (%s) not found can not move it., skipping item.', $path_to_file));
+			return false;
+		}
 	}
 
 	/**
