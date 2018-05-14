@@ -106,7 +106,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			ilUtil::makeDirParents(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir);
 			$iter = new RegexIterator(
 				new DirectoryIterator(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir),
-				'/(\d+)_(.*).xml/'
+				'/(.*).xml/'
 			);
 			foreach($iter as $fileinfo)
 			{
