@@ -126,6 +126,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 				$content = @file_get_contents($pathname);
 
+				//Todo: Validate against xslt
 				$this->logger->write('MD5 checksum: ' . md5($content));
 				$this->logger->write('SHA1 checksum: ' . sha1($content));
 
@@ -150,6 +151,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				}
 				$this->logger->write('...item creation done.');
 				$this->moveXmlToBackupFolder($pathname);
+				//Todo: Mail on error
 			}
 		}
 		catch(ilException $e)
