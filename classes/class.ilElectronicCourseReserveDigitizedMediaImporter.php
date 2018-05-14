@@ -84,26 +84,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$this->ensureSystemPreconditions();
 			$this->ensureCorrectLockingState();
 
-			$soap_client = new SoapClient(ilUtil::_getHttpPath() . '/webservice/soap/server.php?wsdl', array(
-				'trace'     => true,
-				'exception' => true
-			));
-
-			if(php_sapi_name() == 'cli')
-			{
-				$sid = $soap_client->__soapCall('login', array(CLIENT_ID,  $_SERVER['argv'][1], $_SERVER['argv'][2]));
-			}
-			else
-			{
-				$currentSessionId = session_id();
-				$newSessionId = ilSession::_duplicate($currentSessionId);
-
-				$sid = $newSessionId . '::' . CLIENT_ID;
-			}
-
 			$this->logger->write('Started determination with file pattern.');
-
-			$mapper = new ilElectronicCourseReserveDataMapper();
 
 			ilUtil::makeDirParents(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::IMPORT_DIR);
 			$iter = new RegexIterator(
@@ -189,7 +170,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @return bool
+	 * @return int
 	 */
 	protected function checkCourseAndFolderStructure($parsed_item)
 	{
@@ -199,7 +180,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		if($crs_ref_id === 0 || $folder_import_id === 0)
 		{
 			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was not set', $folder_import_id, $crs_ref_id));
-			return false;
+			return 0;
 		}
 
 		/**
@@ -243,7 +224,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$this->logger->write(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.', $crs_ref_id, $ilObjDataCache->lookupType($obj_id)));
 		}
-		return false;
+		return 0;
 	}
 
 	/**
