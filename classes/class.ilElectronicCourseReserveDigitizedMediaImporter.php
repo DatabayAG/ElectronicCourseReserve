@@ -110,19 +110,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$crs_ref_id = null;
 				$job_nr     = null;
 				$matches    = null;
-				preg_match('/^(\d+)_(.*).xml/i', $filename, $matches);
-
-				if(is_array($matches) && isset($matches[1]) && is_numeric($matches[1]))
-				{
-					$this->logger->write('Found target ref_id ' . $matches[1]);
-					$crs_ref_id = $matches[1];
-					$job_nr     = $matches[2];
-				}
-				else
-				{
-					$this->logger->write('Could not extract target ref_id from filename. Skipped file.');
-					continue;
-				}
 
 				$content = @file_get_contents($pathname);
 
@@ -192,11 +179,16 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 * @param ilElectronicCourseReserveContainer $parsed_item
 	 * @param $ref_id
 	 */
-	protected function updateFolder($parsed_item, $ref_id)
+	protected function updateFolderTitle($parsed_item, $ref_id)
 	{
 		$fold = new ilObjFolder($ref_id);
-		$fold->setTitle($parsed_item->getItem()->getLabel());
-		$fold->update();
+		if($parsed_item->getItem()->getLabel() != $fold->getTitle())
+		{
+			$this->logger->write('Title for folder (ref_id: %s), get updated from "%s" to "%s".', $ref_id, $fold->getTitle(), $parsed_item->getItem()->getLabel());
+			$fold->setTitle($parsed_item->getItem()->getLabel());
+			$fold->update();
+		}
+		
 	}
 
 	/**
@@ -278,17 +270,17 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @param int $crs_ref_id
-	 * @param string $raw_xml
+	 * @param int                                $new_obj_ref_id
+	 * @param string                             $raw_xml
 	 */
-	protected function writeDescriptionToDB($parsed_item, $crs_ref_id, $raw_xml)
+	protected function writeDescriptionToDB($parsed_item, $new_obj_ref_id, $raw_xml)
 	{
 		global $DIC;
 		$version = 1;
 		$res = $DIC->database()->queryF(
 			'SELECT version FROM ecr_description WHERE ref_id = %s',
 			array('integer'),
-			array($crs_ref_id)
+			array($new_obj_ref_id)
 		);
 		$row = $DIC->database()->fetchAssoc($res);
 
@@ -298,7 +290,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 
 		$DIC->database()->insert('ecr_description', array(
-			'ref_id'      => array('integer', $crs_ref_id),
+			'ref_id'      => array('integer', $new_obj_ref_id),
 			'version'     => array('integer', $version),
 			'timestamp'   => array('integer', strtotime($parsed_item->getTimestamp())),
 			'icon'        => array('text', $parsed_item->getItem()->getIcon()),
@@ -393,7 +385,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 		if($crs_ref_id === 0 || $folder_import_id === 0)
 		{
-			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was not set', $folder_import_id, $crs_ref_id));
+			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was not set, skipping this one.', $folder_import_id, $crs_ref_id));
 			return 0;
 		}
 
@@ -415,10 +407,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 			else if($ilObjDataCache->lookupType($folder_obj_id) === 'fold')
 			{
-				$this->logger->write(sprintf('Found folder with Import id (%s) updating title.', $folder_import_id));
+				$this->logger->write(sprintf('Found folder with Import id (%s).', $folder_import_id));
 				$ref_ids = ilObject::_getAllReferences($folder_obj_id);
 				$ref_id  = current($ref_ids);
-				$this->updateFolder($parsed_item, $ref_id);
+				$this->updateFolderTitle($parsed_item, $ref_id);
 				if($ref_id != null && $ref_id > 0)
 				{
 					$parent = $tree->getParentId($ref_id);
