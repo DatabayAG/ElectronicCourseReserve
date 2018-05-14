@@ -10,6 +10,7 @@ require_once 'Modules/WebResource/classes/class.ilObjLinkResource.php';
 require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
 require_once 'Modules/Folder/classes/class.ilObjFolder.php';
+require_once 'Services/Utilities/classes/class.ilMimeTypeUtil.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
 
@@ -210,25 +211,29 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$folder_ref_id != 0
 		)
 		{
+			$filename = basename($parsed_item->getItem()->getFile());
 			$new_file = new ilObjFile();
-			$new_file->setTitle($parsed_item->getLabel());
+			$new_file->setTitle($filename);
 			$new_file->setFileType(pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION));
+			$new_file->setFileName($filename);
 			$new_file->create();
-			$new_file->getUploadFile($parsed_item->getItem()->getFile(), $parsed_item->getItem()->getFilename());
-			ilUtil::makeDirParents($new_file->getDirectory());
-			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $parsed_item->getItem()->getFilename(), $new_file->getDirectory(1) . '/' . $new_file->getFileName(), true, 'copy');
+			$new_file->setFilename($new_file->getFileName());
+			$new_file->addNewsNotification("file_updated");
 			$new_file->createReference();
 			$new_file->putInTree($folder_ref_id);
 			$new_file->setPermissions($folder_ref_id);
+			$new_file->update();
+			ilUtil::makeDirParents($new_file->getDirectory(1));
+			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $filename, $new_file->getDirectory(1) . '/' . $filename, true, 'copy');
+			#$new_file->getUploadFile($parsed_item->getItem()->getFile(), $filename);
+			//Todo: fix size
 			require_once("./Services/History/classes/class.ilHistory.php");
 			/*ilHistory::_createEntry(
 				$new_file->getId(),
 				"replace",
 				$new_file->getFileName().",".$this->$new_file()
 			);*/
-			$new_file->setFilename($new_file->getFileName());
-			$new_file->addNewsNotification("file_updated");
-			$new_file->update();
+
 			$this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml);
 		}
 		else if($folder_ref_id === 0)
