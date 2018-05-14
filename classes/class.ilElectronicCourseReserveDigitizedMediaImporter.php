@@ -443,7 +443,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		global $ilObjDataCache, $tree;
 
 		$crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
-		if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs')
+		if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && ! ilObject::_isInTrash($crs_ref_id))
 		{
 			$this->logger->write(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
 			$folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id);
@@ -458,12 +458,16 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$ref_ids = ilObject::_getAllReferences($folder_obj_id);
 				$ref_id  = current($ref_ids);
 				$this->updateFolderTitle($parsed_item, $ref_id);
-				if($ref_id != null && $ref_id > 0)
+				if($ref_id != null && $ref_id > 0 && ! ilObject::_isInTrash($ref_id))
 				{
 					$parent = $tree->getParentId($ref_id);
 					if($parent == $crs_ref_id)
 					{
 						return $ref_id;
+					}
+					else if( $ref_id > 0 && ilObject::_isInTrash($ref_id))
+					{
+						$this->logger->write(sprintf('Object with ref_id (%s) is in trash, skipping.', $ref_id));
 					}
 					else
 					{
@@ -477,7 +481,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->logger->write(sprintf('Object with Import id (%s) is not of type folder (%s).', $folder_import_id, $ilObjDataCache->lookupType($folder_obj_id)));
 			}
 		}
-		else if($crs_obj_id > 0)
+		else if($crs_obj_id > 0 && ilObject::_isInTrash($crs_ref_id))
+		{
+			$this->logger->write(sprintf('Object with ref_id (%s) is in trash, skipping.', $crs_ref_id));
+		}
+		else if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) !== 'crs')
 		{
 			$this->logger->write(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.', $crs_ref_id, $ilObjDataCache->lookupType($crs_obj_id)));
 		}
