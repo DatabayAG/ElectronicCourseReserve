@@ -170,65 +170,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @return int
-	 */
-	protected function checkCourseAndFolderStructure($parsed_item)
-	{
-		$crs_ref_id = $parsed_item->getCrsRefId();
-		$folder_import_id = $parsed_item->getFolderImportId();
-
-		if($crs_ref_id === 0 || $folder_import_id === 0)
-		{
-			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was not set', $folder_import_id, $crs_ref_id));
-			return 0;
-		}
-
-		/**
-		 * @var $ilObjDataCache ilObjectDataCache
-		 * @var $tree ilTree
-		 */
-		global $ilObjDataCache, $tree;
-
-		$obj_id =  (int) $ilObjDataCache->lookupObjId($crs_ref_id);
-		if($obj_id > 0 && $ilObjDataCache->lookupType($obj_id) === 'crs')
-		{
-			$this->logger->write(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
-			$object_id = ilObject::_lookupObjIdByImportId($folder_import_id);
-			if($object_id === 0)
-			{
-				$this->logger->write(sprintf('Folder with Import id (%s) not found creating new folder.', $folder_import_id));
-				return $this->createFolder($parsed_item, $folder_import_id, $crs_ref_id);
-			}
-			else
-			{
-				$this->logger->write(sprintf('Found folder with Import id (%s) updating title.', $folder_import_id));
-				$ref_ids = ilObject::_getAllReferences($object_id);
-				$ref_id  = current($ref_ids);
-				$this->updateFolder($parsed_item, $ref_id);
-				if($ref_id != null && $ref_id > 0)
-				{
-					$parent = $tree->getParentId($ref_id);
-					if($parent == $crs_ref_id)
-					{
-						return $ref_id;
-					}
-					else
-					{
-						// Todo:  $tree->moveTree();
-						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
-					}
-				}
-			}
-		}
-		else if($obj_id > 0)
-		{
-			$this->logger->write(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.', $crs_ref_id, $ilObjDataCache->lookupType($obj_id)));
-		}
-		return 0;
-	}
-
-	/**
-	 * @param ilElectronicCourseReserveContainer $parsed_item
 	 * @param $folder_import_id
 	 * @param $crs_ref_id
 	 * @return int
@@ -265,7 +206,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function createFileItem($parsed_item, $raw_xml)
 	{
-		$ref_id = $this->checkCourseAndFolderStructure($parsed_item);
+		$ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
 		if(file_exists($parsed_item->getItem()->getFile()) &&
 			$ref_id != 0
 		)
@@ -303,7 +244,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function createWebResourceItem($parsed_item, $raw_xml)
 	{
-		$ref_id = $this->checkCourseAndFolderStructure($parsed_item);
+		$ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
 		if(strlen($parsed_item->getItem()->getUrl()) > 0 &&
 			$ref_id != 0)
 		{
@@ -438,5 +379,68 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			throw new ilException('The passed ILIAS user has to accept the user agreement.');
 		}
+	}
+
+	/**
+	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @return int
+	 */
+	protected function ensureCorrectCourseAndFolderStructure($parsed_item)
+	{
+		$crs_ref_id = $parsed_item->getCrsRefId();
+		$folder_import_id = $parsed_item->getFolderImportId();
+
+		if($crs_ref_id === 0 || $folder_import_id === 0)
+		{
+			$this->logger->write(sprintf('Import id (%s) or Course Ref id (%s) was not set', $folder_import_id, $crs_ref_id));
+			return 0;
+		}
+
+		/**
+		 * @var $ilObjDataCache ilObjectDataCache
+		 * @var $tree ilTree
+		 */
+		global $ilObjDataCache, $tree;
+
+		$crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
+		if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs')
+		{
+			$this->logger->write(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
+			$folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id);
+			if($folder_obj_id === 0)
+			{
+				$this->logger->write(sprintf('Folder with Import id (%s) not found creating new folder.', $folder_import_id));
+				return $this->createFolder($parsed_item, $folder_import_id, $crs_ref_id);
+			}
+			else if($ilObjDataCache->lookupType($folder_obj_id) === 'fold')
+			{
+				$this->logger->write(sprintf('Found folder with Import id (%s) updating title.', $folder_import_id));
+				$ref_ids = ilObject::_getAllReferences($folder_obj_id);
+				$ref_id  = current($ref_ids);
+				$this->updateFolder($parsed_item, $ref_id);
+				if($ref_id != null && $ref_id > 0)
+				{
+					$parent = $tree->getParentId($ref_id);
+					if($parent == $crs_ref_id)
+					{
+						return $ref_id;
+					}
+					else
+					{
+						// Todo:  $tree->moveTree();
+						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
+					}
+				}
+			}
+			else
+			{
+				$this->logger->write(sprintf('Object with Import id (%s) is not of type folder (%s).', $folder_import_id, $ilObjDataCache->lookupType($folder_obj_id)));
+			}
+		}
+		else if($crs_obj_id > 0)
+		{
+			$this->logger->write(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.', $crs_ref_id, $ilObjDataCache->lookupType($crs_obj_id)));
+		}
+		return 0;
 	}
 }
