@@ -212,7 +212,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		)
 		{
 			$filename = basename($parsed_item->getItem()->getFile());
-			$new_file = new ilObjFile();
+				$new_file = new ilObjFile();
 			$new_file->setTitle($filename);
 			$new_file->setFileType(pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION));
 			$new_file->setFileName($filename);
@@ -223,18 +223,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->putInTree($folder_ref_id);
 			$new_file->setPermissions($folder_ref_id);
 			$new_file->update();
-			ilUtil::makeDirParents($new_file->getDirectory(1));
-			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $filename, $new_file->getDirectory(1) . '/' . $filename, true, 'copy');
+			$dir = $new_file->getDirectory(1);
+			ilUtil::makeDirParents($dir);
+			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $filename, $dir . '/' . $filename, true, 'copy');
 			$new_file->determineFileSize();
 			$new_file->update();
-
-			//Todo: fix size
-			require_once("./Services/History/classes/class.ilHistory.php");
-			/*ilHistory::_createEntry(
-				$new_file->getId(),
-				"replace",
-				$new_file->getFileName().",".$this->$new_file()
-			);*/
 
 			$this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml);
 		}
