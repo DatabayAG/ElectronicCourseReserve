@@ -11,7 +11,6 @@ require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
 require_once 'Modules/Folder/classes/class.ilObjFolder.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
-require_once dirname(__FILE__).'/class.ilElectronicCourseReserveDataMapper.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
 
 

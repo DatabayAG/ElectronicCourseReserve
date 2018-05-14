@@ -141,3 +141,14 @@ if($ilDB->tableColumnExists('ecr_folder', 'obj_id'))
 	$ilDB->dropTableColumn('ecr_folder', 'obj_id');
 }
 ?>
+<#8>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if($ilDB->tableExists('ecr_import_history'))
+{
+	$ilDB->dropTable('ecr_import_history');
+}
+?>
+
