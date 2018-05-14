@@ -169,7 +169,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form->addItem($mail);
 
 		$import_dir = new \ilTextInputGUI($this->getPluginObject()->txt('import_directory'), 'import_directory');
-		$dir = ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory');
+		$dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $this->pluginObj->getSetting('import_directory');
 		$import_dir->setInfo(sprintf($this->getPluginObject()->txt('import_directory_info'), $dir));
 		$import_dir->setRequired(true);
 		$import_dir->setSize(120);
