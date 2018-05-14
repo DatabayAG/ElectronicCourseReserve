@@ -87,7 +87,8 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			'global_roles'        => explode(',', $this->pluginObj->getSetting('global_roles')),
 			'url_search_system'   => $this->pluginObj->getSetting('url_search_system'),
 			'is_mail_enabled'     => $this->pluginObj->getSetting('is_mail_enabled'),
-			'recipients'          => explode(',', $this->pluginObj->getSetting('mail_recipients'))
+			'recipients'          => explode(',', $this->pluginObj->getSetting('mail_recipients')),
+			'import_directory'    => $this->pluginObj->getSetting('import_directory')
 		));
 	}
 
@@ -166,7 +167,15 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$recipients->setInfo($this->getPluginObject()->txt('recipients_info'));
 		$mail->addSubItem($recipients);
 		$this->form->addItem($mail);
-		
+
+		$import_dir = new \ilTextInputGUI($this->getPluginObject()->txt('import_directory'), 'import_directory');
+		$dir = ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory');
+		$import_dir->setInfo(sprintf($this->getPluginObject()->txt('import_directory_info'), $dir));
+		$import_dir->setRequired(true);
+		$import_dir->setSize(120);
+		$import_dir->setMaxLength(512);
+		$this->form->addItem($import_dir);
+
 	}
 
 
@@ -191,6 +200,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			$this->pluginObj->setSetting('sign_key_email', $this->form->getInput('sign_key_email'));
 			$this->pluginObj->setSetting('is_mail_enabled', $this->form->getInput('is_mail_enabled'));
 			$this->pluginObj->setSetting('mail_recipients', implode(',', $recipients));
+			$this->pluginObj->setSetting('import_directory',  $this->form->getInput('import_directory'));
 
 			if($this->form->getInput('sign_key_passphrase'))
 			{

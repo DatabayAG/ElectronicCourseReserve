@@ -21,3 +21,5 @@ notification_mail#:#Notification Mail
 notification_mail_info#:#Wenn activated, an email notification with import summary will be sent.
 recipients#:#Recipients
 recipients_info#:#Please insert the login names of the recipients.
+import_directory#:#Importdirectory
+import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. Your configured path is: <br/>%s

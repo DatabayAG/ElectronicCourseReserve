@@ -21,3 +21,5 @@ notification_mail#:#Benachrichtigungs Mail
 notification_mail_info#:#Wenn aktiviert, wird eine Benachrichtigung per E-Mail versendet.
 recipients#:#Empfänger
 recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
+import_directory#:#Importverzeichnis
+import_directory_info#:#Bitte tragen Sie hier einen relativen Serverpfad ein, in dem ILIAS die zu importierenden Dateien auslesen soll. Bitte bedenken Sie, dass der Benutzer, in dessen Kontext PHP ausgeführt wird, Leserechte und Schreibrechte auf dieses Verzeichnis benötigt. Ihr konfigurierter Pfad lautet: <br/>%s

@@ -46,6 +46,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected $valid_items = array(self::ITEM_TYPE_FILE, self::ITEM_TYPE_URL);
 
 	/**
+	 * @var ilElectronicCourseReservePlugin
+	 */
+	public $pluginObj = null;
+
+	/**
 	 *
 	 */
 	public function __construct()
@@ -54,6 +59,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
+		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+
 	}
 
 	/**
@@ -86,9 +93,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 			$this->logger->write('Started determination with file pattern.');
 
-			ilUtil::makeDirParents(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::IMPORT_DIR);
+			$dir = $this->pluginObj->getSetting('import_directory');
+			if(strlen($dir) === 0)
+			{
+				$dir = DIRECTORY_SEPARATOR . self::IMPORT_DIR;
+			}
+			ilUtil::makeDirParents(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir);
 			$iter = new RegexIterator(
-				new DirectoryIterator(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::IMPORT_DIR),
+				new DirectoryIterator(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir),
 				'/(\d+)_(.*).xml/'
 			);
 			foreach($iter as $fileinfo)
@@ -225,11 +237,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 		else if($folder_ref_id === 0)
 		{
-			$this->logger->write('Could not find/create course/folder structure.');
+			$this->logger->write('Could not find/create course/folder structure, skipping item.');
 		}
 		else
 		{
-			$this->logger->write(sprintf('File %s not found for item %s skipping creation.', $parsed_item->getItem()->getFile(),  $parsed_item->getLabel()));
+			$this->logger->write(sprintf('File %s not found for item %s, skipping item creation.', $parsed_item->getItem()->getFile(),  $parsed_item->getLabel()));
 		}
 	}
 
@@ -260,7 +272,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 		else
 		{
-			$this->logger->write(sprintf('No url given for %s, skipping creation.', $parsed_item->getLabel()));
+			$this->logger->write(sprintf('No url given for %s, skipping item creation.', $parsed_item->getLabel()));
 		}
 	}
 
