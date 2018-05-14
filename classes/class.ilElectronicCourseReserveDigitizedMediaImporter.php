@@ -212,7 +212,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		)
 		{
 			$filename = basename($parsed_item->getItem()->getFile());
-				$new_file = new ilObjFile();
+			$new_file = new ilObjFile();
 			$new_file->setTitle($filename);
 			$new_file->setFileType(pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION));
 			$new_file->setFileName($filename);
@@ -224,7 +224,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->setPermissions($folder_ref_id);
 			$new_file->update();
 			$dir = $new_file->getDirectory(1);
-			ilUtil::makeDirParents($dir);
+			if( ! is_dir($dir))
+			{
+				ilUtil::makeDirParents($dir);
+			}
+
 			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $filename, $dir . '/' . $filename, true, 'copy');
 			$new_file->determineFileSize();
 			$new_file->update();
@@ -264,12 +268,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$link_item->setTarget($parsed_item->getItem()->getUrl());
 			$link_item->setInternal(false);
 			$link_item->add();
-			require_once("./Services/History/classes/class.ilHistory.php");
-			/*	ilHistory::_createEntry(
-					$new_link->getId(),
-					"replace",
-					$new_link->getTitle().",". $new_link()
-				);*/
 			$this->writeDescriptionToDB($parsed_item, $new_link->getRefId(), $raw_xml);
 		}
 		else
