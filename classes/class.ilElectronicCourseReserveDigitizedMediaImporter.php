@@ -205,21 +205,21 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function createFileItem($parsed_item, $raw_xml)
 	{
-		$ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
+		$folder_ref_id = (int) $this->ensureCorrectCourseAndFolderStructure($parsed_item);
 		if(file_exists($parsed_item->getItem()->getFile()) &&
-			$ref_id != 0
+			$folder_ref_id != 0
 		)
 		{
-			//Todo: Fix this
 			$new_file = new ilObjFile();
 			$new_file->setTitle($parsed_item->getLabel());
+			$new_file->setFileType(pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION));
 			$new_file->create();
-			$new_file->getUploadFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg');
+			$new_file->getUploadFile($parsed_item->getItem()->getFile(), $parsed_item->getItem()->getFilename());
 			ilUtil::makeDirParents($new_file->getDirectory());
-			ilUtil::moveUploadedFile('/tmp/Av5i6lcCQAEkI9m.jpg', 'Av5i6lcCQAEkI9m.jpg', $new_file->getDirectory(1) . '/' . $new_file->getFileName(), true, 'copy');
+			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $parsed_item->getItem()->getFilename(), $new_file->getDirectory(1) . '/' . $new_file->getFileName(), true, 'copy');
 			$new_file->createReference();
-			$new_file->putInTree($ref_id);
-			$new_file->setPermissions($ref_id);
+			$new_file->putInTree($folder_ref_id);
+			$new_file->setPermissions($folder_ref_id);
 			require_once("./Services/History/classes/class.ilHistory.php");
 			/*ilHistory::_createEntry(
 				$new_file->getId(),
@@ -230,6 +230,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->addNewsNotification("file_updated");
 			$new_file->update();
 			$this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml);
+		}
+		else if($folder_ref_id === 0)
+		{
+			$this->logger->write('Could not find/create course/folder structure.');
 		}
 		else
 		{
