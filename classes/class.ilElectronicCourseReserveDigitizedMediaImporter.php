@@ -107,10 +107,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->logger->write('Found file to import: ' . $filename);
 				$this->logger->write('Pathname: ' . $pathname);
 
-				$crs_ref_id = null;
-				$job_nr     = null;
-				$matches    = null;
-
 				$content = @file_get_contents($pathname);
 
 				$this->logger->write('MD5 checksum: ' . md5($content));
