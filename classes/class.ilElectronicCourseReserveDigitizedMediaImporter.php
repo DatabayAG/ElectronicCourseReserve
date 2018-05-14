@@ -225,7 +225,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->update();
 			ilUtil::makeDirParents($new_file->getDirectory(1));
 			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $filename, $new_file->getDirectory(1) . '/' . $filename, true, 'copy');
-			#$new_file->getUploadFile($parsed_item->getItem()->getFile(), $filename);
+			$new_file->determineFileSize();
+			$new_file->update();
+
 			//Todo: fix size
 			require_once("./Services/History/classes/class.ilHistory.php");
 			/*ilHistory::_createEntry(
