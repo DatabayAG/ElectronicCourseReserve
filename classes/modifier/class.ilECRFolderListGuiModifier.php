@@ -14,7 +14,11 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 	{
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		
+		preg_match('/icon_file\.svg/', $a_par['html'], $match);
+		if(count($match) > 0)
+		{
+			$a = 0;
+		}
 		if($a_par['tpl_id'] == 'Services/Container/tpl.container_list_item.html' && $obj->getType() == 'fold')
 		{
 			return true;
@@ -34,7 +38,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		}
 		
 		$html = $a_par['html'];
-		
+
 		$dom = new \DOMDocument("1.0", "utf-8");
 		if(!@$dom->loadHTML('<?xml encoding="utf-8" ?><html><body>' . $html . '</body></html>'))
 		{
@@ -42,7 +46,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		}
 		$plugin = ilElectronicCourseReservePlugin::getInstance();
 		$item_data = $plugin->getItemData();
-		
+
 		$dom->encoding  = 'UTF-8';
 		$xpath = new DomXPath($dom);
 		$item_ref_id = $this->getRefIdFromItemUrl($xpath);
