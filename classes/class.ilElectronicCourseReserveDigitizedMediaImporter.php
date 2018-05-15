@@ -11,6 +11,8 @@ require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
 require_once 'Modules/Folder/classes/class.ilObjFolder.php';
 require_once 'Services/Utilities/classes/class.ilMimeTypeUtil.php';
+require_once 'Services/Mail/classes/class.ilMail.php';
+require_once 'Services/Mail/classes/class.ilMimeMail.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
 
@@ -46,6 +48,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected $user;
 
 	/**
+	 * @var ilMailMimeSender|string
+	 */
+	protected $from;
+
+	/**
 	 * @var array 
 	 */
 	protected $valid_items = array(self::ITEM_TYPE_FILE, self::ITEM_TYPE_URL);
@@ -60,7 +67,23 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	public function __construct()
 	{
-		global $DIC;
+		global $DIC, $ilSetting;
+
+		$factory = null;
+		if (isset($GLOBALS['DIC']['mail.mime.sender.factory'])) {
+			$factory = $GLOBALS['DIC']['mail.mime.sender.factory'];
+		} elseif (isset($GLOBALS['mail.mime.sender.factory'])) {
+			$factory = $GLOBALS['mail.mime.sender.factory'];
+		}
+
+		if($factory !== null && $factory instanceof ilMailMimeSenderFactory)
+		{
+			$this->from = $factory->system();
+		}
+		else
+		{
+			$this->from = ilMail::getIliasMailerAddress();
+		}
 
 		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
@@ -143,18 +166,28 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->logger->write('Starting item creation...');
 				if($parsed_item->getType() === self::ITEM_TYPE_FILE)
 				{
-					$this->createFileItem($parsed_item, $content);
+					if ( ! $this->createFileItem($parsed_item, $content))
+					{
+						$msg =  $this->pluginObj->txt(sprintf('error_create_file_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+						$this->sendMailOnError($msg);
+					}
 				}
 				else if($parsed_item->getType() === self::ITEM_TYPE_URL)
 				{
-					$this->createWebResourceItem($parsed_item, $content);
+					if ( ! $this->createWebResourceItem($parsed_item, $content))
+					{
+						$msg =  $this->pluginObj->txt(sprintf('error_create_url_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+						$this->sendMailOnError($msg);
+					}
 				}
 				$this->logger->write('...item creation done.');
+
 				if( ! $this->moveXmlToBackupFolder($pathname))
 				{
-					
+					$msg =  $this->pluginObj->txt(sprintf('error_move_mail', $pathname));
+					$this->sendMailOnError($msg);
 				}
-				//Todo: Mail on error
+
 			}
 		}
 		catch(ilException $e)
@@ -240,12 +273,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$fold->setTitle($parsed_item->getItem()->getLabel());
 			$fold->update();
 		}
-		
 	}
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @param string $raw_xml
+	 * @param $raw_xml
+	 * @return bool
 	 * @throws ilFileUtilsException
 	 */
 	protected function createFileItem($parsed_item, $raw_xml)
@@ -278,20 +311,24 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->update();
 
 			$this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml);
+			return true;
 		}
 		else if($folder_ref_id === 0)
 		{
 			$this->logger->write('Could not find/create course/folder structure, skipping item.');
+			return false;
 		}
 		else
 		{
 			$this->logger->write(sprintf('File %s not found for item %s, skipping item creation.', $parsed_item->getItem()->getFile(),  $parsed_item->getLabel()));
+			return false;
 		}
 	}
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @param string $raw_xml
+	 * @param $raw_xml
+	 * @return bool
 	 */
 	protected function createWebResourceItem($parsed_item, $raw_xml)
 	{
@@ -313,10 +350,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$link_item->setInternal(false);
 			$link_item->add();
 			$this->writeDescriptionToDB($parsed_item, $new_link->getRefId(), $raw_xml);
+			return true;
 		}
 		else
 		{
 			$this->logger->write(sprintf('No url given for %s, skipping item creation.', $parsed_item->getLabel()));
+			return false;
 		}
 	}
 
@@ -495,5 +534,21 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$this->logger->write(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.', $crs_ref_id, $ilObjDataCache->lookupType($crs_obj_id)));
 		}
 		return 0;
+	}
+
+	/**
+	 * @param $msg
+	 */
+	protected function sendMailOnError($msg)
+	{
+		if((int) $this->pluginObj->getSetting('is_mail_enabled') === 1)
+		{
+			$mail = new ilMimeMail();
+			$mail->From($this->from);
+			$mail->To(explode(',', $this->pluginObj->getSetting('mail_recipients')));
+			$mail->Subject("There was a problem with an Electronic Course Import Item");
+			$mail->Body($msg);
+			$mail->Send();
+		}
 	}
 }
