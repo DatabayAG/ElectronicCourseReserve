@@ -24,41 +24,8 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	 */
 	public $plugin_object;
 
-	/**
-	 * @var ilTemplate 
-	 */
-	protected $tpl;
-
-	/**
-	 * @var ilCtrl 
-	 */
-	protected $ctrl;
-
-	/**
-	 * @var ilObjUser 
-	 */
-	protected $user;
-
-	/**
-	 * @var ilAccessHandler 
-	 */
-	protected $access;
-
-	/**
-	 * @var ilTabsGUI 
-	 */
-	protected $tabs;
-
 	public function __construct()
 	{
-		global $DIC;
-
-		$this->access = $DIC->access();
-		$this->ctrl   = $DIC->ctrl();
-		$this->tabs   = $DIC->tabs();
-		$this->tpl    = $DIC->ui()->mainTemplate()->getStandardTemplate();
-		$this->user   = $DIC->user();
-
 		parent::getPluginObject();
 		if(!$this->modifier_cache  || count($this->modifier_cache ) == 0)
 		{
@@ -68,9 +35,14 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	
 	public function executeCommand()
 	{
+		global $DIC; 
+		$tpl = $DIC->ui()->mainTemplate(); 
+		$ilCtrl = $DIC->ctrl();
+		
+		$tpl->getStandardTemplate();
 
-		$this->ctrl->saveParameter($this, 'ref_id');
-		$next_class = $this->ctrl->getNextClass();
+		$ilCtrl->saveParameter($this, 'ref_id');
+		$next_class = $ilCtrl->getNextClass();
 		
 		switch(strtolower($next_class))
 		{
@@ -78,9 +50,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 				$response = '';
 				ilElectronicCourseReservePlugin::getInstance()->includeClass('dispatcher/class.ilECRCommandDispatcher.php');
 				$dispatcher = ilECRCommandDispatcher::getInstance($this);
-				$response   = $dispatcher->dispatch($this->ctrl->getCmd());
-				$this->tpl->setContent($response);
-				$this->tpl->show();
+				$response   = $dispatcher->dispatch($ilCtrl->getCmd());
+				$tpl->setContent($response);
+				$tpl->show();
 				break;
 		}
 	}
@@ -93,6 +65,10 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	 */
 	public function getHTML($a_comp, $a_part, $a_par = array())
 	{
+		global $DIC;
+		$ilUser = $DIC->user();
+		$ilAccess = $DIC->access();
+
 		if($a_part != 'template_get')
 		{
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
@@ -125,7 +101,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		}
 
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		if(!($obj instanceof ilObjCourse) || !$this->access->checkAccess('write', '', $obj->getRefId()) || !$plugin->isAssignedToRequiredRole($this->user->getId()))
+		if(!($obj instanceof ilObjCourse) || !$ilAccess->checkAccess('write', '', $obj->getRefId()) || !$plugin->isAssignedToRequiredRole($ilUser->getId()))
 		{
 			return parent::getHTML($a_comp, $a_part, $a_par);
 		}
@@ -150,22 +126,27 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	{
 		if(!isset($_GET['pluginCmd']) && 'tabs' == $a_part && isset($_GET['ref_id']))
 		{
+			global $DIC; 
+			$ilCtrl   = $DIC->ctrl(); 
+			$ilAccess = $DIC->access(); 
+			$ilUser   = $DIC->user();
+
 			$this->getPluginObject()->loadLanguageModule();
 
 			$ref_id = (int)$_GET['ref_id'];
 			$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
 			if( $obj instanceof ilObjCourse 
-				&& $this->access->checkAccess('write', '', $obj->getRefId()) 
+				&& $ilAccess->checkAccess('write', '', $obj->getRefId()) 
 				&& $this->plugin_object->isCourseRelevant($ref_id) 
-				&& $this->getPluginObject()->isAssignedToRequiredRole($this->user->getId())
+				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())
 			)
 			{
-				$this->ctrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
-				$this->tabs->addTab(
+				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
+				$DIC->tabs()->addTab(
 					'ecr_tab_title',
 					$this->getPluginObject()->txt('ecr_tab_title'),
-					$this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRContent')
+					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRContent')
 				);
 			}
 		}
