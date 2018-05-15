@@ -31,6 +31,16 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	private static $instance = null;
 
 	/**
+	 * @var array 
+	 */
+	protected $relevant_folder_cache = array();
+
+	/**
+	 * @var array 
+	 */
+	protected $relevant_course_cache = array();
+
+	/**
 	 * @var int
 	 */
 	protected static $iv_source = MCRYPT_DEV_URANDOM;
@@ -316,5 +326,53 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 		}
 
 		return $params;
+	}
+
+	/**
+	 * @param $folder_ref_id
+	 * @return bool
+	 */
+	public function isFolderRelevant($folder_ref_id)
+	{
+		if( ! array_key_exists($folder_ref_id, $this->relevant_folder_cache))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_folder WHERE ref_id = %s',
+				array('integer'),
+				array($folder_ref_id)
+			);
+			$row = $DIC->database()->fetchAssoc($res);
+			$this->relevant_folder_cache[$folder_ref_id] = false;
+			if(is_array($row) && array_key_exists('ref_id', $row))
+			{
+				$this->relevant_folder_cache[$folder_ref_id] = true;
+			}
+		}
+		return $this->relevant_folder_cache[$folder_ref_id];
+	}
+
+	/**
+	 * @param $ref_id
+	 * @return bool
+	 */
+	public function isCourseRelevant($ref_id)
+	{
+		if( ! array_key_exists($ref_id, $this->relevant_folder_cache))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_folder WHERE crs_ref_id = %s',
+				array('integer'),
+				array($ref_id)
+			);
+			$row = $DIC->database()->fetchAssoc($res);
+			$this->relevant_course_cache[$ref_id] = false;
+			if(is_array($row) && array_key_exists('crs_ref_id', $row))
+			{
+				$this->relevant_course_cache[$ref_id] = true;
+			}
+		}
+		return $this->relevant_course_cache[$ref_id];
 	}
 }
