@@ -150,7 +150,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					$this->createWebResourceItem($parsed_item, $content);
 				}
 				$this->logger->write('...item creation done.');
-				$this->moveXmlToBackupFolder($pathname);
+				if( ! $this->moveXmlToBackupFolder($pathname))
+				{
+					
+				}
 				//Todo: Mail on error
 			}
 		}
@@ -179,7 +182,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		if(file_exists($path_to_file))
 		{
-			$dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . selF::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
+			$dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
 			if( ! is_dir($dir))
 			{
 				ilUtil::makeDirParents($dir);
