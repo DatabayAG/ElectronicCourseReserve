@@ -310,7 +310,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->determineFileSize();
 			$new_file->update();
 
-			$this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml);
+			$this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml, $folder_ref_id);
 			return true;
 		}
 		else if($folder_ref_id === 0)
@@ -332,16 +332,16 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function createWebResourceItem($parsed_item, $raw_xml)
 	{
-		$ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
+		$folder_ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
 		if(strlen($parsed_item->getItem()->getUrl()) > 0 &&
-			$ref_id != 0)
+			$folder_ref_id != 0)
 		{
 			$new_link = new ilObjLinkResource();
 			$new_link->setTitle($parsed_item->getLabel());
 			$new_link->create();
 			$new_link->createReference();
-			$new_link->putInTree($ref_id);
-			$new_link->setPermissions($ref_id);
+			$new_link->putInTree($folder_ref_id);
+			$new_link->setPermissions($folder_ref_id);
 			$link_item = new ilLinkResourceItems($new_link->getId());
 			$link_item->setTitle($parsed_item->getItem()->getLabel());
 			$link_item->setActiveStatus(1);
@@ -349,7 +349,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$link_item->setTarget($parsed_item->getItem()->getUrl());
 			$link_item->setInternal(false);
 			$link_item->add();
-			$this->writeDescriptionToDB($parsed_item, $new_link->getRefId(), $raw_xml);
+			$this->writeDescriptionToDB($parsed_item, $new_link->getRefId(), $raw_xml, $folder_ref_id);
 			return true;
 		}
 		else
@@ -361,10 +361,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @param int                                $new_obj_ref_id
-	 * @param string                             $raw_xml
+	 * @param $new_obj_ref_id
+	 * @param $raw_xml
+	 * @param $folder_ref_id
 	 */
-	protected function writeDescriptionToDB($parsed_item, $new_obj_ref_id, $raw_xml)
+	protected function writeDescriptionToDB($parsed_item, $new_obj_ref_id, $raw_xml, $folder_ref_id)
 	{
 		global $DIC;
 		$version = 1;
@@ -381,12 +382,13 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 
 		$DIC->database()->insert('ecr_description', array(
-			'ref_id'      => array('integer', $new_obj_ref_id),
-			'version'     => array('integer', $version),
-			'timestamp'   => array('integer', strtotime($parsed_item->getTimestamp())),
-			'icon'        => array('text', $parsed_item->getItem()->getIcon()),
-			'description' => array('text', $parsed_item->getItem()->getDescription()),
-			'raw_xml'     => array('text', $raw_xml)
+			'ref_id'        => array('integer', $new_obj_ref_id),
+			'version'       => array('integer', $version),
+			'timestamp'     => array('integer', strtotime($parsed_item->getTimestamp())),
+			'icon'          => array('text', $parsed_item->getItem()->getIcon()),
+			'description'   => array('text', $parsed_item->getItem()->getDescription()),
+			'raw_xml'       => array('text', $raw_xml),
+			'folder_ref_id' => array('integer', $folder_ref_id)
 		));
 	}
 

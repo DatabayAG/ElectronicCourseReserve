@@ -19,12 +19,10 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	 */
 	protected $modifier_cache = array();
 
-	protected $modifier = null;
-
 	public function __construct()
 	{
 		parent::getPluginObject();
-		if(!$this->modifier || count($this->modifier) == 0)
+		if(!$this->modifier_cache  || count($this->modifier_cache ) == 0)
 		{
 			$this->initModifier();
 		}
@@ -74,9 +72,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		/**
 		 * @var $modifier ilECRBaseModifier
 		 */
-		if(is_array($this->modifier))
+		if(is_array($this->modifier_cache))
 		{
-			foreach($this->modifier as $modifier)
+			foreach($this->modifier_cache as $key => $modifier)
 			{
 				if($modifier->shouldModifyHtml($a_comp, $a_part, $a_par))
 				{
@@ -147,9 +145,11 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	{
 		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
 		$this->plugin_object->includeClass("modifier/class.ilECRInfoScreenModifier.php");
+		$this->plugin_object->includeClass("modifier/class.ilECRFolderListGuiModifier.php");
 		
 		$this->modifier_cache = array(
-			new ilECRInfoScreenModifier()
+			new ilECRInfoScreenModifier(), 
+			new ilECRFolderListGuiModifier()
 		);
 	}
 	
