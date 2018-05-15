@@ -41,6 +41,16 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	protected $relevant_course_cache = array();
 
 	/**
+	 * @var array 
+	 */
+	protected $already_queried_folders = array();
+
+	/**
+	 * @var array 
+	 */
+	protected $item_data = array();
+
+	/**
 	 * @var int
 	 */
 	protected static $iv_source = MCRYPT_DEV_URANDOM;
@@ -353,6 +363,30 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
+	 * @param $folder_ref_id
+	 */
+	public function queryFolderData($folder_ref_id)
+	{
+		if( ! array_key_exists($folder_ref_id, $this->already_queried_folders))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_description WHERE folder_ref_id = %s',
+				array('integer'),
+				array($folder_ref_id)
+			);
+			while($row = $DIC->database()->fetchAssoc($res))
+			{
+				if(is_array($row) && array_key_exists('ref_id', $row))
+				{
+					$this->item_data[$row['ref_id']] = $row;
+				}
+			}
+			$this->already_queried_folders[$folder_ref_id];
+		}
+	}
+
+	/**
 	 * @param $ref_id
 	 * @return bool
 	 */
@@ -374,5 +408,13 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 			}
 		}
 		return $this->relevant_course_cache[$ref_id];
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getItemData()
+	{
+		return $this->item_data;
 	}
 }

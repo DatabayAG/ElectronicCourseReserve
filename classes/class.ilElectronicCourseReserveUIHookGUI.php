@@ -68,7 +68,14 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		{
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
-		
+
+		$plugin = ilElectronicCourseReservePlugin::getInstance();
+
+		$ref_id = (int)$_GET['ref_id'];
+		if($plugin->isFolderRelevant($ref_id))
+		{
+			$plugin->queryFolderData($ref_id);
+		}
 		/**
 		 * @var $modifier ilECRBaseModifier
 		 */
@@ -87,9 +94,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		{
 			return parent::getHTML($a_comp, $a_part, $a_par);
 		}
-		$plugin = ilElectronicCourseReservePlugin::getInstance();
 
-		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 		if(!($obj instanceof ilObjCourse) || !$ilAccess->checkAccess('write', '', $obj->getRefId()) || !$plugin->isAssignedToRequiredRole($ilUser->getId()))
 		{
