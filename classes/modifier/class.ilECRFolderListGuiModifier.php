@@ -65,7 +65,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 				$image_node_list = $xpath->query("//img[@class='ilListItemIcon']");
 				$image_node = $image_node_list->item(0);
 				//Todo: replace
-				$image_node->setAttribute('src', 'http://placekitten.com/g/200/300');
+				$image_node->setAttribute('src', 'https://placekitten.com/100/100');
 				#$image_node->setAttribute('src', $image);
 				$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 			}
@@ -87,7 +87,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		$ref_id_node_list = $xpath->query("//a[@class='il_ContainerItemTitle']");
 		$ref_id_node = $ref_id_node_list->item(0);
 		$url_with_ref_id = $ref_id_node->getAttribute('href');
-		$re              = '/ref_id=(\d+)/m';
+		$re = '/ref_id=(\d+)/m';
 		preg_match($re, $url_with_ref_id, $matches);
 		if(count($matches) > 1 && $matches[1] > 0)
 		{
@@ -95,7 +95,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		}
 		else
 		{
-			$re              = '/target=file_(\d+)/m';
+			$re = '/target=file_(\d+)/m';
 			preg_match($re, $url_with_ref_id, $matches);
 			if(count($matches) > 1 && $matches[1] > 0)
 			{
