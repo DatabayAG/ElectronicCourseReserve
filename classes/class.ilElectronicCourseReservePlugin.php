@@ -392,7 +392,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public function isCourseRelevant($ref_id)
 	{
-		if( ! array_key_exists($ref_id, $this->relevant_folder_cache))
+		if( ! array_key_exists($ref_id, $this->relevant_course_cache))
 		{
 			global $DIC;
 			$res = $DIC->database()->queryF(
