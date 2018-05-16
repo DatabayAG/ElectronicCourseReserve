@@ -149,6 +149,20 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRContent')
 				);
 			}
+
+			if( ( $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
+				&& $ilAccess->checkAccess('write', '', $obj->getRefId()) 
+				&& $this->getPluginObject()->queryItemData($ref_id)
+				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())
+			)
+			{
+				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
+				$DIC->tabs()->addTab(
+					'ecr_tab_title',
+					$this->getPluginObject()->txt('ecr_tab_title'),
+					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRItemContent')
+				);
+			}
 		}
 	}
 	protected function initModifier()

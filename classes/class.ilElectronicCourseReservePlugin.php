@@ -44,6 +44,10 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 * @var array 
 	 */
 	protected $already_queried_folders = array();
+	/**
+	 * @var array 
+	 */
+	protected $already_queried_items = array();
 
 	/**
 	 * @var array 
@@ -384,6 +388,31 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 			}
 			$this->already_queried_folders[$folder_ref_id];
 		}
+	}
+
+	/**
+	 * @param $item_ref_id
+	 * @return mixed
+	 */
+	public function queryItemData($item_ref_id)
+	{
+		if( ! array_key_exists($item_ref_id, $this->already_queried_items))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_description WHERE ref_id = %s',
+				array('integer'),
+				array($item_ref_id)
+			);
+			while($row = $DIC->database()->fetchAssoc($res))
+			{
+				if(is_array($row) && array_key_exists('ref_id', $row))
+				{
+					return $row;
+				}
+			}
+		}
+		return $this->already_queried_items[$item_ref_id];
 	}
 
 	/**

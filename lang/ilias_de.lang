@@ -26,3 +26,5 @@ import_directory_info#:#Bitte tragen Sie hier einen relativen Serverpfad ein, in
 error_move_mail#:#Es gab ein problem beim verschieben der Datei "%s" in den Backup Ordner.
 error_create_file_mail#:#Es gab ein Problem beim erzeugen des Datei Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
 error_create_url_mail#:#Es gab ein Problem beim erzeugen des Weblink Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
+show_description#:#Zeige Beschreibung
+show_image#:#Zeige Icon

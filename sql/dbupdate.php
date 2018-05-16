@@ -165,4 +165,33 @@ if(!$ilDB->tableColumnExists('ecr_description', 'folder_ref_id'))
 				'notnull' => true));
 }
 ?>
+<#10>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableColumnExists('ecr_description', 'show_description'))
+{
+	$ilDB->addTableColumn('ecr_description', 'show_description',
+			array(
+				'type'    => 'integer',
+				'length'  => '1',
+				'default' => '1',
+				'notnull' => true));
+}
+?><#11>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableColumnExists('ecr_description', 'show_image'))
+{
+	$ilDB->addTableColumn('ecr_description', 'show_image',
+			array(
+				'type'    => 'integer',
+				'length'  => '1',
+				'default' => '1',
+				'notnull' => true));
+}
+?>
 

@@ -76,6 +76,64 @@ class ilECRContentController extends ilECRBaseController
 		
 		return $form->getHTML();
 	}
+
+	/**
+	 * @return string
+	 */
+	public function showECRItemContent()
+	{
+		global $DIC;
+
+		$ilCtrl = $DIC->ctrl();
+		$tpl    = $DIC->ui()->mainTemplate();
+		$ilTabs = $DIC->tabs();
+		$lng    = $DIC->language();
+
+		$ref_id = (int)$_GET['ref_id'];
+		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+
+		$this->checkPermission('write');
+
+		$tpl->setTitle($obj->getTitle());
+		$tpl->setTitleIcon(ilUtil::getImagePath('icon_file.svg'));
+
+		if($obj->getType() === 'file' )
+		{
+			$ilCtrl->setParameterByClass('ilObjFileGUI', 'ref_id', $obj->getRefId());
+			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjFileGUI'), 'infoScreen'));
+		}
+		else if($obj->getType() === 'webr' )
+		{
+			$ilCtrl->setParameterByClass('ilObjLinkResourceGUI', 'ref_id', $obj->getRefId());
+			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjLinkResourceGUI'), 'infoScreen'));
+		}
+		
+		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
+		$form = new ilPropertyFormGUI();
+		$form->setTitle($this->plugin_object->txt('ecr_title'));
+
+		$item = $this->plugin_object->queryItemData($ref_id);
+		$show_description =  new ilCheckboxInputGUI($this->plugin_object->txt('show_description'), 'show_description');
+		
+		if(array_key_exists('show_description', $item) 
+			&& $item['show_description'] 
+			&& $item['show_description'] == 1)
+		{
+			$show_description->setChecked(true);
+		}
+		$form->addItem($show_description);
+
+		$show_image = new ilCheckboxInputGUI($this->plugin_object->txt('show_image'), 'show_image');
+		if(array_key_exists('show_image', $item)
+			&& $item['show_image']
+			&& $item['show_image'] == 1)
+		{
+			$show_image->setChecked(true);
+		}
+		$form->addItem($show_image);
+
+		return $form->getHTML();
+	}
 	
 	/**
 	 * @return string
@@ -119,10 +177,11 @@ class ilECRContentController extends ilECRBaseController
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 		
-		if(!($obj instanceof ilObjCourse
+		if(!(($obj instanceof ilObjCourse || $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
 			&& $DIC->access()->checkAccess($permission, '', $obj->getRefId())
 			&& $this->plugin_object->isAssignedToRequiredRole($DIC->user()->getId())))
 		{
+			
 			$DIC['ilErr']->raiseError($DIC->language()->txt("msg_no_perm_read"), $DIC['ilErr']->MESSAGE);
 		}
 	}
