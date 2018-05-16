@@ -137,9 +137,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 			$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
 			if( $obj instanceof ilObjCourse 
-				&& $ilAccess->checkAccess('write', '', $obj->getRefId()) 
-				&& $this->plugin_object->isCourseRelevant($ref_id) 
-				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())
+				&& $ilAccess->checkAccess('write', '', $obj->getRefId())
+				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()
+				&& $this->plugin_object->isCourseRelevant($ref_id))
 			)
 			{
 				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
@@ -149,11 +149,10 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRContent')
 				);
 			}
-
-			if( ( $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
-				&& $ilAccess->checkAccess('write', '', $obj->getRefId()) 
-				&& $this->getPluginObject()->queryItemData($ref_id)
-				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())
+			else if( ( $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
+				&& $ilAccess->checkAccess('write', '', $obj->getRefId())
+				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()
+				&& $this->getPluginObject()->queryItemData($ref_id))
 			)
 			{
 				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());

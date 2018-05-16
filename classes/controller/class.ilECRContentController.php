@@ -1,6 +1,6 @@
 <?php
 ilElectronicCourseReservePlugin::getInstance()->includeClass('controller/class.ilECRBaseController.php');
-
+require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 /**
  * Class ilECRContentController
  * @author Nadia Matuschek <nmatuschek@databay.de>
@@ -58,8 +58,7 @@ class ilECRContentController extends ilECRBaseController
 		
 		$ilCtrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
 		$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
-		
-		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
+
 		$form = new ilPropertyFormGUI();
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
 
@@ -91,30 +90,50 @@ class ilECRContentController extends ilECRBaseController
 
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		$item   = $this->plugin_object->queryItemData($ref_id);
 
 		$this->checkPermission('write');
 
 		$tpl->setTitle($obj->getTitle());
-		$tpl->setTitleIcon(ilUtil::getImagePath('icon_file.svg'));
 
 		if($obj->getType() === 'file' )
 		{
+			if(array_key_exists('show_image', $item)
+				&& $item['show_image']
+				&& $item['show_image'] == 1
+				&& strlen($item['icon']) > 0)
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath($item['icon']));
+			}
+			else
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath('icon_file.svg'));
+			}
 			$ilCtrl->setParameterByClass('ilObjFileGUI', 'ref_id', $obj->getRefId());
 			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjFileGUI'), 'infoScreen'));
 		}
 		else if($obj->getType() === 'webr' )
 		{
+			if(array_key_exists('show_image', $item)
+				&& $item['show_image']
+				&& $item['show_image'] == 1
+				&& strlen($item['icon']) > 0)
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath($item['icon']));
+			}
+			else
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath('icon_webr.svg'));
+			}
 			$ilCtrl->setParameterByClass('ilObjLinkResourceGUI', 'ref_id', $obj->getRefId());
 			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjLinkResourceGUI'), 'infoScreen'));
 		}
-		
-		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
+
 		$form = new ilPropertyFormGUI();
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
 
-		$item = $this->plugin_object->queryItemData($ref_id);
 		$show_description =  new ilCheckboxInputGUI($this->plugin_object->txt('show_description'), 'show_description');
-		
+
 		if(array_key_exists('show_description', $item) 
 			&& $item['show_description'] 
 			&& $item['show_description'] == 1)
@@ -130,6 +149,8 @@ class ilECRContentController extends ilECRBaseController
 		{
 			$show_image->setChecked(true);
 		}
+
+		
 		$form->addItem($show_image);
 
 		return $form->getHTML();
