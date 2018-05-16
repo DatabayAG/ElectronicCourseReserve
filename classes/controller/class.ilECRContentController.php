@@ -130,6 +130,8 @@ class ilECRContentController extends ilECRBaseController
 		}
 
 		$form = new ilPropertyFormGUI();
+		#$form->setFormAction($ilCtrl->getFormAction(new ilECRContentController(), 'ilECRContentController'));
+		#$form->addCommandButton('ilECRContentController', $lng->txt('submit'));
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
 
 		$show_description =  new ilCheckboxInputGUI($this->plugin_object->txt('show_description'), 'show_description');
@@ -154,6 +156,11 @@ class ilECRContentController extends ilECRBaseController
 		$form->addItem($show_image);
 
 		return $form->getHTML();
+	}
+	
+	public function updateItemSettings()
+	{
+		$a = 0;
 	}
 	
 	/**
