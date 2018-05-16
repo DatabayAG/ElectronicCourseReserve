@@ -33,7 +33,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 		if(!($obj instanceof ilObjCourse) || !$DIC->access()->checkAccess('read', '', $obj->getRefId()))
 		{
 			return parent::getHTML($a_comp, $a_part, $a_par);
-			//Todo: we don't hav a parent!
+			//Todo: we don't have a parent!
 		}
 		
 		$html = $a_par['html'];

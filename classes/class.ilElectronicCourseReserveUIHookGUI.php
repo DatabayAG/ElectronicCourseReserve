@@ -84,7 +84,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		/**
 		 * @var $modifier ilECRBaseModifier
 		 */
-		if(is_array($this->modifier_cache))
+		if(is_array($this->modifier_cache) && count($this->modifier_cache) > 0)
 		{
 			foreach($this->modifier_cache as $key => $modifier)
 			{
