@@ -44,11 +44,11 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		{
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
-		$plugin = ilElectronicCourseReservePlugin::getInstance();
-		$item_data = $plugin->getItemData();
-
 		$dom->encoding  = 'UTF-8';
+
+		$plugin = ilElectronicCourseReservePlugin::getInstance();
 		$xpath = new DomXPath($dom);
+		$item_data = $plugin->getItemData();
 		$item_ref_id = $this->getRefIdFromItemUrl($xpath);
 		if(array_key_exists($item_ref_id, $item_data))
 		{

@@ -45,8 +45,8 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 		}
 		
 		$dom->encoding  = 'UTF-8';
-		
-		$infoscreen_section_1 = $dom->getElementById('infoscreen_section_1');
+
+		$infoscreen_section_8 = $dom->getElementById('infoscreen_section_8');
 		
 		$row = $dom->createElement('div');
 		$row->setAttribute('class', 'form-group');
@@ -58,8 +58,8 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 		$value->nodeValue = (int)$obj->getRefId();
 		$row->appendChild($label);
 		$row->appendChild($value);
-		
-		$infoscreen_section_1->appendChild($row);
+
+		$infoscreen_section_8->appendChild($row);
 		
 		$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 		if(!$processed_html)

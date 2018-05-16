@@ -283,30 +283,30 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	public function getLibraryUrlParameters(ilContainer $container)
 	{
 		global $DIC, $ilSetting; 
-		$ilUser = $DIC->user();
+		$user = $DIC->user();
 
 		$default_auth = $ilSetting->get('auth_mode') ? $ilSetting->get('auth_mode') : AUTH_LOCAL;
-		$usr_id       = $ilUser->getLogin();
+		$usr_id       = $user->getLogin();
 
 		if(
-			strlen(trim($ilUser->getExternalAccount())) &&
+			strlen(trim($user->getExternalAccount())) &&
 			!(
 				(
-					$ilUser->getAuthMode() == 'default' &&
+					$user->getAuthMode() == 'default' &&
 					$default_auth == AUTH_LOCAL
 				) ||
-				$ilUser->getAuthMode(true) == AUTH_LOCAL
+				$user->getAuthMode(true) == AUTH_LOCAL
 			)
 		)
 		{
-			$usr_id = $ilUser->getExternalAccount();
+			$usr_id = $user->getExternalAccount();
 		}
 
 		$params = array(
 			'ref_id' => $container->getRefId(),
 			'usr_id' => $usr_id,
 			'ts'     => time(),
-			'email'  => $ilUser->getEmail()
+			'email'  => $user->getEmail()
 		);
 		$data_to_sign = implode('', $params);
 
