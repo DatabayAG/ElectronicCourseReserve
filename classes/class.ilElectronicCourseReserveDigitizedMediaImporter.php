@@ -335,7 +335,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 * @param $parsed_item
+	 * @param ilElectronicCourseReserveContainer $parsed_item
 	 * @param $raw_xml
 	 * @return bool
 	 * @throws ilFileUtilsException
@@ -562,7 +562,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && ! ilObject::_isInTrash($crs_ref_id))
 		{
 			$this->logger->write(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
-			$folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id);
+			$folder_obj_id = (int) ilObject::_lookupObjIdByImportId($folder_import_id);
 			if($folder_obj_id === 0)
 			{
 				$this->logger->write(sprintf('Folder with Import id (%s) not found creating new folder.', $folder_import_id));
@@ -625,7 +625,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 * @return mixed|string
+	 * @return string
 	 */
 	protected function getImportDir()
 	{
