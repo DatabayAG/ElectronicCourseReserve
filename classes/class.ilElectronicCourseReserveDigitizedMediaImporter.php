@@ -23,6 +23,16 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	/**
 	 * @var string
 	 */
+	const ITEM_TYPE_FILE = 'file';
+
+	/**
+	 * @var string
+	 */
+	const ITEM_TYPE_URL = 'url';
+
+	/**
+	 * @var string
+	 */
 	const IMPORT_DIR = 'ecr_import';
 
 	/**
