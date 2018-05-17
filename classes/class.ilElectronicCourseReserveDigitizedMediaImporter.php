@@ -407,7 +407,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
-	 * @param $new_obj_ref_id
+	 * @param int $new_obj_ref_id
 	 * @return array
 	 * @throws ilFileUtilsException
 	 */
