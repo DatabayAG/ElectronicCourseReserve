@@ -51,7 +51,7 @@ class ilECRContentController extends ilECRBaseController
 
 	private function checkUseAgreementCondition()
 	{
-		$is_use_agreement_enabled = $this->settigns->get('ecr_enable_use_agreement', 0);
+		$is_use_agreement_enabled =$this->plugin_object->getSetting('enable_use_agreement');
 
 		if($is_use_agreement_enabled)
 		{
