@@ -43,6 +43,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	/**
 	 * @var string
 	 */
+	const IMAGE_DIR = 'ecr_images';
+
+	/**
+	 * @var string
+	 */
 	const LOCK_FILENAME = 'ecr.lock';
 
 	/**
@@ -129,14 +134,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 			$this->logger->write('Started determination with file pattern.');
 
-			$dir = $this->pluginObj->getSetting('import_directory');
-			if(strlen($dir) === 0)
-			{
-				$dir = DIRECTORY_SEPARATOR . self::IMPORT_DIR;
-			}
-			ilUtil::makeDirParents(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir);
+			$dir = $this->getImportDir();
+			ilUtil::makeDirParents($dir);
 			$iter = new RegexIterator(
-				new DirectoryIterator(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir),
+				new DirectoryIterator($dir),
 				'/(.*).xml/'
 			);
 			foreach($iter as $fileinfo)
@@ -334,9 +335,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param $parsed_item
 	 * @param $raw_xml
 	 * @return bool
+	 * @throws ilFileUtilsException
 	 */
 	protected function createWebResourceItem($parsed_item, $raw_xml)
 	{
@@ -372,6 +374,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 * @param $new_obj_ref_id
 	 * @param $raw_xml
 	 * @param $folder_ref_id
+	 * @throws ilFileUtilsException
 	 */
 	protected function writeDescriptionToDB($parsed_item, $new_obj_ref_id, $raw_xml, $folder_ref_id)
 	{
@@ -389,7 +392,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$version = $row['version'] + 1;
 		}
 		
-		$icon = $this->getIcon($parsed_item);
+		$icon = $this->getIcon($parsed_item, $new_obj_ref_id);
 		$DIC->database()->insert('ecr_description', array(
 			'ref_id'        => array('integer', $new_obj_ref_id),
 			'version'       => array('integer', $version),
@@ -404,21 +407,42 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @param $new_obj_ref_id
 	 * @return array
+	 * @throws ilFileUtilsException
 	 */
-	protected function getIcon($parsed_item)
+	protected function getIcon($parsed_item, $new_obj_ref_id)
 	{
 		$icon_type = $this->evaluateIconType($parsed_item->getItem()->getIcon());
 		if($icon_type === $this->pluginObj::ICON_URL){
 			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
 		}else{
-			if(file_exists($parsed_item->getItem()->getIcon())){
-				//Todo: Upload file an register mob
-				return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
+			$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $parsed_item->getItem()->getIcon();
+			if(file_exists($file)){
+				$dir = $this->getImageFolder($new_obj_ref_id);
+				$filename = basename($parsed_item->getItem()->getIcon());
+				$target = $dir . DIRECTORY_SEPARATOR . $filename;
+				ilUtil::moveUploadedFile($file, $filename, $target , true, 'copy' );
+				if(file_exists($target)){
+					$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
+					#unlink($filename);
+					return array('icon' => $file_path, 'icon_type' => $icon_type);
+				}
 			}
 		}
 		return array('icon' => '', 'icon_type' => '');
 	}
+
+	/**
+	 * @param int $new_obj_ref_id
+	 * @return string
+	 */
+	protected function getImageFolder($new_obj_ref_id)
+	{
+		$dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR  . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR;
+		ilUtil::makeDirParents($dir);
+		return $dir;
+	} 
 
 	/**
 	 * @param $icon
@@ -598,5 +622,17 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$mail->Body($msg);
 			$mail->Send();
 		}
+	}
+
+	/**
+	 * @return mixed|string
+	 */
+	protected function getImportDir()
+	{
+		$dir = $this->pluginObj->getSetting('import_directory');
+		if (strlen($dir) === 0) {
+			$dir = self::IMPORT_DIR;
+		}
+		return ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
 	}
 }
