@@ -49,14 +49,12 @@ class ilUserAcceptance
 		$this->db->insert('ecr_user_acceptance',
 			array('ref_id' => array('integer', $this->ref_id), 
 				'user_id' => array('integer', $this->user_id), 
-				'agreement_id' => array('integer', ), 
+				'agreement_id' => array('integer', $this->getAgreementId()),
 				'time_accepted' => array('integer', time())));
-		
 	}
 	
 	public function getAgreementId()
 	{
-		//@todo nadia: alles testen 
 		$user_language = $this->user->getLanguage();
 		$res = $this->db->queryF('SELECT agreement_id FROM ecr_lang_agreements WHERE is_active = %s AND lang = %s', 
 			array('integer', 'text'), array(1, $this->user->getLanguage()));
@@ -68,6 +66,4 @@ class ilUserAcceptance
 		
 		return $this->agreement_id;
 	}
-	
-	
 }
