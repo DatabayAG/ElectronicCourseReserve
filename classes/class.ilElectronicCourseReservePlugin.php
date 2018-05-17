@@ -26,6 +26,16 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	const PNAME = 'ElectronicCourseReserve';
 
 	/**
+	 * @var string
+	 */
+	const ICON_URL = 'url';
+
+	/**
+	 * @var string
+	 */
+	const ICON_FILE = 'file';
+
+	/**
 	 * @var ilElectronicCourseReservePlugin
 	 */
 	private static $instance = null;

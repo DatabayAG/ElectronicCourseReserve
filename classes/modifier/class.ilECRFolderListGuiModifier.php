@@ -68,9 +68,15 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 			{
 				$image_node_list = $xpath->query("//img[@class='ilListItemIcon']");
 				$image_node = $image_node_list->item(0);
-				//Todo: replace
-				$image_node->setAttribute('src', 'https://placekitten.com/100/100');
-				#$image_node->setAttribute('src', $image);
+				/** @var ilElectronicCourseReservePlugin $plugin */
+				$plugin = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+				if($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_URL ){
+					$image_node->setAttribute('src', $image);
+				}elseif($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_FILE){
+					//Todo: implement
+					$image_node->setAttribute('src', '');
+				}
+
 				$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 			}
 		}

@@ -13,15 +13,13 @@ require_once 'Modules/Folder/classes/class.ilObjFolder.php';
 require_once 'Services/Utilities/classes/class.ilMimeTypeUtil.php';
 require_once 'Services/Mail/classes/class.ilMail.php';
 require_once 'Services/Mail/classes/class.ilMimeMail.php';
+require_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
 
 
 class ilElectronicCourseReserveDigitizedMediaImporter
 {
-	const ITEM_TYPE_FILE = 'file';
-	const ITEM_TYPE_URL = 'url';
-
 	/**
 	 * @var string
 	 */
@@ -67,7 +65,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	public function __construct()
 	{
-		global $DIC, $ilSetting;
+		global $DIC;
 
 		$factory = null;
 		if (isset($GLOBALS['DIC']['mail.mime.sender.factory'])) {
@@ -380,16 +378,54 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$version = $row['version'] + 1;
 		}
-
+		
+		$icon = $this->getIcon($parsed_item);
 		$DIC->database()->insert('ecr_description', array(
 			'ref_id'        => array('integer', $new_obj_ref_id),
 			'version'       => array('integer', $version),
 			'timestamp'     => array('integer', strtotime($parsed_item->getTimestamp())),
-			'icon'          => array('text', $parsed_item->getItem()->getIcon()),
+			'icon'          => array('text', $icon['icon']),
+			'icon_type'     => array('text', $icon['icon_type']),
 			'description'   => array('text', $parsed_item->getItem()->getDescription()),
 			'raw_xml'       => array('text', $raw_xml),
 			'folder_ref_id' => array('integer', $folder_ref_id)
 		));
+	}
+
+	/**
+	 * @param ilElectronicCourseReserveContainer $parsed_item
+	 * @return array
+	 */
+	protected function getIcon($parsed_item)
+	{
+		$icon_type = $this->evaluateIconType($parsed_item->getItem()->getIcon());
+		if($icon_type === $this->pluginObj::ICON_URL){
+			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
+		}else{
+			if(file_exists($parsed_item->getItem()->getIcon())){
+				//Todo: Upload file an register mob
+				return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
+			}
+		}
+		return array('icon' => '', 'icon_type' => '');
+	}
+
+	/**
+	 * @param $icon
+	 * @return bool
+	 */
+	protected function evaluateIconType($icon)
+	{
+		if(strlen($icon) === 0){
+			return false;
+		}
+
+		preg_match('/http(s)?:\/\//', $icon, $matches);
+		if(count($matches) > 0 ){
+			return $this->pluginObj::ICON_URL;
+		}else{
+			return  $this->pluginObj::ICON_FILE;
+		}
 	}
 
 	/**

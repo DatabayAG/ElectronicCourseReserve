@@ -179,7 +179,8 @@ if(!$ilDB->tableColumnExists('ecr_description', 'show_description'))
 				'default' => '1',
 				'notnull' => true));
 }
-?><#11>
+?>
+<#11>
 <?php
 /**
  * @var $ilDB ilDB
@@ -194,4 +195,17 @@ if(!$ilDB->tableColumnExists('ecr_description', 'show_image'))
 				'notnull' => true));
 }
 ?>
-
+<#12>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableColumnExists('ecr_description', 'icon_type'))
+{
+	$ilDB->addTableColumn('ecr_description', 'icon_type',
+		array(
+			'type'    => 'text',
+			'length'  => '2000',
+			'notnull' => false));
+}
+?>
