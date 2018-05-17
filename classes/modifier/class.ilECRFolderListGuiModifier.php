@@ -73,8 +73,10 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 				if($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_URL ){
 					$image_node->setAttribute('src', $image);
 				}elseif($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_FILE){
-					//Todo: implement
-					$image_node->setAttribute('src', '');
+					$path_to_image = ILIAS_WEB_DIR. DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $image;
+					if(file_exists($path_to_image)){
+						$image_node->setAttribute('src',$path_to_image);
+					}
 				}
 
 				$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));

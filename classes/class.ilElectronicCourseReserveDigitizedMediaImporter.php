@@ -439,7 +439,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function getImageFolder($new_obj_ref_id)
 	{
-		$dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR  . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR;
+		$dir = CLIENT_WEB_DIR . DIRECTORY_SEPARATOR  . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR;
 		ilUtil::makeDirParents($dir);
 		return $dir;
 	} 
