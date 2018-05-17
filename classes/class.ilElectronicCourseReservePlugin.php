@@ -155,9 +155,9 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param array  $ctrlPath
-	 * @param array  $params
-	 * @param string $path
+	 * @param array $path
+	 * @param array $params
+	 * @param       $cmd
 	 * @return string
 	 */
 	public function getLinkTarget(array $path, array $params = array(), $cmd)
@@ -206,7 +206,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @return ilElectronicCourseReservePlugin
+	 * @return ilElectronicCourseReservePlugin | ilPlugin
 	 */
 	public static function getInstance()
 	{
@@ -260,8 +260,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param $container
-	 * @throws Exception
+	 * @param ilContainer $container
+	 * @return string
 	 */
 	public function getLibraryOrderLink(ilContainer $container)
 	{

@@ -115,9 +115,8 @@ class ilECRCommandDispatcher
 	protected function requireController($controller)
 	{
 
-		
 	}
-	
+
 	/**
 	 * @return mixed
 	 */
@@ -125,9 +124,9 @@ class ilECRCommandDispatcher
 	{
 		return $this->controller;
 	}
-	
+
 	/**
-	 * @param $core_controller
+	 * @param $controller
 	 */
 	public function setCoreController($controller)
 	{
