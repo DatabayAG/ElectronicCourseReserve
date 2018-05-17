@@ -30,7 +30,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->ctrl = $DIC->ctrl();
 		$this->lng = $DIC->language();
 		$this->tpl = $DIC->ui()->mainTemplate();
-		$this->settings = $DIC->settings();
+		$this->settings = $DIC['ilSetting'];
 	}
 	
 	/**
@@ -156,7 +156,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		
 		$this->form = new ilPropertyFormGUI();
 		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveUseAgreement'));
-		$this->form->setTitle($this->lng->txt('addUseAgreement'));
+		$this->form->setTitle($this->pluginObj->txt('add_use_agreement'));
 		
 		$installed_langs  = $this->lng->getInstalledLanguages();
 		$this->lng->loadLanguageModule('meta');
@@ -169,7 +169,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$lang_select->setOptions($lang_options);
 		$this->form->addItem($lang_select);
 		
-		$agreement_input = new ilTextAreaInputGUI($this->lng->txt('agreement'), 'agreement');
+		$agreement_input = new ilTextAreaInputGUI($this->pluginObj->txt('use_agreement'), 'agreement');
 		$agreement_input->setRequired(true);
 		$agreement_input->setRows(15);
 		$agreement_input->setUseRte(true);
@@ -282,7 +282,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	{
 		global  $DIC;
 		$tpl = $DIC->ui()->mainTemplate();
-		$ilSetting = $DIC->settings();
+		$ilSetting = $DIC['ilSetting'];
 
 		if(!$ilSetting->get('soap_user_administration'))
 		{

@@ -33,7 +33,7 @@ class ilECRContentController extends ilECRBaseController
 		$this->tabs     = $DIC->tabs();
 		$this->lng      = $DIC->language();
 		$this->logger   = $DIC->logger()->root();
-		$this->settings = $DIC->settings();
+		$this->settings = $DIC['ilSetting'];
 	}
 
 	/**
