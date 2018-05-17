@@ -408,7 +408,12 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 			{
 				if(is_array($row) && array_key_exists('ref_id', $row))
 				{
-					return $row;
+					$this->already_queried_items[$item_ref_id] = $row;
+
+				}
+				else
+				{
+					$this->already_queried_items[$item_ref_id] = array();
 				}
 			}
 		}
