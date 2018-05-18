@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Class ilUseAgreement
+ * Class ilElectronicCourseReserveAgreement
  * @author Nadia Matuschek <nmatuschek@databay.de>
  */
-class ilUseAgreement
+class ilElectronicCourseReserveAgreement
 {
 	/**
 	 * @var ilDB

@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Class ilUseAgreementTableProvider
+ * Class ilElectronicCourseReserveAgreementTableProvider
  * @author Nadia Matuschek <nmatuschek@databay.de>
  */
-class ilUseAgreementTableProvider
+class ilElectronicCourseReserveAgreementTableProvider
 {
 	protected $db;
 	

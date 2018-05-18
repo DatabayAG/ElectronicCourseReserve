@@ -2,10 +2,10 @@
 include_once  'Services/Table/classes/class.ilTable2GUI.php';
 
 /**
- * Class ilUseAgreementTableGUI
+ * Class ilElectronicCourseReserveAgreementTableGUI
  * @author Nadia Matuschek <nmatuschek@databay.de> 
  */
-class ilUseAgreementTableGUI extends ilTable2GUI
+class ilElectronicCourseReserveAgreementTableGUI extends ilTable2GUI
 {
 	public $ctrl;
 	

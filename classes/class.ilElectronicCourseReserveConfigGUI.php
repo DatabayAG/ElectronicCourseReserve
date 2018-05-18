@@ -132,11 +132,11 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		
 		$this->tabs->activateSubTab('editUseAgreements');
 		
-		$this->pluginObj->includeClass('tables/class.ilUseAgreementTableGUI.php');
-		$this->pluginObj->includeClass('tables/class.ilUseAgreementTableProvider.php');
+		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveAgreementTableGUI.php');
+		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveAgreementTableProvider.php');
 		
-		$table = new ilUseAgreementTableGUI($this);
-		$provider = new ilUseAgreementTableProvider();
+		$table = new ilElectronicCourseReserveAgreementTableGUI($this);
+		$provider = new ilElectronicCourseReserveAgreementTableProvider();
 		$table->setData($provider->getTableData());
 		
 		$this->tpl->setContent($table->getHTML());		
@@ -228,8 +228,8 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			$lang = $this->form->getInput('lang');
 			$agreement_text = $this->form->getInput('agreement');
 				
-			$this->pluginObj->includeClass('class.ilUseAgreement.php');
-			$agreement_obj = new ilUseAgreement();
+			$this->pluginObj->includeClass('class.ilElectronicCourseReserveAgreement.php');
+			$agreement_obj = new ilElectronicCourseReserveAgreement();
 			$agreement_obj->setLang($lang);
 			$agreement_obj->setAgreement($agreement_text);
 				
@@ -256,8 +256,8 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 */
 	public function getUseAgreementValues($ecr_lang)
 	{
-		$this->pluginObj->includeClass('class.ilUseAgreement.php');
-		$use_agreement = new ilUseAgreement();
+		$this->pluginObj->includeClass('class.ilElectronicCourseReserveAgreement.php');
+		$use_agreement = new ilElectronicCourseReserveAgreement();
 		$use_agreement->loadByLang($ecr_lang);
 		
 		$values['lang'] = $use_agreement->getLang();

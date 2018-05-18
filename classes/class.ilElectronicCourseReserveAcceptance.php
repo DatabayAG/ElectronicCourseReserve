@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Class ilUserAcceptance
+ * Class ilElectronicCourseReserveAcceptance
  * @author Nadia Matuschek <nmatuschek@databay.de>
  */
-class ilUserAcceptance
+class ilElectronicCourseReserveAcceptance
 {
 	protected $ref_id;
 	protected $user_id;
@@ -17,7 +17,7 @@ class ilUserAcceptance
 	
 	
 	/**
-	 * ilUserAcceptance constructor.
+	 * ilElectronicCourseReserveAcceptance constructor.
 	 * @param int $ref_id
 	 */
 	public function __construct($ref_id)

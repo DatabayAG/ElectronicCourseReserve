@@ -68,9 +68,9 @@ class ilECRContentController extends ilECRBaseController
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
-		$this->plugin_object->includeClass('class.ilUserAcceptance.php');
+		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAcceptance.php');
 
-		$ilUserAcceptance = new ilUserAcceptance($obj->getRefId());
+		$ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
 		if($ilUserAcceptance->hasUserAcceptedAgreement())
 		{
 			return true;
@@ -94,7 +94,7 @@ class ilECRContentController extends ilECRBaseController
 	private function showUseAgreement()
 	{
 		global $DIC;
-		$this->plugin_object->includeClass('class.ilUseAgreement.php');
+		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAgreement.php');
 		$tpl = $DIC->ui()->mainTemplate();
 
 		// CONFIRMATION
@@ -108,7 +108,7 @@ class ilECRContentController extends ilECRBaseController
 		$c_gui->setCancel($this->lng->txt('cancel'), 'cancelAcceptance');
 		$c_gui->setConfirm($this->lng->txt('confirm'), 'saveAcceptedUserAgreement');
 
-		$agreement = new ilUseAgreement();
+		$agreement = new ilElectronicCourseReserveAgreement();
 		$agreement->loadByLang($DIC->user()->getLanguage());
 		$text = $agreement->getAgreement();
 		$c_gui->addItem('accepted_ua', $DIC->user()->getId(), $text);
@@ -132,9 +132,9 @@ class ilECRContentController extends ilECRBaseController
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
-		$this->plugin_object->includeClass('class.ilUserAcceptance.php');
+		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAcceptance.php');
 
-		$ilUserAcceptance = new ilUserAcceptance($obj->getRefId());
+		$ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
 		$ilUserAcceptance->saveUserAcceptance();
 		$url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.showECRContent', '', false, false);
 
