@@ -17,7 +17,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	/**
 	 * @var ilECRBaseModifier[]
 	 */
-	protected $modifier_cache = array();
+	protected $modifier = array();
 	
 	public function __construct()
 	{
@@ -122,7 +122,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 
 			$ref_id = (int)$_GET['ref_id'];
 			$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-			if($obj instanceof ilObjCourse && $ilAccess->checkAccess('write', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()))
+			if($obj instanceof ilObjCourse && $ilAccess->checkAccess('read', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()))
 			{
 				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
 				$ilTabs->addTab(

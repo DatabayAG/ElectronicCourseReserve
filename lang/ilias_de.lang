@@ -17,3 +17,8 @@ ecr_soap_activation_required#:#Bitte <a href="%1$s">aktivieren Sie SOAP</a>.
 limit_to_groles#:#Zugriff auf bestimmte globale Rollen beschränken
 global_roles#:#Globale Rollen
 crs_ref_id#:#Kurs-RefId
+use_agreement#:#Nutzungsvereinbarung
+use_agreements#:#Nutzungsvereinbarungen
+edit_use_agreement#:#Nutzungsvereinbarung bearbeiten
+add_use_agreement#:#Nutzungsvereinbarung hinzufügen
+enable_use_agreement#:#Nutzungsvereinbarung aktivieren

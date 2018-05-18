@@ -15,26 +15,263 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 * @var ilPropertyFormGUI
 	 */
 	public $form = null;
-
+	
+	
+	public $tabs;
+	public $ctrl;
+	public $lng;
+	public $tpl;
+	public $settings;
+	
+	public function __construct()
+	{
+		global $DIC;
+		$this->tabs = $DIC->tabs();
+		$this->ctrl = $DIC->ctrl();
+		$this->lng = $DIC->language();
+		$this->tpl = $DIC->ui()->mainTemplate();
+		$this->settings = $DIC['ilSetting'];
+	}
+	
 	/**
 	 * @param string $cmd
 	 */
 	public function performCommand($cmd)
 	{
 		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+		$this->getTabs();
+		
 		switch($cmd)
 		{
 			default:
+				$this->getSubTabs($cmd);
 				$this->$cmd();
 				break;
 		}
 	}
 
+	
+	public function getTabs()
+	{
+		$this->tabs->addTab('configure', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'configure'));
+		$this->tabs->addTab('showUseAgreementSettings', $this->pluginObj->txt('use_agreement'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
+	}
+	
+	public function getSubTabs($cmd)
+	{
+		switch($cmd)
+		{
+			case 'showUseAgreementSettings':
+			case 'editUseAgreements':
+			case 'editUseAgreement':
+			case 'showUseAgreementForm':
+				$this->tabs->activateTab('showUseAgreementSettings');
+				$this->tabs->addSubTab('showUseAgreementSettings', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
+				$this->tabs->addSubTab('editUseAgreements', $this->pluginObj->txt('edit_use_agreement'), $this->ctrl->getLinkTarget($this, 'editUseAgreements'));
+
+				break;
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	public function initUseAgreementSettingsForm()
+	{
+		if($this->form instanceof ilPropertyFormGUI)
+		{
+			return;
+		}
+		
+		$this->form = new ilPropertyFormGUI();
+		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveUseAgreementSettings'));
+		$this->form->setTitle($this->lng->txt('settings'));
+		$this->form->addCommandButton('saveUseAgreementSettings', $this->lng->txt('save'));
+		
+		$enable_use_agreement = new ilCheckboxInputGUI($this->pluginObj->txt('enable_use_agreement'), 'enable_use_agreement');
+		$this->form->addItem($enable_use_agreement);
+
+	}
+	
+	public function showUseAgreementSettings()
+	{
+		$this->tabs->activateSubTab('showUseAgreementSettings');
+		$this->initUseAgreementSettingsForm();
+		$this->populateValues();
+		$this->tpl->setContent($this->form->getHTML());
+		
+	}
+	
+	public function saveUseAgreementSettings()
+	{
+		$this->initUseAgreementSettingsForm();
+		
+		if($this->form->checkInput())
+		{
+			$this->pluginObj->setSetting('enable_use_agreement', (int)$this->form->getInput('enable_use_agreement'));
+			
+			ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+			$this->ctrl->redirect($this, 'showUseAgreementSettings');
+		}
+		
+		$this->form->setValuesByPost();
+		$this->tpl->setContent($this->form->getHTML());
+	}
+	
+	public function editUseAgreements()
+	{
+		global $DIC;
+		
+		$toolbar = $DIC->toolbar();
+		
+		require_once 'Services/UIComponent/Button/classes/class.ilLinkButton.php';
+		$button = ilLinkButton::getInstance();
+		$button->setCaption($this->pluginObj->txt('add_use_agreement'), false);
+		$button->setUrl($this->ctrl->getLinkTarget($this, 'showUseAgreementForm'));
+		$toolbar->addButtonInstance($button);
+		
+		$this->tabs->activateSubTab('editUseAgreements');
+		
+		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveAgreementTableGUI.php');
+		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveAgreementTableProvider.php');
+		
+		$table = new ilElectronicCourseReserveAgreementTableGUI($this);
+		$provider = new ilElectronicCourseReserveAgreementTableProvider();
+		$table->setData($provider->getTableData());
+		
+		$this->tpl->setContent($table->getHTML());		
+	}
+	
+	/**
+	 * 
+	 */
+	public function initUseAgreementForm()
+	{
+		global $DIC;
+		
+		if($this->form instanceof ilPropertyFormGUI)
+		{
+			return;
+		}
+		
+		$this->form = new ilPropertyFormGUI();
+		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveUseAgreement'));
+		$this->form->setTitle($this->pluginObj->txt('add_use_agreement'));
+		
+		$installed_langs  = $this->lng->getInstalledLanguages();
+		$this->lng->loadLanguageModule('meta');
+		foreach($installed_langs as $lang)
+		{
+			$lang_options[$lang] = $this->lng->txt('meta_l_'.$lang);
+		}
+		
+		$lang_select = new ilSelectInputGUI($this->lng->txt('language'), 'lang');
+		$lang_select->setOptions($lang_options);
+		$this->form->addItem($lang_select);
+		
+		$agreement_input = new ilTextAreaInputGUI($this->pluginObj->txt('use_agreement'), 'agreement');
+		$agreement_input->setRequired(true);
+		$agreement_input->setRows(15);
+		$agreement_input->setUseRte(true);
+		
+		$agreement_input->removePlugin('advlink');
+		$agreement_input->removePlugin('ilimgupload');
+		$agreement_input->setRTERootBlockElement('');
+		$agreement_input->usePurifier(true);
+		$agreement_input->disableButtons(array(
+			'charmap',
+			'undo',
+			'redo',
+			'justifyleft',
+			'justifycenter',
+			'justifyright',
+			'justifyfull',
+			'anchor',
+			'fullscreen',
+			'cut',
+			'copy',
+			'paste',
+			'pastetext',
+			'formatselect'
+		));
+		
+		$agreement_input->setRTESupport($DIC->user()->getId(), 'ecr_ua', 'ecr_ua');
+		
+		// purifier
+		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
+		$agreement_input->setPurifier(ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
+		
+		$this->form->addCommandButton('saveUseAgreement', $this->lng->txt('add'));
+		$this->form->addCommandButton('editUseAgreements', $this->lng->txt('cancel'));
+		$this->form->addItem($agreement_input);
+	}
+	
+	/**
+	 * 
+	 */
+	public function showUseAgreementForm()
+	{
+		$this->tabs->activateSubTab('editUseAgreements');
+		$this->initUseAgreementForm();
+		$this->tpl->setContent($this->form->getHTML());
+	}
+	
+	/**
+	 * 
+	 */
+	public function  saveUseAgreement()
+	{
+		$this->initUseAgreementForm();
+		
+		if($this->form->checkInput())
+		{
+			$lang = $this->form->getInput('lang');
+			$agreement_text = $this->form->getInput('agreement');
+				
+			$this->pluginObj->includeClass('class.ilElectronicCourseReserveAgreement.php');
+			$agreement_obj = new ilElectronicCourseReserveAgreement();
+			$agreement_obj->setLang($lang);
+			$agreement_obj->setAgreement($agreement_text);
+				
+			$agreement_obj->saveAgreement();
+			$this->ctrl->redirect($this, 'editUseAgreements');
+		}
+	}
+	
+	/**
+	 * 
+	 */	
+	public function editUseAgreement()
+	{
+		$ecr_lang = $_GET['ecr_lang'];
+		$this->tabs->activateSubTab('editUseAgreements');
+		$this->initUseAgreementForm();
+
+		$this->getUseAgreementValues($ecr_lang);
+		$this->tpl->setContent($this->form->getHTML());
+	}
+	
+	/**
+	 * @param $ecr_lang
+	 */
+	public function getUseAgreementValues($ecr_lang)
+	{
+		$this->pluginObj->includeClass('class.ilElectronicCourseReserveAgreement.php');
+		$use_agreement = new ilElectronicCourseReserveAgreement();
+		$use_agreement->loadByLang($ecr_lang);
+		
+		$values['lang'] = $use_agreement->getLang();
+		$values['agreement'] = $use_agreement->getAgreement();
+		
+		$this->form->setValuesByArray($values);
+	}
+	
 	/**
 	 *
 	 */
 	protected function configure()
 	{
+		$this->tabs->activateTab('configure');
 		$this->editSettings();
 	}
 
@@ -45,7 +282,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	{
 		global  $DIC;
 		$tpl = $DIC->ui()->mainTemplate();
-		$ilSetting = $DIC->settings();
+		$ilSetting = $DIC['ilSetting'];
 
 		if(!$ilSetting->get('soap_user_administration'))
 		{
@@ -82,7 +319,8 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			'sign_key_email'      => $this->pluginObj->getSetting('sign_key_email'),
 			'limit_to_groles'     => $this->pluginObj->getSetting('limit_to_groles'),
 			'global_roles'        => explode(',', $this->pluginObj->getSetting('global_roles')),
-			'url_search_system'   => $this->pluginObj->getSetting('url_search_system')
+			'url_search_system'   => $this->pluginObj->getSetting('url_search_system'),
+			'enable_use_agreement' => $this->pluginObj->getSetting('enable_use_agreement')
 		));
 	}
 
@@ -149,8 +387,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		
 	}
 
-
-	/**N
+	/**
 	 *
 	 */
 	public function saveSettings()
@@ -181,4 +418,5 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form->setValuesByPost();
 		$tpl->setContent($this->form->getHTML());
 	}
+
 }

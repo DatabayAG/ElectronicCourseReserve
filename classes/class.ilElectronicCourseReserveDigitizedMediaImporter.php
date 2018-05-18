@@ -36,7 +36,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		global $DIC;
 
-		$this->logger = $DIC->logger();
+		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
 	}
 
@@ -208,7 +208,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected function ensureSystemPreconditions()
 	{
 		global $DIC;
-		$ilSetting = $DIC->settings();
+		$ilSetting = $DIC['ilSetting'];
 
 		if(!$ilSetting->get('soap_user_administration'))
 		{

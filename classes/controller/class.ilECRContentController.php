@@ -11,87 +11,184 @@ class ilECRContentController extends ilECRBaseController
 	 * @var ilElectronicCourseReservePlugin
 	 */
 	protected $plugin_object;
-	
+
+	protected $tpl;
+	protected $ctrl;
+	protected $tabs;
+	protected $lng;
+	protected $logger;
+	protected $settings;
+
 	/**
 	 * ilECRContentController constructor.
 	 */
 	public function __construct()
 	{
+		global $DIC;
+
 		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
+
+		$this->ctrl     = $DIC->ctrl();
+		$this->tpl      = $DIC->ui()->mainTemplate();
+		$this->tabs     = $DIC->tabs();
+		$this->lng      = $DIC->language();
+		$this->logger   = $DIC->logger()->root();
+		$this->settings = $DIC['ilSetting'];
 	}
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public function executeCommand()
 	{
-		global $DIC;
-		
-		$this->checkPermission('write');
-		
-		$cmd = $DIC->ctrl()->getCmd();
+//		$this->checkPermission('write');
+		$cmd = $this->ctrl()->getCmd();
 		if(method_exists($this, $cmd))
 		{
 			$this->$cmd();
 		}
 	}
-	
+
+	private function checkUseAgreementCondition()
+	{
+		$is_use_agreement_enabled =$this->plugin_object->getSetting('enable_use_agreement');
+
+		if($is_use_agreement_enabled)
+		{
+			$this->checkUserAcceptance();
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	private function checkUserAcceptance()
+	{
+		$ref_id = (int)$_GET['ref_id'];
+		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+
+		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAcceptance.php');
+
+		$ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
+		if($ilUserAcceptance->hasUserAcceptedAgreement())
+		{
+			return true;
+		}
+
+		$this->showUseAgreement($ref_id);
+	}
+
+	public function handleAcceptanceCmd()
+	{
+		if(isset($_POST['cmd']['saveAcceptedUserAgreement']))
+		{
+			$this->saveAcceptedUserAgreement();
+		}
+		else
+		{
+			$this->cancelAcceptance();
+		}
+	}
+
+	private function showUseAgreement()
+	{
+		global $DIC;
+		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAgreement.php');
+		$tpl = $DIC->ui()->mainTemplate();
+
+		// CONFIRMATION
+		include_once('Services/Utilities/classes/class.ilConfirmationGUI.php');
+		$c_gui = new ilConfirmationGUI();
+
+		$url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.handleAcceptanceCmd');
+
+		$c_gui->setFormAction($url);
+		$c_gui->setHeaderText($this->plugin_object->txt('use_agreement'));
+		$c_gui->setCancel($this->lng->txt('cancel'), 'cancelAcceptance');
+		$c_gui->setConfirm($this->lng->txt('confirm'), 'saveAcceptedUserAgreement');
+
+		$agreement = new ilElectronicCourseReserveAgreement();
+		$agreement->loadByLang($DIC->user()->getLanguage());
+		$text = $agreement->getAgreement();
+		$c_gui->addItem('accepted_ua', $DIC->user()->getId(), $text);
+
+		$tpl->setContent($c_gui->getHTML());
+		$tpl->show();
+		exit;
+	}
+
+	public function cancelAcceptance()
+	{
+		$ref_id = (int)$_GET['ref_id'];
+		$this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $ref_id);
+		$url = $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view', '', false, false);
+
+		$this->ctrl->redirectToURL($url);
+	}
+
+	public function saveAcceptedUserAgreement()
+	{
+		$ref_id = (int)$_GET['ref_id'];
+		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+
+		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAcceptance.php');
+
+		$ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
+		$ilUserAcceptance->saveUserAcceptance();
+		$url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.showECRContent', '', false, false);
+
+		$this->ctrl->redirectToURL($url);
+	}
+
 	/**
 	 * @return string
 	 */
 	public function showECRContent()
 	{
-		global $DIC;
-		
-		$ilCtrl = $DIC->ctrl();
-		$tpl    = $DIC->ui()->mainTemplate();
-		$ilTabs = $DIC->tabs();
-		$lng    = $DIC->language();
-		
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		
-		$this->checkPermission('write');
-		
-		$tpl->setTitle($obj->getTitle());
-		$tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
-		
-		$ilCtrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
-		$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
-		
+
+		$this->checkUseAgreementCondition();
+//		$this->checkPermission('write');
+
+		$this->tpl->setTitle($obj->getTitle());
+		$this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
+
+		$this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
+		$this->tabs->setBackTarget($this->lng->txt('back'), $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
+
 		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 		$form = new ilPropertyFormGUI();
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
 
-		$crs_ref_id =  new ilNonEditableValueGUI($this->plugin_object->txt('crs_ref_id'), 'crs_ref_id');
+		$crs_ref_id = new ilNonEditableValueGUI($this->plugin_object->txt('crs_ref_id'), 'crs_ref_id');
 		$crs_ref_id->setValue($obj->getRefId());
 		$form->addItem($crs_ref_id);
-		
+
 		$link = new ilNonEditableValueGUI('', 'ecr', true);
-		$url = $ilCtrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.performRedirect');
-		$link->setValue('<a href="'.$url.'&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>');
-		
+		$url  = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.performRedirect');
+		$link->setValue('<a href="' . $url . '&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>');
+
 		$link->setInfo($this->plugin_object->txt('ecr_desc'));
 		$form->addItem($link);
-		
+
 		return $form->getHTML();
 	}
-	
+
 	/**
 	 * @return string
 	 */
-	public function performRedirect() 
+	public function performRedirect()
 	{
-		global $DIC;
-		
 		$this->checkPermission('write');
-		
+
 		try
 		{
 			$ref_id = (int)$_GET['ref_id'];
 			$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-			$url = $this->plugin_object->getLibraryOrderLink($obj);
-			
+			$url    = $this->plugin_object->getLibraryOrderLink($obj);
+
 			ilUtil::redirect($url);
 		}
 		catch(Exception $e)
@@ -102,23 +199,23 @@ class ilECRContentController extends ilECRBaseController
 			}
 			else
 			{
-				$DIC->logger()->write($e->getMessage());
+				$this->logger->write($e->getMessage());
 				ilUtil::sendFailure($this->plugin_object->txt('ecr_sign_error_occured'));
 			}
 			return '';
 		}
 	}
-	
+
 	/**
 	 * @param string $permission
 	 */
 	public function checkPermission($permission = 'write')
 	{
 		global $DIC;
-		
+
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		
+
 		if(!($obj instanceof ilObjCourse
 			&& $DIC->access()->checkAccess($permission, '', $obj->getRefId())
 			&& $this->plugin_object->isAssignedToRequiredRole($DIC->user()->getId())))
