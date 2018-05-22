@@ -94,7 +94,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 		$key_size = mcrypt_enc_get_key_size($cipher);
 		$sym_key  = substr($sym_key, 0, $key_size);
 		mcrypt_generic_init($cipher, $sym_key, $iv);
-		$plain_data = trim(mdecrypt_generic($cipher, self::urlbase64_decode($crypt_data)));
+		$plain_data = trim(mdecrypt_generic($cipher, self::url_base64_decode($crypt_data)));
 		mcrypt_generic_deinit($cipher);
 		mcrypt_module_close($cipher);
 		return $plain_data;
@@ -113,7 +113,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 		$key_size = mcrypt_enc_get_key_size($cipher);
 		$sym_key  = substr($sym_key, 0, $key_size);
 		mcrypt_generic_init($cipher, $sym_key, $iv);
-		$crypt_data = self::urlbase64_encode(mcrypt_generic($cipher, $plain_data));
+		$crypt_data = self::url_base64_encode(mcrypt_generic($cipher, $plain_data));
 		mcrypt_generic_deinit($cipher);
 		mcrypt_module_close($cipher);
 		return $crypt_data;
@@ -128,7 +128,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 * @param string $data
 	 * @return string
 	 */
-	protected static function urlbase64_decode($data)
+	protected static function url_base64_decode($data)
 	{
 		return base64_decode(str_replace(array('_', '-', '.'), array('/', '+', '='), $data), true);
 	}
@@ -137,7 +137,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 * @param string $data
 	 * @return string
 	 */
-	protected static function urlbase64_encode($data)
+	protected static function url_base64_encode($data)
 	{
 		return str_replace(array('/', '+', '='), array('_', '-', '.'), base64_encode($data));
 	}
@@ -241,7 +241,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	public function isAssignedToRequiredRole($usr_id)
 	{
 		global $DIC; 
-		$rbacreview = $DIC->rbac()->review();
+		$rbac_review = $DIC->rbac()->review();
 
 		$plugin = self::getInstance();
 
@@ -250,17 +250,17 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 			return true;
 		}
 
-		$groles = explode(',', $plugin->getSetting('global_roles'));
-		$groles = array_filter($groles);
+		$global_roles = explode(',', $plugin->getSetting('global_roles'));
+		$global_roles = array_filter($global_roles);
 
-		if(!$groles)
+		if(!$global_roles)
 		{
 			return true;
 		}
 
-		foreach($groles as $role_id)
+		foreach($global_roles as $role_id)
 		{
-			if($rbacreview->isAssigned($usr_id, $role_id))
+			if($rbac_review->isAssigned($usr_id, $role_id))
 			{
 				return true;
 			}
@@ -326,7 +326,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
 		require_once $this->getDirectory() . '/lib/php-gnupg/gpg.php';
 		$gpg = new GnuPG($this->getSetting('gpg_homedir'));
-		$passphrase = strlen($this->getSetting('sign_key_passphrase')) ? ilElectronicCourseReservePlugin::decrypt($this->getSetting('sign_key_passphrase')) : '';
+		$pass_phrase = strlen($this->getSetting('sign_key_passphrase')) ? ilElectronicCourseReservePlugin::decrypt($this->getSetting('sign_key_passphrase')) : '';
 
 		$key_id = null;
 		foreach($gpg->listKeys(true) as $result)
@@ -335,13 +335,13 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 			{
 				if(strpos($key['uid'][0], '<' . $this->getSetting('sign_key_email') . '>') !== false)
 				{
-					$sign_result = $gpg->sign($data_to_sign, $key_id, $passphrase, false, true);
+					$sign_result = $gpg->sign($data_to_sign, $key_id, $pass_phrase, false, true);
 					$signed_data  = $sign_result->data;
 					$sign_error   = $sign_result->err;
 
 					if($signed_data && !$sign_error)
 					{
-						$signature         = $gpg->sign($data_to_sign, $key_id, $passphrase, false, true)->data;
+						$signature         = $gpg->sign($data_to_sign, $key_id, $pass_phrase, false, true)->data;
 						$params['iltoken'] = base64_encode($signature);
 						break 2;
 					}
