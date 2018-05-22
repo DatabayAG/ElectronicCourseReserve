@@ -576,8 +576,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$this->updateFolderTitle($parsed_item, $ref_id);
 				if($ref_id != null && $ref_id > 0 && ! ilObject::_isInTrash($ref_id))
 				{
-					$parent = $tree->getParentId($ref_id);
-					if($parent == $crs_ref_id)
+					$parent = (int) $tree->getParentId($ref_id);
+					if($parent === $crs_ref_id)
 					{
 						return $ref_id;
 					}
