@@ -543,8 +543,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function ensureCorrectCourseAndFolderStructure($parsed_item)
 	{
-		$crs_ref_id = $parsed_item->getCrsRefId();
-		$folder_import_id = $parsed_item->getFolderImportId();
+		$crs_ref_id = (int) $parsed_item->getCrsRefId();
+		$folder_import_id = (int) $parsed_item->getFolderImportId();
 
 		if($crs_ref_id === 0 || $folder_import_id === 0)
 		{
@@ -587,7 +587,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					}
 					else
 					{
-						// Todo:  $tree->moveTree();
+						// Todo:  $tree->moveTree();?
 						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
 					}
 				}

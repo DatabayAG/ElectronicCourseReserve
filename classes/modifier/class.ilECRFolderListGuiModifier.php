@@ -44,7 +44,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		{
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
-		$dom->encoding  = 'UTF-8';
+		$dom->encoding = 'UTF-8';
 
 		$plugin = ilElectronicCourseReservePlugin::getInstance();
 		$xpath = new DomXPath($dom);
@@ -64,16 +64,17 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 				$field_div->appendChild($field_html);
 				$text_node->appendChild($field_div);
 			}
-			if(strlen($image) > 0)
-			{
+			if(strlen($image) > 0){
 				$image_node_list = $xpath->query("//img[@class='ilListItemIcon']");
 				$image_node = $image_node_list->item(0);
 				/** @var ilElectronicCourseReservePlugin $plugin */
 				$plugin = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+
 				if($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_URL ){
 					$image_node->setAttribute('src', $image);
 				}elseif($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_FILE){
-					$path_to_image = ILIAS_WEB_DIR. DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $image;
+					$path_to_image = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $image;
+
 					if(file_exists($path_to_image)){
 						$image_node->setAttribute('src',$path_to_image);
 					}
