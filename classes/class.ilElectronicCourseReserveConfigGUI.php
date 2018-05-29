@@ -72,8 +72,11 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 
 			case 'showEcrLangVars':
 			case 'saveEcrLangVars':
+			case 'editEcrContent':
 				$this->tabs->activateTab('showEcrLangVars');
-				break;
+				$this->tabs->addSubTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
+				$this->tabs->addSubTab('editEcrContent', $this->pluginObj->txt('edit_ecr_content'), $this->ctrl->getLinkTarget($this, 'editEcrContent'));
+			break;
 		}
 	}
 	
@@ -424,18 +427,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 
 	public function showEcrLangVars()
 	{
-		global $DIC;
-
-		$toolbar = $DIC->toolbar();
-
-		require_once 'Services/UIComponent/Button/classes/class.ilLinkButton.php';
-		$button = ilLinkButton::getInstance();
-		$button->setCaption($this->pluginObj->txt('add_use_agreement'), false);
-		$button->setUrl($this->ctrl->getLinkTarget($this, 'showUseAgreementForm'));
-		$toolbar->addButtonInstance($button);
-
-		$this->tabs->activateSubTab('editUseAgreements');
-
+		$this->tabs->activateSubTab('showEcrLangVars');
 		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableGUI.php');
 		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableProvider.php');
 
@@ -464,5 +456,109 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		}
 		ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
 		$this->showEcrLangVars();
+	}
+
+	public function editEcrContent()
+	{
+		$this->tabs->activateSubTab('editEcrContent');
+		$this->initEcrContentForm();
+
+		$content = ilRTE::_replaceMediaObjectImageSrc($this->settings->get('ecr_content'), 1);
+
+		$this->form->setValuesByArray(array('ecr_content' => $content));
+		$this->tpl->setContent($this->form->getHTML());
+	}
+
+	public function saveEcrContent()
+	{
+		$this->initEcrContentForm();
+		$this->form->checkInput();
+
+		$content = ilRTE::_replaceMediaObjectImageSrc($this->form->getInput('ecr_content'), 0);
+		$ecr_content_id = 8888;
+
+		// copy temporary media objects (frm~)
+		$this->pluginObj->includeClass('class.ilElectronicCourseReserveRTEHelper.php');
+
+		ilElectronicCourseReserveRTEHelper::moveMediaObjects($this->form->getInput('ecr_content'), 'ecr_content~:html', 'ecr_content:html');
+
+// remove usage of deleted media objects
+		include_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
+		$oldMediaObjects = ilObjMediaObject::_getMobsOfObject('ecr_content:html', $ecr_content_id);
+		$curMediaObjects = ilRTE::_getMediaObjects($this->form->getInput('ecr_content'), 0);
+		foreach($oldMediaObjects as $oldMob)
+		{
+			$found = false;
+			foreach($curMediaObjects as $curMob)
+			{
+				if($oldMob == $curMob)
+				{
+					$found = true;
+					break;
+				}
+			}
+			if(!$found)
+			{
+				if(ilObjMediaObject::_exists($oldMob))
+				{
+					ilObjMediaObject::_removeUsage($oldMob, 'ecr_content:html', $ecr_content_id);
+					$mob_obj = new ilObjMediaObject($oldMob);
+					$mob_obj->delete();
+				}
+			}
+		}
+
+		$this->settings->set('ecr_content', $content);
+
+		ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
+		$this->ctrl->redirect($this, 'editEcrContent');
+	}
+
+	public function initEcrContentForm()
+	{
+		global $DIC;
+		if($this->form instanceof ilPropertyFormGUI)
+		{
+			return;
+		}
+
+		$this->form = new ilPropertyFormGUI();
+		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveEcrContent'));
+		$this->form->setTitle($this->pluginObj->txt('edit_ecr_content'));
+
+		$ecr_content_input = new ilTextAreaInputGUI($this->pluginObj->txt('content'), 'ecr_content');
+		$ecr_content_input->setRequired(true);
+		$ecr_content_input->setRows(15);
+		$ecr_content_input->setUseRte(true);
+
+		$ecr_content_input->removePlugin('advlink');
+		$ecr_content_input->setRTERootBlockElement('');
+		$ecr_content_input->usePurifier(true);
+		$ecr_content_input->disableButtons(array(
+			'charmap',
+			'undo',
+			'redo',
+			'justifyleft',
+			'justifycenter',
+			'justifyright',
+			'justifyfull',
+			'anchor',
+			'fullscreen',
+			'cut',
+			'copy',
+			'paste',
+			'pastetext',
+			'formatselect'
+		));
+
+		$ecr_content_input->setRTESupport($DIC->user()->getId(), 'ecr_content', 'ecr_content');
+
+		// purifier
+		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
+		$ecr_content_input->setPurifier(ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
+
+		$this->form->addCommandButton('saveEcrContent', $this->lng->txt('save'));
+		$this->form->addCommandButton('editEcrContent', $this->lng->txt('cancel'));
+		$this->form->addItem($ecr_content_input);
 	}
 }

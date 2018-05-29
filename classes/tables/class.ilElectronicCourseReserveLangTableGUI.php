@@ -25,6 +25,7 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 
 		parent::__construct($a_parent_obj, $a_parent_cmd);
 
+		$this->setTitle($a_parent_obj->pluginObj->txt('adm_ecr_tab_title'));
 		$this->setRowTemplate($a_parent_obj->pluginObj->getDirectory().'/templates/tpl.lang_items_row.html');
 		$this->setFormAction($ilCtrl->getFormAction($a_parent_obj));
 		$this->setDisableFilterHiding(true);
