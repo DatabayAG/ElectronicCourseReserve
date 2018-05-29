@@ -320,4 +320,11 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
 		return $params;
 	}
+
+	public function ecr_txt($identifier)
+	{
+		$this->includeClass('class.ilElectronicCourseReserveLangData.php');
+		$ecr_lang_data = new ilElectronicCourseReserveLangData();
+		return $ecr_lang_data->txt($identifier);
+	}
 }

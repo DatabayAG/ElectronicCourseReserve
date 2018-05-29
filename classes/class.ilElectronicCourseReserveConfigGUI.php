@@ -50,11 +50,11 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		}
 	}
 
-	
 	public function getTabs()
 	{
 		$this->tabs->addTab('configure', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'configure'));
 		$this->tabs->addTab('showUseAgreementSettings', $this->pluginObj->txt('use_agreement'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
+		$this->tabs->addTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
 	}
 	
 	public function getSubTabs($cmd)
@@ -68,7 +68,11 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 				$this->tabs->activateTab('showUseAgreementSettings');
 				$this->tabs->addSubTab('showUseAgreementSettings', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
 				$this->tabs->addSubTab('editUseAgreements', $this->pluginObj->txt('edit_use_agreement'), $this->ctrl->getLinkTarget($this, 'editUseAgreements'));
+				break;
 
+			case 'showEcrLangVars':
+			case 'saveEcrLangVars':
+				$this->tabs->activateTab('showEcrLangVars');
 				break;
 		}
 	}
@@ -99,7 +103,6 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->initUseAgreementSettingsForm();
 		$this->populateValues();
 		$this->tpl->setContent($this->form->getHTML());
-		
 	}
 	
 	public function saveUseAgreementSettings()
@@ -419,4 +422,47 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$tpl->setContent($this->form->getHTML());
 	}
 
+	public function showEcrLangVars()
+	{
+		global $DIC;
+
+		$toolbar = $DIC->toolbar();
+
+		require_once 'Services/UIComponent/Button/classes/class.ilLinkButton.php';
+		$button = ilLinkButton::getInstance();
+		$button->setCaption($this->pluginObj->txt('add_use_agreement'), false);
+		$button->setUrl($this->ctrl->getLinkTarget($this, 'showUseAgreementForm'));
+		$toolbar->addButtonInstance($button);
+
+		$this->tabs->activateSubTab('editUseAgreements');
+
+		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableGUI.php');
+		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableProvider.php');
+
+		$table = new ilElectronicCourseReserveLangTableGUI($this);
+		$provider = new ilElectronicCourseReserveLangTableProvider();
+		$table->setData($provider->getTableData());
+
+		$this->tpl->setContent($table->getHTML());
+	}
+
+	public function saveEcrLangVars()
+	{
+		$this->pluginObj->includeClass('class.ilElectronicCourseReserveLangData.php');
+		$ecr_lang_data = new ilElectronicCourseReserveLangData();
+
+		$installed_langs = ilLanguage::_getInstalledLanguages();
+
+		foreach($installed_langs as $lang)
+		{
+			if(isset($_POST[$lang]))
+			{
+				$ecr_lang_data->setLangKey($lang);
+				$ecr_lang_data->setValue(trim($_POST[$lang]));
+				$ecr_lang_data->save();
+			}
+		}
+		ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
+		$this->showEcrLangVars();
+	}
 }
