@@ -321,6 +321,10 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 		return $params;
 	}
 
+	/**
+	 * @param $identifier
+	 * @return string
+	 */
 	public function ecr_txt($identifier)
 	{
 		$this->includeClass('class.ilElectronicCourseReserveLangData.php');

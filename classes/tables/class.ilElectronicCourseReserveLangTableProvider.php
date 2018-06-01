@@ -31,7 +31,10 @@ class ilElectronicCourseReserveLangTableProvider
 
 		while($row = $this->db->fetchAssoc($res))
 		{
-			$data[$row['lang_key']] = $row;
+			if(isset($data[$row['lang_key']]))
+			{
+				$data[$row['lang_key']] = $row;
+			}
 		}
 
 		return $data;

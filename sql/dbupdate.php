@@ -143,3 +143,14 @@ if(!$ilDB->tableExists('ecr_lang_data'))
 	$ilDB->addPrimaryKey( 'ecr_lang_data', array('lang_key',  'identifier'));
 }
 ?>
+<#7>
+<?php
+if($ilDB->tableExists('ecr_lang_data'))
+{
+	if(!$ilDB->tableColumnExists('ecr_lang_data', 'ecr_content'))
+	{
+		$ilDB->addTableColumn('ecr_lang_data', 'ecr_content',
+			array('type' => 'clob', 'default' => null, 'notnull' => false));
+	}
+}
+?>

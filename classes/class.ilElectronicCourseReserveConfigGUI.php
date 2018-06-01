@@ -29,8 +29,13 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->tabs = $DIC->tabs();
 		$this->ctrl = $DIC->ctrl();
 		$this->lng = $DIC->language();
+		$this->lng->loadLanguageModule('meta');
+
 		$this->tpl = $DIC->ui()->mainTemplate();
 		$this->settings = $DIC['ilSetting'];
+
+		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+		$this->pluginObj->includeClass('class.ilElectronicCourseReserveLangData.php');
 	}
 	
 	/**
@@ -38,7 +43,6 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 */
 	public function performCommand($cmd)
 	{
-		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 		$this->getTabs();
 		
 		switch($cmd)
@@ -74,8 +78,8 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			case 'saveEcrLangVars':
 			case 'editEcrContent':
 				$this->tabs->activateTab('showEcrLangVars');
-				$this->tabs->addSubTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
-				$this->tabs->addSubTab('editEcrContent', $this->pluginObj->txt('edit_ecr_content'), $this->ctrl->getLinkTarget($this, 'editEcrContent'));
+//				$this->tabs->addSubTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
+//				$this->tabs->addSubTab('editEcrContent', $this->pluginObj->txt('edit_ecr_content'), $this->ctrl->getLinkTarget($this, 'editEcrContent'));
 			break;
 		}
 	}
@@ -440,7 +444,6 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 
 	public function saveEcrLangVars()
 	{
-		$this->pluginObj->includeClass('class.ilElectronicCourseReserveLangData.php');
 		$ecr_lang_data = new ilElectronicCourseReserveLangData();
 
 		$installed_langs = ilLanguage::_getInstalledLanguages();
@@ -451,7 +454,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			{
 				$ecr_lang_data->setLangKey($lang);
 				$ecr_lang_data->setValue(trim($_POST[$lang]));
-				$ecr_lang_data->save();
+				$ecr_lang_data->saveTranslation();
 			}
 		}
 		ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
@@ -460,12 +463,22 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 
 	public function editEcrContent()
 	{
-		$this->tabs->activateSubTab('editEcrContent');
+		$lang_key = trim($_GET['ecr_lang']);
+
+		$lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
+		if(!$lang_obj_id)
+		{
+			ilUtil::sendFailure($this->lng->txt('obj_not_found'));
+			$this->ctrl->redirect($this, 'showEcrLangVars');
+		}
+
+		$ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($lang_key);
+
 		$this->initEcrContentForm();
 
-		$content = ilRTE::_replaceMediaObjectImageSrc($this->settings->get('ecr_content'), 1);
+		$content = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
 
-		$this->form->setValuesByArray(array('ecr_content' => $content));
+		$this->form->setValuesByArray(array('ecr_content' => $content, 'ecr_lang' => $lang_key));
 		$this->tpl->setContent($this->form->getHTML());
 	}
 
@@ -475,16 +488,18 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form->checkInput();
 
 		$content = ilRTE::_replaceMediaObjectImageSrc($this->form->getInput('ecr_content'), 0);
-		$ecr_content_id = 8888;
 
 		// copy temporary media objects (frm~)
 		$this->pluginObj->includeClass('class.ilElectronicCourseReserveRTEHelper.php');
 
-		ilElectronicCourseReserveRTEHelper::moveMediaObjects($this->form->getInput('ecr_content'), 'ecr_content~:html', 'ecr_content:html');
+		$lang_key = $this->form->getInput('ecr_lang');
+		$lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
 
-// remove usage of deleted media objects
+		ilElectronicCourseReserveRTEHelper::moveMediaObjects($lang_obj_id, $this->form->getInput('ecr_content'), 'ecr_content~:html', 'ecr_content:html');
+
+		// remove usage of deleted media objects
 		include_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
-		$oldMediaObjects = ilObjMediaObject::_getMobsOfObject('ecr_content:html', $ecr_content_id);
+		$oldMediaObjects = ilObjMediaObject::_getMobsOfObject('ecr_content:html', $lang_obj_id);
 		$curMediaObjects = ilRTE::_getMediaObjects($this->form->getInput('ecr_content'), 0);
 		foreach($oldMediaObjects as $oldMob)
 		{
@@ -501,17 +516,18 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			{
 				if(ilObjMediaObject::_exists($oldMob))
 				{
-					ilObjMediaObject::_removeUsage($oldMob, 'ecr_content:html', $ecr_content_id);
+					ilObjMediaObject::_removeUsage($oldMob, 'ecr_content:html', $lang_obj_id);
 					$mob_obj = new ilObjMediaObject($oldMob);
 					$mob_obj->delete();
 				}
 			}
 		}
 
-		$this->settings->set('ecr_content', $content);
+		ilElectronicCourseReserveLangData::writeEcrContent($lang_key, $content);
 
-		ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
-		$this->ctrl->redirect($this, 'editEcrContent');
+		ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+		$this->ctrl->setParameter($this, 'ecr_lang', $lang_key);
+		$this->ctrl->redirect($this, $this->editEcrContent());
 	}
 
 	public function initEcrContentForm()
@@ -524,7 +540,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 
 		$this->form = new ilPropertyFormGUI();
 		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveEcrContent'));
-		$this->form->setTitle($this->pluginObj->txt('edit_ecr_content'));
+		$this->form->setTitle($this->pluginObj->txt('edit_ecr_content'). ': '. $this->lng->txt('meta_l_'. $_GET['ecr_lang']));
 
 		$ecr_content_input = new ilTextAreaInputGUI($this->pluginObj->txt('content'), 'ecr_content');
 		$ecr_content_input->setRequired(true);
@@ -552,13 +568,22 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		));
 
 		$ecr_content_input->setRTESupport($DIC->user()->getId(), 'ecr_content', 'ecr_content');
+		$ecr_content_input->setInfo($this->pluginObj->txt('insert_url_esa_info'));
 
 		// purifier
 		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
 		$ecr_content_input->setPurifier(ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
 
+		$ecr_lang = new ilHiddenInputGUI('ecr_lang');
+		if(isset($_GET['ecr_lang']))
+		{
+			$ecr_lang->setValue($_GET['ecr_lang']);
+		}
+
+		$this->form->addItem($ecr_lang);
+
 		$this->form->addCommandButton('saveEcrContent', $this->lng->txt('save'));
-		$this->form->addCommandButton('editEcrContent', $this->lng->txt('cancel'));
+		$this->form->addCommandButton('showEcrLangVars', $this->lng->txt('cancel'));
 		$this->form->addItem($ecr_content_input);
 	}
 }

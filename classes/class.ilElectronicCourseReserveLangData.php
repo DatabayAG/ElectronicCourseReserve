@@ -31,6 +31,11 @@ class ilElectronicCourseReserveLangData
 	protected $identifier = 'ecr_tab_title';
 
 	/**
+	 * @var null
+	 */
+	protected $ecr_content = NULL;
+
+	/**
 	 * @var string
 	 */
 	protected $value;
@@ -44,14 +49,14 @@ class ilElectronicCourseReserveLangData
 	}
 
 	/**
-	 * @param $lang_key
-	 * @return string
+	 * @param $identifier
+	 * @return mixed|string|void
 	 */
  	public function txt($identifier)
  	{
-
  		global $DIC;
  		$lang_key = $DIC->user()->getLanguage();
+
  		if(!isset(self::$ecr_lang_data[$lang_key]))
 		{
 			$lang_value = $this->readFromDB();
@@ -59,7 +64,8 @@ class ilElectronicCourseReserveLangData
 			{
 				return $lang_value;
 			}
-			return ilElectronicCourseReservePlugin::getInstance()->txt($this->identifier);
+
+			return ilElectronicCourseReservePlugin::getInstance()->txt($identifier);
 		}
 		return self::$ecr_lang_data[$lang_key];
  	}
@@ -75,7 +81,7 @@ class ilElectronicCourseReserveLangData
 		}
 	}
 
-	public function save()
+	public function saveTranslation()
 	{
 		$this->db->replace('ecr_lang_data',
 			array
@@ -119,5 +125,62 @@ class ilElectronicCourseReserveLangData
 	public function setValue($value)
 	{
 		$this->value = $value;
+	}
+
+	/**
+	 * @param $lang_key
+	 * @return int
+	 */
+	public static function lookupObjIdByLangKey($lang_key)
+	{
+		global $DIC;
+
+		$res = $DIC->database()->queryF('SELECT obj_id FROM object_data WHERE title = %s',
+			array('text'), array(trim($lang_key)));
+
+		while($row = $DIC->database()->fetchAssoc($res))
+		{
+			return $row['obj_id'];
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param $lang_key
+	 * @return string
+	 */
+	public static function lookupEcrContentByLangKey($lang_key)
+	{
+		global $DIC;
+
+		$res = $DIC->database()->queryF('SELECT ecr_content FROM ecr_lang_data WHERE lang_key = %s',
+			array('text'), array(trim($lang_key)));
+
+		while($row = $DIC->database()->fetchAssoc($res))
+		{
+			return $row['ecr_content'];
+		}
+
+		return '';
+	}
+
+	/**
+	 * @param $lang_key
+	 * @param $ecr_content
+	 */
+	public static function writeEcrContent($lang_key, $ecr_content )
+	{
+		global $DIC;
+
+		$DIC->database()->update('ecr_lang_data',
+			array
+			(
+				'ecr_content' => array('clob', $ecr_content)
+			),
+			array
+			(
+				'lang_key' => array('text', $lang_key),
+			));
 	}
 }
