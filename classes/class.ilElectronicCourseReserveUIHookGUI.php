@@ -127,7 +127,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
 				$ilTabs->addTab(
 					'ecr_tab_title',
-					$this->getPluginObject()->txt('ecr_tab_title'),
+					$this->getPluginObject()->ecr_txt('ecr_tab_title'),
 					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRContent')
 				);
 			}

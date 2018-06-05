@@ -118,4 +118,39 @@ if(!$ilDB->tableExists('ecr_user_acceptance'))
 		'notnull' => true)); 	
 	}
 ?>
-	
+<#6>
+<?php
+if(!$ilDB->tableExists('ecr_lang_data'))
+{
+	$fields = array(
+		'lang_key' => array(
+			'type'    => 'text',
+			'length'  => 2,
+			'notnull' => true
+		),
+		'identifier' => array(
+			'type'    => 'text',
+			'length'  => 60,
+			'notnull' => true
+		),
+		'value' => array(
+			'type'    => 'text',
+			'length'  => 4000,
+			'notnull' => false)
+	);
+
+	$ilDB->createTable('ecr_lang_data', $fields);
+	$ilDB->addPrimaryKey( 'ecr_lang_data', array('lang_key',  'identifier'));
+}
+?>
+<#7>
+<?php
+if($ilDB->tableExists('ecr_lang_data'))
+{
+	if(!$ilDB->tableColumnExists('ecr_lang_data', 'ecr_content'))
+	{
+		$ilDB->addTableColumn('ecr_lang_data', 'ecr_content',
+			array('type' => 'clob', 'default' => null, 'notnull' => false));
+	}
+}
+?>

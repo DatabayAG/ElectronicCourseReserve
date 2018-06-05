@@ -34,6 +34,7 @@ class ilECRContentController extends ilECRBaseController
 		$this->lng      = $DIC->language();
 		$this->logger   = $DIC->logger()->root();
 		$this->settings = $DIC['ilSetting'];
+		$this->user     = $DIC->user();
 	}
 
 	/**
@@ -146,6 +147,8 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	public function showECRContent()
 	{
+		$this->plugin_object->includeClass('class.ilElectronicCourseReserveLangData.php');
+
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
@@ -158,6 +161,33 @@ class ilECRContentController extends ilECRBaseController
 		$this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
 		$this->tabs->setBackTarget($this->lng->txt('back'), $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
 
+		$ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($this->user->getLanguage());
+		$html = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
+		if(strlen($html))
+		{
+
+			$html = $this->replacePlaceholder($html);
+			return $html;
+		}
+
+		$ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($this->lng->getDefaultLanguage());
+		$html = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
+		if(strlen($html))
+		{
+			$html = $this->replacePlaceholder($html);
+			return $html;
+		}
+
+		$html = $this->getDefaultECRContent($obj);
+		return $html;
+	}
+
+	/**
+	 * @param $obj
+	 * @return string
+	 */
+	protected function getDefaultECRContent($obj)
+	{
 		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 		$form = new ilPropertyFormGUI();
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
@@ -174,6 +204,13 @@ class ilECRContentController extends ilECRBaseController
 		$form->addItem($link);
 
 		return $form->getHTML();
+	}
+
+	protected function replacePlaceholder($html)
+	{
+		$url  = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.performRedirect');
+		$esa_url= '<a href="' . $url . '&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>';
+		return str_replace('###URL_ESA###', $esa_url, $html);
 	}
 
 	/**
