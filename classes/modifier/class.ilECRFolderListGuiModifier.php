@@ -48,9 +48,12 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		$item_data   = $plugin->getItemData();
 		$item_ref_id = $this->getRefIdFromItemUrl($xpath);
 		if (array_key_exists($item_ref_id, $item_data)) {
-			$text_string = $item_data[$item_ref_id]['description'];
-			$image       = $item_data[$item_ref_id]['icon'];
-			if (strlen($text_string) > 0) {
+			$text_string       = $item_data[$item_ref_id]['description'];
+			$image             = $item_data[$item_ref_id]['icon'];
+			$show_image        = (int) $item_data[$item_ref_id]['show_image'];
+			$show_description  = (int) $item_data[$item_ref_id]['show_description'];
+
+			if ($show_description == 1 && strlen($text_string) > 0) {
 				$text_node_list = $xpath->query("//div[@class='il_ContainerListItem']");
 				$text_node      = $text_node_list->item(0);
 				$field_html     = $dom->createDocumentFragment();
@@ -59,7 +62,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 				$field_div->appendChild($field_html);
 				$text_node->appendChild($field_div);
 			}
-			if (strlen($image) > 0) {
+			if ($show_image == 1 && strlen($image) > 0) {
 				$image_node_list = $xpath->query("//img[@class='ilListItemIcon']");
 				$image_node      = $image_node_list->item(0);
 				/** @var ilElectronicCourseReservePlugin $plugin */
@@ -74,9 +77,8 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 						$image_node->setAttribute('src', $path_to_image);
 					}
 				}
-
-				$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 			}
+			$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 		}
 
 		if (strlen($processed_html) === 0) {
