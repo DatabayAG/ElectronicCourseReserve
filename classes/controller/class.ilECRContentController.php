@@ -130,8 +130,8 @@ class ilECRContentController extends ilECRBaseController
 		}
 
 		$form = new ilPropertyFormGUI();
-		#$form->setFormAction($ilCtrl->getFormAction(new ilECRContentController(), 'ilECRContentController'));
-		#$form->addCommandButton('ilECRContentController', $lng->txt('submit'));
+		$form->setFormAction($url = $ilCtrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.updateItemSettings'));
+		$form->addCommandButton('ilECRContentController', $lng->txt('submit'));
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
 
 		$show_description =  new ilCheckboxInputGUI($this->plugin_object->txt('show_description'), 'show_description');
@@ -152,16 +152,30 @@ class ilECRContentController extends ilECRBaseController
 			$show_image->setChecked(true);
 		}
 
-		
+		$hidden = new ilHiddenInputGUI('ref_id');
+		$hidden->setValue($ref_id);
+		$form->addItem($hidden);
+
 		$form->addItem($show_image);
 
 		return $form->getHTML();
 	}
-	
+
+	/**
+	 * 
+	 */
 	public function updateItemSettings()
 	{
-		//Todo: implement save Form
-		$a = 0;
+		global $DIC;
+		$show_description = (int) $_POST['show_description'];
+		$show_image = (int) $_POST['show_image'];
+		$ref_id = (int) $_POST['ref_id'];
+		if($ref_id > 0)
+		{
+			$this->plugin_object->updateItemData($ref_id, $show_description, $show_image);
+		}
+		
+		$DIC->ctrl()->redirect(new ilElectronicCourseReserveUIHookGUI(), 'ilECRContentController.showECRItemContent');
 	}
 	
 	/**

@@ -431,6 +431,22 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
+	 * @param int $ref_id
+	 * @param int $show_description
+	 * @param int $show_image
+	 */
+	public function updateItemData($ref_id, $show_description, $show_image)
+	{
+		global $DIC;
+		$DIC->database()->update("ecr_description", array(
+			"show_description" => array("int", $show_description),
+			"show_image"       => array("int", $show_image)),
+			array(
+				"ref_id"       => array("int", $ref_id)
+			));
+	}
+
+	/**
 	 * @param $ref_id
 	 * @return bool
 	 */
