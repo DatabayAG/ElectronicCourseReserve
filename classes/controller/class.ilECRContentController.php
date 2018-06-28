@@ -160,6 +160,7 @@ class ilECRContentController extends ilECRBaseController
 	
 	public function updateItemSettings()
 	{
+		//Todo: implement save Form
 		$a = 0;
 	}
 	
