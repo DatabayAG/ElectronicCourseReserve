@@ -531,7 +531,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function ensureUserRelatedPreconditions()
 	{
-		if(!$this->user->hasAcceptedUserAgreement())
+		if($this->user->hasToAcceptTermsOfService())
 		{
 			throw new ilException('The passed ILIAS user has to accept the user agreement.');
 		}
