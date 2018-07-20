@@ -16,7 +16,7 @@ require_once 'Services/Mail/classes/class.ilMimeMail.php';
 require_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
-
+require_once 'Services/Cron/classes/class.ilCronManager.php';
 
 class ilElectronicCourseReserveDigitizedMediaImporter
 {
@@ -140,19 +140,20 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				new DirectoryIterator($dir),
 				'/(.*).xml/'
 			);
-			foreach($iter as $fileinfo)
+			foreach($iter as $file_info)
 			{
 				ilCronManager::ping($job_id);
+
 				/**
-				 * @var $fileinfo SplFileInfo
+				 * @var $file_info SplFileInfo
 				 */
-				if($fileinfo->isDir())
+				if($file_info->isDir())
 				{
 					continue;
 				}
 
-				$pathname = $fileinfo->getPathname();
-				$filename = $fileinfo->getFileName();
+				$pathname = $file_info->getPathname();
+				$filename = $file_info->getFileName();
 
 				$this->logger->write('Found file to import: ' . $filename);
 				$this->logger->write('Pathname: ' . $pathname);
