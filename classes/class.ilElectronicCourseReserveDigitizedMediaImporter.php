@@ -1,22 +1,22 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-require_once 'Services/WebServices/SOAP/classes/class.ilSoapClient.php';
-require_once 'Services/Xml/classes/class.ilXmlWriter.php';
-require_once 'Services/WebServices/Rest/classes/class.ilRestFileStorage.php';
-require_once 'Services/Cron/classes/class.ilCronJobResult.php';
-require_once 'Modules/File/classes/class.ilObjFile.php';
-require_once 'Modules/WebResource/classes/class.ilObjLinkResource.php';
-require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
+require_once 'Modules/File/classes/class.ilObjFile.php';
 require_once 'Modules/Folder/classes/class.ilObjFolder.php';
-require_once 'Services/Utilities/classes/class.ilMimeTypeUtil.php';
+require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
+require_once 'Modules/WebResource/classes/class.ilObjLinkResource.php';
+require_once 'Services/Cron/classes/class.ilCronJobResult.php';
+require_once 'Services/Cron/classes/class.ilCronManager.php';
 require_once 'Services/Mail/classes/class.ilMail.php';
 require_once 'Services/Mail/classes/class.ilMimeMail.php';
 require_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
+require_once 'Services/Utilities/classes/class.ilMimeTypeUtil.php';
+require_once 'Services/WebServices/SOAP/classes/class.ilSoapClient.php';
+require_once 'Services/WebServices/Rest/classes/class.ilRestFileStorage.php';
+require_once 'Services/Xml/classes/class.ilXmlWriter.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
-require_once 'Services/Cron/classes/class.ilCronManager.php';
 
 class ilElectronicCourseReserveDigitizedMediaImporter
 {
