@@ -113,7 +113,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 * @param int $job_id
+	 * @param string $job_id
 	 */
 	public function run($job_id)
 	{
@@ -121,7 +121,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 * @param int $job_id
+	 * @param string $job_id
 	 */
 	protected function perform($job_id)
 	{
