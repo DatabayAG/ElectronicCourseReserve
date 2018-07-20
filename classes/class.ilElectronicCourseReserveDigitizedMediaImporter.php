@@ -113,17 +113,17 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 *
+	 * @param int $job_id
 	 */
-	public function run()
+	public function run($job_id)
 	{
-		$this->perform();
+		$this->perform($job_id);
 	}
 
 	/**
-	 *
+	 * @param int $job_id
 	 */
-	protected function perform()
+	protected function perform($job_id)
 	{
 		$this->logger->write('Digitized media import script started');
 		try
@@ -142,6 +142,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			);
 			foreach($iter as $fileinfo)
 			{
+				ilCronManager::ping($job_id);
 				/**
 				 * @var $fileinfo SplFileInfo
 				 */
