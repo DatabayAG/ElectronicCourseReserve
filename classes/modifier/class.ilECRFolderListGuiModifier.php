@@ -88,6 +88,8 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 				$this->removeAction($node_list);
 			}
 
+			$this->replaceCheckbox($xpath, $item_ref_id, $dom);
+
 			$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 		}
 
@@ -95,6 +97,24 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 		return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processed_html];
+	}
+
+	/**
+	 * @param DomXPath $xpath
+	 * @param int $item_ref_id
+	 * @param DOMDocument $dom
+	 */
+	protected function replaceCheckbox($xpath, $item_ref_id, $dom)
+	{
+		$node_list = $xpath->query("//div/input[contains(@value,'" . $item_ref_id . "')]");
+		for ($i = 0; $i < count($node_list); $i++) {
+			$node = $node_list->item($i);
+			if ($node !== null) {
+				$new = $dom->createElement('div');
+				$new->setAttribute('style', 'width:20px');
+				$node->parentNode->replaceChild($new, $node);
+			}
+		}
 	}
 
 	/**
