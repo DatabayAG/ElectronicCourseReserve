@@ -4,32 +4,60 @@
 require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once 'Services/Component/classes/class.ilPluginConfigGUI.php';
 
-class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
+class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 {
 	/**
-	 * @var ilElectronicCourseReservePlugin
+	 * @var \ilElectronicCourseReservePlugin
 	 */
 	public $pluginObj = null;
 
 	/**
-	 * @var ilPropertyFormGUI
+	 * @var \ilPropertyFormGUI
 	 */
 	public $form = null;
-	
-	
+
+	/**
+	 * @var ilTabsGUI 
+	 */
 	public $tabs;
+
+	/**
+	 * @var \ilCtrl 
+	 */
 	public $ctrl;
+
+	/**
+	 * @var \ilLanguage 
+	 */
 	public $lng;
+
+	/**
+	 * @var \ilTemplate 
+	 */
 	public $tpl;
+
+	/**
+	 * @var \ilSetting
+	 */
 	public $settings;
-	
+
+	/**
+	 * @var \ilObjUser
+	 */
+	public $user;
+
+	/**
+	 * ilElectronicCourseReserveConfigGUI constructor.
+	 */
 	public function __construct()
 	{
 		global $DIC;
+
 		$this->tabs = $DIC->tabs();
 		$this->ctrl = $DIC->ctrl();
 		$this->lng = $DIC->language();
 		$this->lng->loadLanguageModule('meta');
+		$this->user = $DIC->user();
 
 		$this->tpl = $DIC->ui()->mainTemplate();
 		$this->settings = $DIC['ilSetting'];
@@ -54,33 +82,44 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public function getTabs()
 	{
 		$this->tabs->addTab('configure', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'configure'));
 		$this->tabs->addTab('showUseAgreementSettings', $this->pluginObj->txt('use_agreement'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
 		$this->tabs->addTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
 	}
-	
+
+	/**
+	 * @param string $cmd
+	 */
 	public function getSubTabs($cmd)
 	{
-		switch($cmd)
-		{
+		switch ($cmd) {
 			case 'showUseAgreementSettings':
 			case 'editUseAgreements':
 			case 'editUseAgreement':
 			case 'showUseAgreementForm':
 				$this->tabs->activateTab('showUseAgreementSettings');
-				$this->tabs->addSubTab('showUseAgreementSettings', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
-				$this->tabs->addSubTab('editUseAgreements', $this->pluginObj->txt('edit_use_agreement'), $this->ctrl->getLinkTarget($this, 'editUseAgreements'));
+				$this->tabs->addSubTab(
+					'showUseAgreementSettings',
+					$this->lng->txt('settings'),
+					$this->ctrl->getLinkTarget($this, 'showUseAgreementSettings')
+				);
+				$this->tabs->addSubTab(
+					'editUseAgreements',
+					$this->pluginObj->txt('edit_use_agreement'),
+					$this->ctrl->getLinkTarget($this, 'editUseAgreements')
+				);
 				break;
 
 			case 'showEcrLangVars':
 			case 'saveEcrLangVars':
 			case 'editEcrContent':
 				$this->tabs->activateTab('showEcrLangVars');
-//				$this->tabs->addSubTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
-//				$this->tabs->addSubTab('editEcrContent', $this->pluginObj->txt('edit_ecr_content'), $this->ctrl->getLinkTarget($this, 'editEcrContent'));
-			break;
+				break;
 		}
 	}
 	
@@ -89,12 +128,12 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	 */
 	public function initUseAgreementSettingsForm()
 	{
-		if($this->form instanceof ilPropertyFormGUI)
+		if($this->form instanceof \ilPropertyFormGUI)
 		{
 			return;
 		}
-		
-		$this->form = new ilPropertyFormGUI();
+
+		$this->form = new \ilPropertyFormGUI();
 		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveUseAgreementSettings'));
 		$this->form->setTitle($this->lng->txt('settings'));
 		$this->form->addCommandButton('saveUseAgreementSettings', $this->lng->txt('save'));
@@ -103,7 +142,10 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form->addItem($enable_use_agreement);
 
 	}
-	
+
+	/**
+	 * 
+	 */
 	public function showUseAgreementSettings()
 	{
 		$this->tabs->activateSubTab('showUseAgreementSettings');
@@ -111,19 +153,21 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->populateValues();
 		$this->tpl->setContent($this->form->getHTML());
 	}
-	
+
+	/**
+	 * 
+	 */
 	public function saveUseAgreementSettings()
 	{
 		$this->initUseAgreementSettingsForm();
-		
-		if($this->form->checkInput())
-		{
+
+		if ($this->form->checkInput()) {
 			$this->pluginObj->setSetting('enable_use_agreement', (int)$this->form->getInput('enable_use_agreement'));
 			
 			ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
 			$this->ctrl->redirect($this, 'showUseAgreementSettings');
 		}
-		
+
 		$this->form->setValuesByPost();
 		$this->tpl->setContent($this->form->getHTML());
 	}
@@ -446,120 +490,134 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$tpl->setContent($this->form->getHTML());
 	}
 
+	/**
+	 * 
+	 */
 	public function showEcrLangVars()
 	{
 		$this->tabs->activateSubTab('showEcrLangVars');
 		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableGUI.php');
 		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableProvider.php');
 
-		$table = new ilElectronicCourseReserveLangTableGUI($this);
-		$provider = new ilElectronicCourseReserveLangTableProvider();
+		$table = new \ilElectronicCourseReserveLangTableGUI($this, 'showEcrLangVars');
+		$provider = new \ilElectronicCourseReserveLangTableProvider();
 		$table->setData($provider->getTableData());
 
 		$this->tpl->setContent($table->getHTML());
 	}
 
+	/**
+	 * 
+	 */
 	public function saveEcrLangVars()
 	{
-		$ecr_lang_data = new ilElectronicCourseReserveLangData();
+		$ecr_lang_data = new \ilElectronicCourseReserveLangData();
 
 		$installed_langs = ilLanguage::_getInstalledLanguages();
-
-		foreach($installed_langs as $lang)
-		{
-			if(isset($_POST[$lang]))
-			{
+		foreach ($installed_langs as $lang) {
+			if (isset($_POST[$lang])) {
 				$ecr_lang_data->setLangKey($lang);
-				$ecr_lang_data->setValue(trim($_POST[$lang]));
+				$ecr_lang_data->setValue(trim(\ilUtil::stripSlashes($_POST[$lang])));
 				$ecr_lang_data->saveTranslation();
 			}
 		}
+
 		ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
 		$this->showEcrLangVars();
 	}
 
+	/**
+	 * 
+	 */
 	public function editEcrContent()
 	{
-		$lang_key = trim($_GET['ecr_lang']);
+		if (!isset($_GET['ecr_lang'])) {
+			\ilUtil::sendFailure($this->lng->txt('obj_not_found'), true);
+			$this->ctrl->redirect($this, 'showEcrLangVars');
+			return;
+		}
 
-		$lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
-		if(!$lang_obj_id)
-		{
-			ilUtil::sendFailure($this->lng->txt('obj_not_found'));
+		$lang_key = trim($_GET['ecr_lang']);
+		$lang_obj_id = \ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
+		if (!$lang_obj_id) {
+			\ilUtil::sendFailure($this->lng->txt('obj_not_found'), true);
 			$this->ctrl->redirect($this, 'showEcrLangVars');
 		}
 
-		$ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($lang_key);
-
 		$this->initEcrContentForm();
 
-		$content = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
+		$ecr_content = \ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($lang_key);
+		$content = \ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
 
-		$this->form->setValuesByArray(array('ecr_content' => $content, 'ecr_lang' => $lang_key));
+		$this->form->setValuesByArray(array(
+			'ecr_content' => $content,
+			'ecr_lang' => $lang_key
+		));
+
 		$this->tpl->setContent($this->form->getHTML());
 	}
 
+	/**
+	 * 
+	 */
 	public function saveEcrContent()
 	{
 		$this->initEcrContentForm();
 		$this->form->checkInput();
 
-		$content = ilRTE::_replaceMediaObjectImageSrc($this->form->getInput('ecr_content'), 0);
+		$content = \ilRTE::_replaceMediaObjectImageSrc($this->form->getInput('ecr_content'), 0);
 
-		// copy temporary media objects (frm~)
 		$this->pluginObj->includeClass('class.ilElectronicCourseReserveRTEHelper.php');
 
 		$lang_key = $this->form->getInput('ecr_lang');
-		$lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
+		$lang_obj_id = \ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
 
-		ilElectronicCourseReserveRTEHelper::moveMediaObjects($lang_obj_id, $this->form->getInput('ecr_content'), 'ecr_content~:html', 'ecr_content:html');
+		\ilElectronicCourseReserveRTEHelper::moveMediaObjects($lang_obj_id, $this->form->getInput('ecr_content'), 'ecr_content~:html', 'ecr_content:html');
 
 		// remove usage of deleted media objects
 		include_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
-		$oldMediaObjects = ilObjMediaObject::_getMobsOfObject('ecr_content:html', $lang_obj_id);
-		$curMediaObjects = ilRTE::_getMediaObjects($this->form->getInput('ecr_content'), 0);
-		foreach($oldMediaObjects as $oldMob)
-		{
+		$oldMediaObjects = \ilObjMediaObject::_getMobsOfObject('ecr_content:html', $lang_obj_id);
+		$curMediaObjects = \ilRTE::_getMediaObjects($this->form->getInput('ecr_content'), 0);
+		foreach ($oldMediaObjects as $oldMob) {
 			$found = false;
-			foreach($curMediaObjects as $curMob)
-			{
-				if($oldMob == $curMob)
-				{
+
+			foreach ($curMediaObjects as $curMob) {
+				if ($oldMob == $curMob) {
 					$found = true;
 					break;
 				}
 			}
-			if(!$found)
-			{
-				if(ilObjMediaObject::_exists($oldMob))
-				{
-					ilObjMediaObject::_removeUsage($oldMob, 'ecr_content:html', $lang_obj_id);
-					$mob_obj = new ilObjMediaObject($oldMob);
+
+			if (!$found) {
+				if (\ilObjMediaObject::_exists($oldMob)) {
+					\ilObjMediaObject::_removeUsage($oldMob, 'ecr_content:html', $lang_obj_id);
+					$mob_obj = new \ilObjMediaObject($oldMob);
 					$mob_obj->delete();
 				}
 			}
 		}
 
-		ilElectronicCourseReserveLangData::writeEcrContent($lang_key, $content);
+		\ilElectronicCourseReserveLangData::writeEcrContent($lang_key, $content);
 
-		ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+		\ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
 		$this->ctrl->setParameter($this, 'ecr_lang', $lang_key);
-		$this->ctrl->redirect($this, $this->editEcrContent());
+		$this->ctrl->redirect($this, 'editEcrContent');
 	}
 
+	/**
+	 * @throws \ilHtmlPurifierNotFoundException
+	 */
 	public function initEcrContentForm()
 	{
-		global $DIC;
-		if($this->form instanceof ilPropertyFormGUI)
-		{
+		if ($this->form instanceof \ilPropertyFormGUI) {
 			return;
 		}
 
-		$this->form = new ilPropertyFormGUI();
+		$this->form = new \ilPropertyFormGUI();
 		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveEcrContent'));
 		$this->form->setTitle($this->pluginObj->txt('edit_ecr_content'). ': '. $this->lng->txt('meta_l_'. $_GET['ecr_lang']));
 
-		$ecr_content_input = new ilTextAreaInputGUI($this->pluginObj->txt('content'), 'ecr_content');
+		$ecr_content_input = new \ilTextAreaInputGUI($this->pluginObj->txt('ecr_content'), 'ecr_content');
 		$ecr_content_input->setRequired(true);
 		$ecr_content_input->setRows(15);
 		$ecr_content_input->setUseRte(true);
@@ -584,16 +642,14 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			'formatselect'
 		));
 
-		$ecr_content_input->setRTESupport($DIC->user()->getId(), 'ecr_content', 'ecr_content');
+		$ecr_content_input->setRTESupport($this->user->getId(), 'ecr_content', 'ecr_content');
 		$ecr_content_input->setInfo($this->pluginObj->txt('insert_url_esa_info'));
 
-		// purifier
 		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
-		$ecr_content_input->setPurifier(ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
+		$ecr_content_input->setPurifier(\ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
 
-		$ecr_lang = new ilHiddenInputGUI('ecr_lang');
-		if(isset($_GET['ecr_lang']))
-		{
+		$ecr_lang = new \ilHiddenInputGUI('ecr_lang');
+		if (isset($_GET['ecr_lang'])) {
 			$ecr_lang->setValue($_GET['ecr_lang']);
 		}
 
