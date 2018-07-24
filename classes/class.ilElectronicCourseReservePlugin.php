@@ -78,27 +78,6 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param string $crypt_data
-	 * @return string
-	 */
-	public static function decrypt($crypt_data)
-	{
-		$sym_key = self::getSymKey();
-
-		return openssl_decrypt($crypt_data, 'AES-128-CBC', $sym_key, OPENSSL_RAW_DATA, $iv);
-
-		$cipher = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
-		$iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($cipher), self::$iv_source);
-		$key_size = mcrypt_enc_get_key_size($cipher);
-		$sym_key = substr($sym_key, 0, $key_size);
-		mcrypt_generic_init($cipher, $sym_key, $iv);
-		$plain_data = trim(mdecrypt_generic($cipher, self::urlbase64_decode($crypt_data)));
-		mcrypt_generic_deinit($cipher);
-		mcrypt_module_close($cipher);
-		return $plain_data;
-	}
-
-	/**
 	 * @return string
 	 */
 	protected function getSymKey()
