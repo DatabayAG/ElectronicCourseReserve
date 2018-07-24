@@ -20,10 +20,6 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 	{
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		preg_match('/icon_file\.svg/', $a_par['html'], $match);
-		if (count($match) > 0) {
-			$a = 0;
-		}
 		if ($a_par['tpl_id'] == 'Services/Container/tpl.container_list_item.html' && $obj->getType() == 'fold') {
 			return true;
 		}
