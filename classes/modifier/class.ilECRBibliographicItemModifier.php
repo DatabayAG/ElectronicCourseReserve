@@ -32,6 +32,10 @@ class ilECRBibliographicItemModifier implements \ilECRBaseModifier
 			return false;
 		}
 
+		if (!\ilElectronicCourseReservePlugin::getInstance()->getSetting('token_append_to_bibl')) {
+			return false;
+		}
+
 		/** @var \ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper $objectHelper */
 		$objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];
 
@@ -48,6 +52,25 @@ class ilECRBibliographicItemModifier implements \ilECRBaseModifier
 	 */
 	public function modifyHtml($a_comp, $a_part, $a_par)
 	{
+		global $DIC;
+
+		/** @var \ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper $objectHelper */
+		$objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];
+
+		$instance = $objectHelper->getInstanceByRefId((int)$_GET['ref_id']);
+		$parentCrsRefId = $DIC->repositoryTree()->checkForParentType($instance->getRefId(), 'crs', true);
+		if (!$parentCrsRefId) {
+			return ['mode' => \ilUIHookPluginGUI::KEEP, 'html' => ''];
+		}
+
+		$crs = $objectHelper->getInstanceByRefId($parentCrsRefId);
+		if (
+			!($crs instanceof \ilObjCourse) ||
+			!$DIC->access()->checkAccess('write', '', $crs->getRefId()) ||
+			!\ilElectronicCourseReservePlugin::getInstance()->isAssignedToRequiredRole($DIC->user()->getId())) {
+			return ['mode' => \ilUIHookPluginGUI::KEEP, 'html' => ''];
+		}
+
 		$dom = new \DOMDocument("1.0", "utf-8");
 		$dom->preserveWhiteSpace = true;
 		$dom->formatOutput = true;
@@ -63,18 +86,25 @@ class ilECRBibliographicItemModifier implements \ilECRBaseModifier
 			return ['mode' => \ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 
+		/** @var \ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder $linkBuilder */
+		$linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
+		$linkParameters = $linkBuilder->getLibraryUrlParameters($crs);
+
 		foreach ($actionCells as $actionCell) {
 			/** @var $actionCell DOMNode */
 
 			$bibButtons = $xp->query('a', $actionCell);
-			if ($bibButtons->length !== 1) {
+			if ($bibButtons->length < 1) {
 				continue;
 			}
 
-			$href = $bibButtons->item(0)->getAttribute('href');
-			// TODO: Append token to OpenURL
-			$href = \ilUtil::appendUrlParameterString($href, 'token=xxxxxxxxx');
-			$bibButtons->item(0)->setAttribute('href', $href);
+			foreach ($bibButtons as $bibButton) {
+				$href = $bibButton->getAttribute('href');
+				foreach ($linkParameters as $paramKey => $paramValue) {
+					$href = \ilUtil::appendUrlParameterString($href, $paramKey . '=' . $paramValue);
+				}
+				$bibButton->setAttribute('href', $href);
+			}
 		}
 
 		$processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));

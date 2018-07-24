@@ -30,4 +30,4 @@ tab_translation_value#:#Label for Tab
 token_append_to_bibl#:#Append Course Title to Search System URL
 token_append_to_bibl_info#:#If enabled, the course title will be appended when building the URL to the search system. It will also be part of the token generation.
 token_append_obj_title#:#OpenURL in Bibliography
-token_append_obj_title_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects. Please note that at least one library has to be added in "Administration » Bibliography".
+token_append_obj_title_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects, if these are used as content in ILIAS courses. Please note that at least one library has to be added in "Administration » Bibliography".

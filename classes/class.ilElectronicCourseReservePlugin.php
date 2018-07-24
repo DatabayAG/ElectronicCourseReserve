@@ -62,9 +62,30 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 
 			$GLOBALS['DIC']['plugin.esa.crypt.blockcipher'] = function (\ILIAS\DI\Container $c) use ($that) {
 				$cipher = Crypt\BlockCipher::factory('openssl', ['algorithm' => 'aes']);
-				$cipher->setKey($that->getSymKey());
+				$cipher->setKey(md5(implode('|', [
+					CLIENT_ID
+				])));
 
 				return $cipher;
+			};
+
+			$GLOBALS['DIC']['plugin.esa.library.linkbuilder'] = function (\ILIAS\DI\Container $c) use ($that) {
+				$linkBuilder = new \ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder(
+					$that,
+					$c['plugin.esa.crypt.gpg'],
+					$c->user(),
+					$c->settings(),
+					$c['plugin.esa.crypt.blockcipher']
+				);
+
+				return $linkBuilder;
+			};
+
+			$GLOBALS['DIC']['plugin.esa.crypt.gpg'] = function (\ILIAS\DI\Container $c) use ($that) {
+				require_once $that->getDirectory() . '/lib/php-gnupg/gpg.php';
+				$gpg = new \GnuPG($that->getSetting('gpg_homedir'));
+				
+				return $gpg;
 			};
 		}
 	}
@@ -75,16 +96,6 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 	public function registerAutoloader()
 	{
 		require_once dirname(__FILE__) . '/../autoload.php';
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function getSymKey()
-	{
-		return md5(implode('|', [
-			CLIENT_ID
-		]));
 	}
 
 	/**
@@ -210,85 +221,6 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 		}
 
 		return false;
-	}
-
-	/**
-	 * @param \ilContainer $container
-	 * @throws Exception
-	 */
-	public function getLibraryOrderLink(\ilContainer $container)
-	{
-		$params = $this->getLibraryUrlParameters($container);
-
-		$url = $this->getSetting('url_search_system');
-		if (strpos($url, '?') === false) {
-			$separator = '?';
-		} else {
-			$separator = '&';
-		}
-
-		return $url . $separator . http_build_query($params);
-	}
-
-	/**
-	 * @param \ilContainer $container
-	 * @return array
-	 */
-	public function getLibraryUrlParameters(\ilContainer $container)
-	{
-		global $DIC;
-
-		$ilSetting = $DIC['ilSetting'];
-		$ilUser = $DIC->user();
-		/** @var \Zend\Crypt\BlockCipher $symmetric */
-		$symmetric = $DIC['plugin.esa.crypt.symmetric'];
-
-		$default_auth = $ilSetting->get('auth_mode') ? $ilSetting->get('auth_mode') : AUTH_LOCAL;
-		$usr_id = $ilUser->getLogin();
-
-		if (
-			strlen(trim($ilUser->getExternalAccount())) &&
-			!(
-				(
-					$ilUser->getAuthMode() == 'default' &&
-					$default_auth == AUTH_LOCAL
-				) ||
-				$ilUser->getAuthMode(true) == AUTH_LOCAL
-			)
-		) {
-			$usr_id = $ilUser->getExternalAccount();
-		}
-
-		$params = array(
-			'ref_id' => $container->getRefId(),
-			'usr_id' => $usr_id,
-			'ts' => time(),
-			'email' => $ilUser->getEmail()
-		);
-		$data_to_sign = implode('', $params);
-
-		require_once $this->getDirectory() . '/lib/php-gnupg/gpg.php';
-		$gpg = new GnuPG($this->getSetting('gpg_homedir'));
-		$passphrase = strlen($this->getSetting('sign_key_passphrase')) ? $symmetric->decrypt($this->getSetting('sign_key_passphrase')) : '';
-
-		$key_id = null;
-		foreach ($gpg->listKeys(true) as $result) {
-			foreach ($result as $key) {
-				if (strpos($key['uid'][0], '<' . $this->getSetting('sign_key_email') . '>') !== false) {
-					$sign_result = $gpg->sign($data_to_sign, $key_id, $passphrase, false, true);
-					$signed_data = $sign_result->data;
-					$sign_error = $sign_result->err;
-
-					if ($signed_data && !$sign_error) {
-						$signature = $gpg->sign($data_to_sign, $key_id, $passphrase, false, true)->data;
-						$params['iltoken'] = base64_encode($signature);
-						break 2;
-					}
-				}
-			}
-		}
-
-		return $params;
 	}
 
 	/**
