@@ -15,7 +15,7 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 	/**
 	 * @inheritdoc
 	 */
-	public function __construct($a_parent_obj, $a_parent_cmd= "", $a_params = array())
+	public function __construct($a_parent_obj, $a_parent_cmd = "", $a_params = array())
 	{
 		global $ilCtrl, $lng;
 
