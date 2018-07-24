@@ -110,9 +110,9 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		for ($i = 0; $i < count($node_list); $i++) {
 			$node = $node_list->item($i);
 			if ($node !== null) {
-				$new = $dom->createElement('div');
-				$new->setAttribute('style', 'width:20px');
-				$node->parentNode->replaceChild($new, $node);
+				$placeholder_div = $dom->createElement('div');
+				$placeholder_div->setAttribute('style', 'width:20px');
+				$node->parentNode->replaceChild($placeholder_div, $node);
 			}
 		}
 	}
