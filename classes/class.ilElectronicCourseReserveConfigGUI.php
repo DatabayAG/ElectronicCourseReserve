@@ -403,6 +403,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	public function saveSettings()
 	{
 		global $DIC;
+
 		$tpl = $DIC->ui()->mainTemplate(); 
 		$lng = $DIC->language(); 
 		$ilCtrl = $DIC->ctrl();
@@ -417,7 +418,10 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			$this->pluginObj->setSetting('sign_key_email', $this->form->getInput('sign_key_email'));
 			if($this->form->getInput('sign_key_passphrase'))
 			{
-				$this->pluginObj->setSetting('sign_key_passphrase', ilElectronicCourseReservePlugin::encrypt($this->form->getInput('sign_key_passphrase')));
+				/** @var \Zend\Crypt\BlockCipher $symmetric */
+				$symmetric = $DIC['plugin.esa.crypt.blockcipher'];
+
+				$this->pluginObj->setSetting('sign_key_passphrase', $symmetric->encrypt($this->form->getInput('sign_key_passphrase')));
 			}
 			$this->pluginObj->setSetting('url_search_system', $this->form->getInput('url_search_system'));
 

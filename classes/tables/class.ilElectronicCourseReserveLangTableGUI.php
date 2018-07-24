@@ -8,22 +8,20 @@ require_once 'Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvance
 class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 {
 	/**
-	 * Size of input fields
-	 * @var  string
-	 */
-	private $inputsize = 40;
-
-	/**
-	 * @var array   call parameters
+	 * @var array call parameters
 	 */
 	private $params = array();
 
-	function __construct($a_parent_obj, $a_parent_cmd= "", $a_params = array())
+	/**
+	 * @inheritdoc
+	 */
+	public function __construct($a_parent_obj, $a_parent_cmd= "", $a_params = array())
 	{
 		global $ilCtrl, $lng;
 
 		$this->params = $a_params;
 
+		$this->setId('esa_crs_lang_adm');
 		parent::__construct($a_parent_obj, $a_parent_cmd);
 
 		$lng->loadLanguageModule('meta');
@@ -32,23 +30,24 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 		$this->setFormAction($ilCtrl->getFormAction($a_parent_obj));
 		$this->setDisableFilterHiding(true);
 
-		$this->addColumn($lng->txt('language'), 'lang_key');
-//		$this->addColumn(ucfirst($lng->txt("identifier")),"identifier", "10em");
-		$this->addColumn($lng->txt('value'),"value");
-		$this->addColumn($lng->txt('actions'), '');
+		$this->addColumn($lng->txt('language'), 'lang_key', '30%');
+		$this->addColumn(ilElectronicCourseReservePlugin::getInstance()->txt('tab_translation_value'), 'value', '50%');
+		$this->addColumn($lng->txt('actions'), '', '20%');
 		$this->addCommandButton('saveEcrLangVars', $lng->txt('save'));
 	}
 
 
 	/**
-	 * Fill a single data row.
+	 * @inheritdoc
 	 */
 	protected function fillRow($data)
 	{
-		$this->tpl->setVariable("T_SIZE", $this->inputsize);
-		$this->tpl->setVariable("T_NAME", $data["lang_key"]);
+		require_once 'Services/Form/classes/class.ilTextInputGUI.php';
+		$field = new \ilTextInputGUI('', $data['lang_key']);
+		$field->setValue($data['value']);
+
 		$this->tpl->setVariable("LANG_KEY", ilUtil::prepareFormOutput($this->lng->txt('meta_l_'.$data["lang_key"])));
-		$this->tpl->setVariable("VALUE", ilUtil::prepareFormOutput($data["value"]));
+		$this->tpl->setVariable("TRANSLATION_FIELD", $field->getToolbarHTML());
 
 		$actions = new ilAdvancedSelectionListGUI();
 		$actions->setId('action' . $data['lang_key']);
@@ -58,7 +57,5 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 		$edit_url = $this->ctrl->getLinkTarget($this->parent_obj, 'editEcrContent');
 		$actions->addItem($this->parent_obj->pluginObj->txt('edit_ecr_content'), '', $edit_url);
 		$this->tpl->setVariable('ACTIONS', $actions->getHTML());
-
-//		$this->tpl->setVariable("IDENTIFIER", ilUtil::prepareFormOutput($data["identifier"]));
 	}
 }

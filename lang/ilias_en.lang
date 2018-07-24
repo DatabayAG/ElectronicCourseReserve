@@ -26,3 +26,4 @@ adm_ecr_tab_title#:#Electronic Course Reserve in Courses
 edit_ecr_content#:#Edit page content
 ecr_content#:#Content of Electronic Course Reserve
 insert_url_esa_info#:#To include the link to the Electronic Course Reserve in the page, use the following placeholder in the text: ### URL_ESA ###
+tab_translation_value#:#Label for Tab

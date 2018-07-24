@@ -26,3 +26,4 @@ adm_ecr_tab_title#:#Elektronischer Semesterapparat in Kursen
 edit_ecr_content#:#Seiteninhalt bearbeiten
 ecr_content#:#Seiteninhalt des Semesterapparats
 insert_url_esa_info#:#Um den Link zum Semesterapparat in die Seite einzubinden verwenden Sie im Text folgenden Platzhalter: ###URL_ESA###
+tab_translation_value#:#Text des Navigationsreiters

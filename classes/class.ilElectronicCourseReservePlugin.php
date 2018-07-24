@@ -1,9 +1,11 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use Zend\Crypt;
+
 require_once 'Services/UIComponent/classes/class.ilUserInterfaceHookPlugin.php';
 
-class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
+class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 {
 	/**
 	 * @var string
@@ -26,25 +28,53 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	const PNAME = 'ElectronicCourseReserve';
 
 	/**
-	 * @var ilElectronicCourseReservePlugin
+	 * @var \ilElectronicCourseReservePlugin
 	 */
 	private static $instance = null;
 
-	/**
-	 * @var int
-	 */
-	protected static $iv_source = MCRYPT_DEV_URANDOM;
+	/** @var bool */
+	protected static $initialized = false;
 
 	/**
-	 * Get Plugin Name. Must be same as in class name il<Name>Plugin
-	 * and must correspond to plugins subdirectory name.
-	 * Must be overwritten in plugin class of plugin
-	 * (and should be made final)
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getPluginName()
 	{
 		return self::PNAME;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function init()
+	{
+		parent::init();
+		$this->registerAutoloader();
+
+		if (!self::$initialized) {
+			self::$initialized = true;
+
+			$that = $this;
+
+			$GLOBALS['DIC']['plugin.esa.object.helper'] = function (\ILIAS\DI\Container $c) use ($that) {
+				return new \ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper();
+			};
+
+			$GLOBALS['DIC']['plugin.esa.crypt.blockcipher'] = function (\ILIAS\DI\Container $c) use ($that) {
+				$cipher = Crypt\BlockCipher::factory('openssl', ['algorithm' => 'aes']);
+				$cipher->setKey($that->getSymKey());
+
+				return $cipher;
+			};
+		}
+	}
+
+	/**
+	 * Registers the plugin autoloader
+	 */
+	public function registerAutoloader()
+	{
+		require_once dirname(__FILE__) . '/../autoload.php';
 	}
 
 	/**
@@ -55,10 +85,12 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	{
 		$sym_key = self::getSymKey();
 
-		$cipher   = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
-		$iv       = mcrypt_create_iv(mcrypt_enc_get_iv_size($cipher), self::$iv_source);
+		return openssl_decrypt($crypt_data, 'AES-128-CBC', $sym_key, OPENSSL_RAW_DATA, $iv);
+
+		$cipher = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
+		$iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($cipher), self::$iv_source);
 		$key_size = mcrypt_enc_get_key_size($cipher);
-		$sym_key  = substr($sym_key, 0, $key_size);
+		$sym_key = substr($sym_key, 0, $key_size);
 		mcrypt_generic_init($cipher, $sym_key, $iv);
 		$plain_data = trim(mdecrypt_generic($cipher, self::urlbase64_decode($crypt_data)));
 		mcrypt_generic_deinit($cipher);
@@ -67,54 +99,23 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param string $plain_data
 	 * @return string
 	 */
-	public static function encrypt($plain_data)
+	protected function getSymKey()
 	{
-		$sym_key = self::getSymKey();
-
-		$cipher   = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_ECB, '');
-		$iv       = mcrypt_create_iv(mcrypt_enc_get_iv_size($cipher), self::$iv_source);
-		$key_size = mcrypt_enc_get_key_size($cipher);
-		$sym_key  = substr($sym_key, 0, $key_size);
-		mcrypt_generic_init($cipher, $sym_key, $iv);
-		$crypt_data = self::urlbase64_encode(mcrypt_generic($cipher, $plain_data));
-		mcrypt_generic_deinit($cipher);
-		mcrypt_module_close($cipher);
-		return $crypt_data;
-	}
-
-	protected static function getSymKey()
-	{
-		return md5(implode('|', array(CLIENT_ID, $_SERVER['HOST'])));
-	}
-
-	/**
-	 * @param string $data
-	 * @return string
-	 */
-	protected static function urlbase64_decode($data)
-	{
-		return base64_decode(str_replace(array('_', '-', '.'), array('/', '+', '='), $data), true);
-	}
-
-	/**
-	 * @param string $data
-	 * @return string
-	 */
-	protected static function urlbase64_encode($data)
-	{
-		return str_replace(array('/', '+', '='), array('_', '-', '.'), base64_encode($data));
+		return md5(implode('|', [
+			CLIENT_ID
+		]));
 	}
 
 	/**
 	 * @param string $keyword
-	 * @param mixed  $value
+	 * @param mixed $value
 	 */
 	public function setSetting($keyword, $value)
 	{
 		global $DIC;
+
 		$ilSetting = $DIC['ilSetting'];
 
 		$ilSetting->set('ecr_' . $keyword, $value);
@@ -127,20 +128,22 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	public function getSetting($keyword)
 	{
 		global $DIC;
+
 		$ilSetting = $DIC['ilSetting'];
 
 		return $ilSetting->get('ecr_' . $keyword, '');
 	}
 
 	/**
-	 * @param array  $ctrlPath
-	 * @param array  $params
-	 * @param string $path
+	 * @param array $path
+	 * @param array $params
+	 * @param $cmd
 	 * @return string
 	 */
 	public function getLinkTarget(array $path, array $params = array(), $cmd)
 	{
-		global $DIC; 
+		global $DIC;
+
 		$ilDB = $DIC->database();
 
 		$class_IN_ctrlClasses = $ilDB->in('class', $path, false, 'text');
@@ -159,24 +162,22 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
 		$commandNodeIds = array();
 
-		while($dataSet = $ilDB->fetchAssoc($resultSet))
-		{
+		while ($dataSet = $ilDB->fetchAssoc($resultSet)) {
 			$commandNodeIds[$ctrlClasses[$dataSet['class']]] = $dataSet['cid'];
 		}
 
 		ksort($commandNodeIds);
 
 		$params = array_merge(array(
-			'cmd'       => $cmd,
+			'cmd' => $cmd,
 			'baseClass' => $path[0],
-			'cmdClass'  => $path[count($path) - 1],
-			'cmdNode'   => implode(':', $commandNodeIds)
+			'cmdClass' => $path[count($path) - 1],
+			'cmdNode' => implode(':', $commandNodeIds)
 		), $params);
 
 		$target = 'ilias.php';
 
-		foreach($params as $paramName => $paramValue)
-		{
+		foreach ($params as $paramName => $paramValue) {
 			$target = ilUtil::appendUrlParameterString($target, "$paramName=$paramValue", false);
 		}
 
@@ -188,8 +189,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	 */
 	public static function getInstance()
 	{
-		if(null === self::$instance)
-		{
+		if (null === self::$instance) {
 			require_once 'Services/Component/classes/class.ilPluginAdmin.php';
 			return self::$instance = ilPluginAdmin::getPluginObject(
 				self::CTYPE,
@@ -203,33 +203,29 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param $usr_id
+	 * @param int $usr_id
 	 * @return bool
 	 */
 	public function isAssignedToRequiredRole($usr_id)
 	{
-		global $DIC; 
+		global $DIC;
 		$rbacreview = $DIC->rbac()->review();
 
 		$plugin = self::getInstance();
 
-		if(!$plugin->getSetting('limit_to_groles'))
-		{
+		if (!$plugin->getSetting('limit_to_groles')) {
 			return true;
 		}
 
 		$groles = explode(',', $plugin->getSetting('global_roles'));
 		$groles = array_filter($groles);
 
-		if(!$groles)
-		{
+		if (!$groles) {
 			return true;
 		}
 
-		foreach($groles as $role_id)
-		{
-			if($rbacreview->isAssigned($usr_id, $role_id))
-			{
+		foreach ($groles as $role_id) {
+			if ($rbacreview->isAssigned($usr_id, $role_id)) {
 				return true;
 			}
 		}
@@ -238,20 +234,17 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param $container
+	 * @param \ilContainer $container
 	 * @throws Exception
 	 */
-	public function getLibraryOrderLink(ilContainer $container)
+	public function getLibraryOrderLink(\ilContainer $container)
 	{
 		$params = $this->getLibraryUrlParameters($container);
 
 		$url = $this->getSetting('url_search_system');
-		if(strpos($url, '?') === false)
-		{
+		if (strpos($url, '?') === false) {
 			$separator = '?';
-		}
-		else
-		{
+		} else {
 			$separator = '&';
 		}
 
@@ -259,19 +252,22 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param ilContainer $container
+	 * @param \ilContainer $container
 	 * @return array
 	 */
-	public function getLibraryUrlParameters(ilContainer $container)
+	public function getLibraryUrlParameters(\ilContainer $container)
 	{
-		global $DIC; 
+		global $DIC;
+
 		$ilSetting = $DIC['ilSetting'];
 		$ilUser = $DIC->user();
+		/** @var \Zend\Crypt\BlockCipher $symmetric */
+		$symmetric = $DIC['plugin.esa.crypt.symmetric'];
 
 		$default_auth = $ilSetting->get('auth_mode') ? $ilSetting->get('auth_mode') : AUTH_LOCAL;
-		$usr_id       = $ilUser->getLogin();
+		$usr_id = $ilUser->getLogin();
 
-		if(
+		if (
 			strlen(trim($ilUser->getExternalAccount())) &&
 			!(
 				(
@@ -280,37 +276,32 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 				) ||
 				$ilUser->getAuthMode(true) == AUTH_LOCAL
 			)
-		)
-		{
+		) {
 			$usr_id = $ilUser->getExternalAccount();
 		}
 
 		$params = array(
 			'ref_id' => $container->getRefId(),
 			'usr_id' => $usr_id,
-			'ts'     => time(),
-			'email'  => $ilUser->getEmail()
+			'ts' => time(),
+			'email' => $ilUser->getEmail()
 		);
 		$data_to_sign = implode('', $params);
 
 		require_once $this->getDirectory() . '/lib/php-gnupg/gpg.php';
 		$gpg = new GnuPG($this->getSetting('gpg_homedir'));
-		$passphrase = strlen($this->getSetting('sign_key_passphrase')) ? ilElectronicCourseReservePlugin::decrypt($this->getSetting('sign_key_passphrase')) : '';
+		$passphrase = strlen($this->getSetting('sign_key_passphrase')) ? $symmetric->decrypt($this->getSetting('sign_key_passphrase')) : '';
 
 		$key_id = null;
-		foreach($gpg->listKeys(true) as $result)
-		{
-			foreach($result as $key)
-			{
-				if(strpos($key['uid'][0], '<' . $this->getSetting('sign_key_email') . '>') !== false)
-				{
+		foreach ($gpg->listKeys(true) as $result) {
+			foreach ($result as $key) {
+				if (strpos($key['uid'][0], '<' . $this->getSetting('sign_key_email') . '>') !== false) {
 					$sign_result = $gpg->sign($data_to_sign, $key_id, $passphrase, false, true);
-					$signed_data  = $sign_result->data;
-					$sign_error   = $sign_result->err;
+					$signed_data = $sign_result->data;
+					$sign_error = $sign_result->err;
 
-					if($signed_data && !$sign_error)
-					{
-						$signature         = $gpg->sign($data_to_sign, $key_id, $passphrase, false, true)->data;
+					if ($signed_data && !$sign_error) {
+						$signature = $gpg->sign($data_to_sign, $key_id, $passphrase, false, true)->data;
 						$params['iltoken'] = base64_encode($signature);
 						break 2;
 					}
@@ -322,7 +313,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
-	 * @param $identifier
+	 * @param string $identifier
 	 * @return string
 	 */
 	public function ecr_txt($identifier)
