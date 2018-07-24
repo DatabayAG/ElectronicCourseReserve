@@ -7,6 +7,11 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRFolderListGuiModifier implements ilECRBaseModifier
 {
+	/**
+	 * @var array 
+	 */
+	protected $actions_to_remove = array('delete', 'cut', 'initTargetSelection', 'link');
+
 	public function __construct()
 	{
 	}
@@ -78,6 +83,11 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 					}
 				}
 			}
+			foreach($this->actions_to_remove as $key => $action){
+				$node_list = $xpath->query("//li/a[contains(@href,'cmd=". $action ."')]");
+				$this->removeAction($node_list);
+			}
+
 			$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 		}
 
@@ -85,6 +95,18 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 		return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processed_html];
+	}
+
+	/**
+	 * @param DOMNodeList $node_list
+	 */
+	protected function removeAction($node_list){
+		for($i=0; $i < count($node_list); $i++){
+			$node = $node_list->item($i);
+			if($node !== null){
+				$node->parentNode->removeChild($node);
+			}
+		}
 	}
 
 	/**
