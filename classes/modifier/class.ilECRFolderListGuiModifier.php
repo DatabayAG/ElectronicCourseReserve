@@ -53,10 +53,10 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		$item_data   = $plugin->getItemData();
 		$item_ref_id = $this->getRefIdFromItemUrl($xpath);
 		if (array_key_exists($item_ref_id, $item_data)) {
-			$text_string       = $item_data[$item_ref_id]['description'];
-			$image             = $item_data[$item_ref_id]['icon'];
-			$show_image        = (int) $item_data[$item_ref_id]['show_image'];
-			$show_description  = (int) $item_data[$item_ref_id]['show_description'];
+			$text_string      = $item_data[$item_ref_id]['description'];
+			$image            = $item_data[$item_ref_id]['icon'];
+			$show_image       = (int)$item_data[$item_ref_id]['show_image'];
+			$show_description = (int)$item_data[$item_ref_id]['show_description'];
 
 			if ($show_description == 1 && strlen($text_string) > 0) {
 				$text_node_list = $xpath->query("//div[@class='il_ContainerListItem']");
@@ -83,8 +83,8 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 					}
 				}
 			}
-			foreach($this->actions_to_remove as $key => $action){
-				$node_list = $xpath->query("//li/a[contains(@href,'cmd=". $action ."')]");
+			foreach ($this->actions_to_remove as $key => $action) {
+				$node_list = $xpath->query("//li/a[contains(@href,'cmd=" . $action . "')]");
 				$this->removeAction($node_list);
 			}
 
@@ -100,8 +100,8 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 	}
 
 	/**
-	 * @param DomXPath $xpath
-	 * @param int $item_ref_id
+	 * @param DomXPath    $xpath
+	 * @param int         $item_ref_id
 	 * @param DOMDocument $dom
 	 */
 	protected function replaceCheckbox($xpath, $item_ref_id, $dom)
@@ -120,10 +120,11 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 	/**
 	 * @param DOMNodeList $node_list
 	 */
-	protected function removeAction($node_list){
-		for($i=0; $i < count($node_list); $i++){
+	protected function removeAction($node_list)
+	{
+		for ($i = 0; $i < count($node_list); $i++) {
 			$node = $node_list->item($i);
-			if($node !== null){
+			if ($node !== null) {
 				$node->parentNode->removeChild($node);
 			}
 		}
