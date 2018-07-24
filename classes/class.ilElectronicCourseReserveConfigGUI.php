@@ -325,12 +325,14 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	protected function populateValues()
 	{
 		$this->form->setValuesByArray(array(
-			'gpg_homedir'         => $this->pluginObj->getSetting('gpg_homedir'),
-			'sign_key_email'      => $this->pluginObj->getSetting('sign_key_email'),
-			'limit_to_groles'     => $this->pluginObj->getSetting('limit_to_groles'),
-			'global_roles'        => explode(',', $this->pluginObj->getSetting('global_roles')),
-			'url_search_system'   => $this->pluginObj->getSetting('url_search_system'),
-			'enable_use_agreement' => $this->pluginObj->getSetting('enable_use_agreement')
+			'gpg_homedir' => $this->pluginObj->getSetting('gpg_homedir'),
+			'sign_key_email' => $this->pluginObj->getSetting('sign_key_email'),
+			'limit_to_groles' => $this->pluginObj->getSetting('limit_to_groles'),
+			'global_roles' => explode(',', $this->pluginObj->getSetting('global_roles')),
+			'url_search_system' => $this->pluginObj->getSetting('url_search_system'),
+			'enable_use_agreement' => $this->pluginObj->getSetting('enable_use_agreement'),
+			'token_append_obj_title' => $this->pluginObj->getSetting('token_append_obj_title'),
+			'token_append_to_bibl' => $this->pluginObj->getSetting('token_append_to_bibl'),
 		));
 	}
 
@@ -374,6 +376,14 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$form_search_system_url->setValidationFailureMessage($this->pluginObj->txt('ecr_url_search_system_invalid'));
 		$form_search_system_url->setInfo($this->pluginObj->txt('ecr_url_search_system_info'));
 
+		$tokenAppendCrsTitle = new \ilCheckboxInputGUI($this->pluginObj->txt('token_append_obj_title'), 'token_append_obj_title');
+		$tokenAppendCrsTitle->setInfo($this->pluginObj->txt('token_append_obj_title_info'));
+		$tokenAppendCrsTitle->setValue(1);
+
+		$tokenAppendToBibItems = new \ilCheckboxInputGUI($this->pluginObj->txt('token_append_to_bibl'), 'token_append_to_bibl');
+		$tokenAppendToBibItems->setInfo($this->pluginObj->txt('token_append_to_bibl_info'));
+		$tokenAppendToBibItems->setValue(1);
+
 		$form_limit_to_groles = new ilCheckboxInputGUI($this->pluginObj->txt('limit_to_groles'), 'limit_to_groles');
 		include_once 'Services/Form/classes/class.ilMultiSelectInputGUI.php';
 		$sub_mlist = new ilMultiSelectInputGUI(
@@ -393,8 +403,9 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 		$this->form->addItem($form_key_email);
 		$this->form->addItem($form_key_passphrase);
 		$this->form->addItem($form_search_system_url);
+		$this->form->addItem($tokenAppendCrsTitle);
+		$this->form->addItem($tokenAppendToBibItems);
 		$this->form->addItem($form_limit_to_groles);
-		
 	}
 
 	/**
@@ -403,6 +414,7 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 	public function saveSettings()
 	{
 		global $DIC;
+
 		$tpl = $DIC->ui()->mainTemplate(); 
 		$lng = $DIC->language(); 
 		$ilCtrl = $DIC->ctrl();
@@ -417,9 +429,14 @@ class ilElectronicCourseReserveConfigGUI extends ilPluginConfigGUI
 			$this->pluginObj->setSetting('sign_key_email', $this->form->getInput('sign_key_email'));
 			if($this->form->getInput('sign_key_passphrase'))
 			{
-				$this->pluginObj->setSetting('sign_key_passphrase', ilElectronicCourseReservePlugin::encrypt($this->form->getInput('sign_key_passphrase')));
+				/** @var \Zend\Crypt\BlockCipher $symmetric */
+				$symmetric = $DIC['plugin.esa.crypt.blockcipher'];
+
+				$this->pluginObj->setSetting('sign_key_passphrase', $symmetric->encrypt($this->form->getInput('sign_key_passphrase')));
 			}
 			$this->pluginObj->setSetting('url_search_system', $this->form->getInput('url_search_system'));
+			$this->pluginObj->setSetting('token_append_obj_title', (int)$this->form->getInput('token_append_obj_title'));
+			$this->pluginObj->setSetting('token_append_to_bibl', (int)$this->form->getInput('token_append_to_bibl'));
 
 			ilUtil::sendSuccess($lng->txt('saved_successfully'), true);
 			$ilCtrl->redirect($this);

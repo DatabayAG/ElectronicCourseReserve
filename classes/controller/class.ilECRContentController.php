@@ -224,7 +224,11 @@ class ilECRContentController extends ilECRBaseController
 		{
 			$ref_id = (int)$_GET['ref_id'];
 			$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-			$url    = $this->plugin_object->getLibraryOrderLink($obj);
+
+			/** @var \ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder $linkBuilder */
+			$linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
+
+			$url = $linkBuilder->getLibraryOrderLink($obj);
 
 			ilUtil::redirect($url);
 		}
