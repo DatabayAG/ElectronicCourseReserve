@@ -82,7 +82,7 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 			};
 
 			$GLOBALS['DIC']['plugin.esa.crypt.gpg'] = function (\ILIAS\DI\Container $c) use ($that) {
-				require_once $that->getDirectory() . '/lib/php-gnupg/gpg.php';
+				require_once $that->getDirectory() . '/libs/php-gnupg/gpg.php';
 				$gpg = new \GnuPG($that->getSetting('gpg_homedir'));
 				
 				return $gpg;
