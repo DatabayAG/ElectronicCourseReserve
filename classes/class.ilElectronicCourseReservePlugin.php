@@ -27,7 +27,6 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 	 */
 	const PNAME = 'ElectronicCourseReserve';
 
-
 	/**
 	 * @var string
 	 */
@@ -57,6 +56,7 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 	 * @var array
 	 */
 	protected $already_queried_folders = array();
+
 	/**
 	 * @var array
 	 */

@@ -35,19 +35,22 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
-
-		$ref_id = (int)$_GET['ref_id'];
 		if ($a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html') {
 			return false;
 		}
 
-		$obj_id = $this->data_cache->lookupObjId($ref_id);
+		$refId = (int)$_GET['ref_id'];
+		if (!$refId) {
+			return false;
+		}
+
+		$obj_id = $this->data_cache->lookupObjId($refId);
 		$type = $this->data_cache ->lookupType($obj_id);
 
-		if ($type == 'fold') {
-			return true;
+		if ($type !== 'fold') {
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	public function modifyHtml($a_comp, $a_part, $a_par)

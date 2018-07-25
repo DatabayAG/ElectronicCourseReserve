@@ -39,16 +39,15 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 			return false;
 		}
 
-	$refId = (int)$_GET['ref_id'];
+		$refId = (int)$_GET['ref_id'];
 		if (!$refId) {
 			return false;
 		}
 
-		/** @var \ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper $objectHelper */
-		$objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];
+		$obj_id = $this->data_cache->lookupObjId($refId);
+		$type = $this->data_cache->lookupType($obj_id);
 
-		$instance = $objectHelper->getInstanceByRefId($refId);
-		if ($instance->getType() !== 'crs') {
+		if($type !== 'crs') {
 			return false;
 		}
 
