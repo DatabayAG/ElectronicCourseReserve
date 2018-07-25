@@ -65,7 +65,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 		$instance = $objectHelper->getInstanceByRefId((int)$_GET['ref_id']);
 
 		$dom = new \DOMDocument("1.0", "utf-8");
-		if(!@$dom->loadHTML('<?xml encoding="utf-8" ?><html><body>' . $html . '</body></html>'))
+		if(!@$dom->loadHTML('<?xml encoding="utf-8" ?><html><body>' . $a_par['html'] . '</body></html>'))
 		{
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
