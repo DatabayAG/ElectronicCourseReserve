@@ -50,13 +50,13 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
 		$xpath       = new DomXPath($dom);
 		$item_data   = $plugin->getRelevantCourseAndFolderData($ref_id);
 		$item_ref_id = $this->list_gui_helper->getRefIdFromItemUrl($xpath);
-			if (count($item_data) > 0 && array_key_exists($item_ref_id, $item_data)) {
+		if (count($item_data) > 0 && array_key_exists($item_ref_id, $item_data)) {
 			foreach ($this->list_gui_helper->actions_to_remove as $key => $action) {
 				$node_list = $xpath->query("//li/a[contains(@href,'cmd=" . $action . "')]");
 				$this->list_gui_helper->removeAction($node_list);
 			}
 
-				$this->list_gui_helper->replaceCheckbox($xpath, $item_ref_id, $dom);
+			$this->list_gui_helper->replaceCheckbox($xpath, $item_ref_id, $dom);
 			$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 		}
 		if (strlen($processed_html) === 0) {
