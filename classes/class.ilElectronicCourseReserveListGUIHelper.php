@@ -1,4 +1,4 @@
-<?php
+<?php		
 
 
 class ilElectronicCourseReserveListGUIHelper
@@ -12,15 +12,16 @@ class ilElectronicCourseReserveListGUIHelper
 	 * @param DomXPath    $xpath
 	 * @param int         $item_ref_id
 	 * @param DOMDocument $dom
+	 * @param string $parent
 	 */
-	public function replaceCheckbox($xpath, $item_ref_id, $dom)
+	public function replaceCheckbox($xpath, $item_ref_id, $dom, $parent = 'div')
 	{
-		$node_list = $xpath->query("//div/input[contains(@value,'" . $item_ref_id . "')]");
+		$node_list = $xpath->query("//" . $parent . "/input[contains(@value,'" . $item_ref_id . "')]");
+		$placeholder_div = $dom->createElement('div');
+		$placeholder_div->setAttribute('style', 'width:15px');
 		for ($i = 0; $i < count($node_list); $i++) {
 			$node = $node_list->item($i);
 			if ($node !== null) {
-				$placeholder_div = $dom->createElement('div');
-				$placeholder_div->setAttribute('style', 'width:15px');
 				$node->parentNode->replaceChild($placeholder_div, $node);
 			}
 		}
