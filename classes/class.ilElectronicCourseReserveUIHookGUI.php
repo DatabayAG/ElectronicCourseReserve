@@ -168,9 +168,11 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 	{
 		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
 		$this->plugin_object->includeClass("modifier/class.ilECRInfoScreenModifier.php");
+		$this->plugin_object->includeClass("modifier/class.ilECRCourseListGuiModifier.php");
 		$this->plugin_object->includeClass("modifier/class.ilECRFolderListGuiModifier.php");
 		
 		$this->modifier_cache = array(
+			new ilECRCourseListGuiModifier(), 
 			new ilECRInfoScreenModifier(), 
 			new ilECRFolderListGuiModifier()
 		);

@@ -377,6 +377,26 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 	}
 
 	/**
+	 * @param int $crs_ref_id
+	 * @return array
+	 */
+	public function getRelevantCourseAndFolderData($crs_ref_id)
+	{
+		global $DIC;
+		$res = $DIC->database()->queryF(
+			'SELECT ref_id, crs_ref_id FROM ecr_folder WHERE crs_ref_id = %s',
+			array('integer'),
+			array($crs_ref_id)
+		);
+		$folders = array();
+		while($row = $DIC->database()->fetchAssoc($res))
+		{
+			$folders[$row['ref_id']] = $row['ref_id'];
+		}
+		return $folders;
+	}
+
+	/**
 	 * @param $folder_ref_id
 	 */
 	public function queryFolderData($folder_ref_id)

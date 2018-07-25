@@ -7,13 +7,15 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRFolderListGuiModifier implements ilECRBaseModifier
 {
+
 	/**
-	 * @var array 
+	 * @var ilElectronicCourseReserveListGUIHelper
 	 */
-	protected $actions_to_remove = array('delete', 'cut', 'initTargetSelection', 'link');
+	protected $list_gui_helper;
 
 	public function __construct()
 	{
+		$this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
 	}
 
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
@@ -47,7 +49,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		$plugin      = ilElectronicCourseReservePlugin::getInstance();
 		$xpath       = new DomXPath($dom);
 		$item_data   = $plugin->getItemData();
-		$item_ref_id = $this->getRefIdFromItemUrl($xpath);
+		$item_ref_id = $this->list_gui_helper->getRefIdFromItemUrl($xpath);
 		if (array_key_exists($item_ref_id, $item_data)) {
 			$text_string      = $item_data[$item_ref_id]['description'];
 			$image            = $item_data[$item_ref_id]['icon'];
@@ -79,12 +81,12 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 					}
 				}
 			}
-			foreach ($this->actions_to_remove as $key => $action) {
+			foreach ($this->list_gui_helper->actions_to_remove as $key => $action) {
 				$node_list = $xpath->query("//li/a[contains(@href,'cmd=" . $action . "')]");
-				$this->removeAction($node_list);
+				$this->list_gui_helper->removeAction($node_list);
 			}
 
-			$this->replaceCheckbox($xpath, $item_ref_id, $dom);
+			$this->list_gui_helper->replaceCheckbox($xpath, $item_ref_id, $dom);
 
 			$processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
 		}
@@ -93,59 +95,5 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 		return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processed_html];
-	}
-
-	/**
-	 * @param DomXPath    $xpath
-	 * @param int         $item_ref_id
-	 * @param DOMDocument $dom
-	 */
-	protected function replaceCheckbox($xpath, $item_ref_id, $dom)
-	{
-		$node_list = $xpath->query("//div/input[contains(@value,'" . $item_ref_id . "')]");
-		for ($i = 0; $i < count($node_list); $i++) {
-			$node = $node_list->item($i);
-			if ($node !== null) {
-				$placeholder_div = $dom->createElement('div');
-				$placeholder_div->setAttribute('style', 'width:20px');
-				$node->parentNode->replaceChild($placeholder_div, $node);
-			}
-		}
-	}
-
-	/**
-	 * @param DOMNodeList $node_list
-	 */
-	protected function removeAction($node_list)
-	{
-		for ($i = 0; $i < count($node_list); $i++) {
-			$node = $node_list->item($i);
-			if ($node !== null) {
-				$node->parentNode->removeChild($node);
-			}
-		}
-	}
-
-	/**
-	 * @param DomXPath $xpath
-	 * @return int
-	 */
-	protected function getRefIdFromItemUrl($xpath)
-	{
-		$ref_id_node_list = $xpath->query("//a[@class='il_ContainerItemTitle']");
-		$ref_id_node      = $ref_id_node_list->item(0);
-		$url_with_ref_id  = $ref_id_node->getAttribute('href');
-		$re               = '/ref_id=(\d+)/m';
-		preg_match($re, $url_with_ref_id, $matches);
-		if (count($matches) > 1 && $matches[1] > 0) {
-			return (int)$matches[1];
-		} else {
-			$re = '/target=file_(\d+)/m';
-			preg_match($re, $url_with_ref_id, $matches);
-			if (count($matches) > 1 && $matches[1] > 0) {
-				return (int)$matches[1];
-			}
-		}
-		return 0;
 	}
 }
