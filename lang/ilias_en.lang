@@ -31,3 +31,14 @@ token_append_to_bibl#:#Append Course Title to Search System URL
 token_append_to_bibl_info#:#If enabled, the course title will be appended (as 'iltitle') when building the URL to the search system. It will also be part of the token generation.
 token_append_obj_title#:#OpenURL in Bibliography
 token_append_obj_title_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects, if these are used as content in ILIAS courses. Please note that at least one library has to be added in "Administration » Bibliography".
+notification_mail#:#Notification Mail
+notification_mail_info#:#Wenn activated, an email notification with import summary will be sent.
+recipients#:#Recipients
+recipients_info#:#Please insert the login names of the recipients.
+import_directory#:#Importdirectory
+import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. Your configured path is: <br/>%s
+error_move_mail#:#There was an error moving "%s" to backup dir.
+error_create_file_mail#:#There was an error creating the file item for course ref id %s and folder import id %s. 
+error_create_url_mail#:#There was an error creating the url item for course ref id %s and folder import id %s. 
+show_description#:#Show Description
+show_image#:#Show Image

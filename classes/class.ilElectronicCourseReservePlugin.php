@@ -27,10 +27,45 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 	 */
 	const PNAME = 'ElectronicCourseReserve';
 
+
 	/**
-	 * @var \ilElectronicCourseReservePlugin
+	 * @var string
+	 */
+	const ICON_URL = 'url';
+
+	/**
+	 * @var string
+	 */
+	const ICON_FILE = 'file';
+
+	/**
+	 * @var ilElectronicCourseReservePlugin
 	 */
 	private static $instance = null;
+
+	/**
+	 * @var array
+	 */
+	protected $relevant_folder_cache = array();
+
+	/**
+	 * @var array
+	 */
+	protected $relevant_course_cache = array();
+
+	/**
+	 * @var array
+	 */
+	protected $already_queried_folders = array();
+	/**
+	 * @var array
+	 */
+	protected $already_queried_items = array();
+
+	/**
+	 * @var array
+	 */
+	protected $item_data = array();
 
 	/** @var bool */
 	protected static $initialized = false;
@@ -233,4 +268,170 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 		$ecr_lang_data = new ilElectronicCourseReserveLangData();
 		return $ecr_lang_data->txt($identifier);
 	}
+
+
+	/**
+	 * @param $folder_ref_id
+	 * @return bool
+	 */
+	public function isFolderRelevant($folder_ref_id)
+	{
+		if( ! array_key_exists($folder_ref_id, $this->relevant_folder_cache))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_folder WHERE ref_id = %s',
+				array('integer'),
+				array($folder_ref_id)
+			);
+			$row = $DIC->database()->fetchAssoc($res);
+			$this->relevant_folder_cache[$folder_ref_id] = false;
+			if(is_array($row) && array_key_exists('ref_id', $row))
+			{
+				$this->relevant_folder_cache[$folder_ref_id] = true;
+			}
+		}
+		return $this->relevant_folder_cache[$folder_ref_id];
+	}
+
+	/**
+	 * @param int $crs_ref_id
+	 * @return array
+	 */
+	public function getRelevantCourseAndFolderData($crs_ref_id)
+	{
+		global $DIC;
+		$res = $DIC->database()->queryF(
+			'SELECT ref_id, crs_ref_id FROM ecr_folder WHERE crs_ref_id = %s',
+			array('integer'),
+			array($crs_ref_id)
+		);
+		$folders = array();
+		while($row = $DIC->database()->fetchAssoc($res))
+		{
+			$folders[$row['ref_id']] = $row['ref_id'];
+		}
+		return $folders;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAllRefIds()
+	{
+		global $DIC;
+		$res = $DIC->database()->query(
+			'SELECT ref_id, folder_ref_id FROM ecr_description'
+		);
+		$ref_ids = array();
+		while($row = $DIC->database()->fetchAssoc($res))
+		{
+			$ref_ids[$row['ref_id']] = $row['ref_id'];
+			$ref_ids[$row['folder_ref_id']] = $row['folder_ref_id'];
+		}
+		return $ref_ids;
+	}
+
+	/**
+	 * @param $folder_ref_id
+	 */
+	public function queryFolderData($folder_ref_id)
+	{
+		if( ! array_key_exists($folder_ref_id, $this->already_queried_folders))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_description WHERE folder_ref_id = %s',
+				array('integer'),
+				array($folder_ref_id)
+			);
+			while($row = $DIC->database()->fetchAssoc($res))
+			{
+				if(is_array($row) && array_key_exists('ref_id', $row))
+				{
+					$this->item_data[$row['ref_id']] = $row;
+				}
+			}
+			$this->already_queried_folders[$folder_ref_id];
+		}
+	}
+
+	/**
+	 * @param $item_ref_id
+	 * @return mixed
+	 */
+	public function queryItemData($item_ref_id)
+	{
+		if( ! array_key_exists($item_ref_id, $this->already_queried_items))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_description WHERE ref_id = %s',
+				array('integer'),
+				array($item_ref_id)
+			);
+			while($row = $DIC->database()->fetchAssoc($res))
+			{
+				if(is_array($row) && array_key_exists('ref_id', $row))
+				{
+					$this->already_queried_items[$item_ref_id] = $row;
+
+				}
+				else
+				{
+					$this->already_queried_items[$item_ref_id] = array();
+				}
+			}
+		}
+		return $this->already_queried_items[$item_ref_id];
+	}
+
+	/**
+	 * @param int $ref_id
+	 * @param int $show_description
+	 * @param int $show_image
+	 */
+	public function updateItemData($ref_id, $show_description, $show_image)
+	{
+		global $DIC;
+		$DIC->database()->update("ecr_description", array(
+			"show_description" => array("int", $show_description),
+			"show_image"       => array("int", $show_image)),
+			array(
+				"ref_id"       => array("int", $ref_id)
+			));
+	}
+
+	/**
+	 * @param $ref_id
+	 * @return bool
+	 */
+	public function isCourseRelevant($ref_id)
+	{
+		if( ! array_key_exists($ref_id, $this->relevant_course_cache))
+		{
+			global $DIC;
+			$res = $DIC->database()->queryF(
+				'SELECT * FROM ecr_folder WHERE crs_ref_id = %s',
+				array('integer'),
+				array($ref_id)
+			);
+			$row = $DIC->database()->fetchAssoc($res);
+			$this->relevant_course_cache[$ref_id] = false;
+			if(is_array($row) && array_key_exists('crs_ref_id', $row))
+			{
+				$this->relevant_course_cache[$ref_id] = true;
+			}
+		}
+		return $this->relevant_course_cache[$ref_id];
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getItemData()
+	{
+		return $this->item_data;
+	}
+
 }

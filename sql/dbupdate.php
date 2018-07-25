@@ -120,10 +120,9 @@ if(!$ilDB->tableExists('ecr_user_acceptance'))
 ?>
 <#6>
 <?php
-if(!$ilDB->tableExists('ecr_lang_data'))
-{
+if(!$ilDB->tableExists('ecr_lang_data')) {
 	$fields = array(
-		'lang_key' => array(
+		'lang_key'   => array(
 			'type'    => 'text',
 			'length'  => 2,
 			'notnull' => true
@@ -133,18 +132,116 @@ if(!$ilDB->tableExists('ecr_lang_data'))
 			'length'  => 60,
 			'notnull' => true
 		),
-		'value' => array(
+		'value'      => array(
 			'type'    => 'text',
 			'length'  => 4000,
-			'notnull' => false)
+			'notnull' => false
+		)
 	);
 
 	$ilDB->createTable('ecr_lang_data', $fields);
-	$ilDB->addPrimaryKey( 'ecr_lang_data', array('lang_key',  'identifier'));
+	$ilDB->addPrimaryKey('ecr_lang_data', array('lang_key', 'identifier'));
 }
 ?>
 <#7>
 <?php
+if(!$ilDB->tableExists('ecr_description'))
+{}
+?>
+<#8>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableExists('ecr_description'))
+{
+	$fields = array(
+		'ref_id'      => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'version'     => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'description' => array(
+			"type"    => "clob",
+			"notnull" => false,
+			"default" => null
+		),
+		'icon'        => array(
+			'type'    => 'text',
+			'length'  => '4000',
+			'notnull' => false
+		),
+		'timestamp'   => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		)
+	);
+
+	$ilDB->createTable('ecr_description', $fields);
+	$ilDB->addPrimaryKey('ecr_description', array('ref_id', 'version'));
+}
+?>
+<#9>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if($ilDB->tableExists('ecr_description'))
+{
+	if(!$ilDB->tableColumnExists('ecr_description', 'raw_xml'))
+	{
+		$ilDB->addTableColumn('ecr_description', 'raw_xml',
+									array(
+										"type"    => "clob",
+										"notnull" => false,
+										"default" => null
+									));
+	}
+}
+?>
+<#10>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableExists('ecr_folder'))
+{
+	$fields = array(
+		'ref_id'      => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'obj_id'     => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'import_id' => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		),
+		'crs_ref_id'  => array(
+			'type'    => 'integer',
+			'length'  => '4',
+			'notnull' => true
+		)
+	);
+
+	$ilDB->createTable('ecr_folder', $fields);
+	$ilDB->addPrimaryKey('ecr_folder', array('ref_id', 'crs_ref_id'));
+}
+?>
+<#11>
+<?php
+
 if($ilDB->tableExists('ecr_lang_data'))
 {
 	if(!$ilDB->tableColumnExists('ecr_lang_data', 'ecr_content'))
@@ -153,4 +250,82 @@ if($ilDB->tableExists('ecr_lang_data'))
 			array('type' => 'clob', 'default' => null, 'notnull' => false));
 	}
 }
+?>
+<#12>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if($ilDB->tableColumnExists('ecr_folder', 'obj_id'))
+{
+	$ilDB->dropTableColumn('ecr_folder', 'obj_id');
+}
+?>
+<#13>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if($ilDB->tableExists('ecr_import_history'))
+{
+	$ilDB->dropTable('ecr_import_history');
+}
+?>
+<#14>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableColumnExists('ecr_description', 'folder_ref_id'))
+{
+	$ilDB->addTableColumn('ecr_description', 'folder_ref_id',
+			array(
+				'type'    => 'integer',
+				'length'  => '4',
+				'notnull' => true));
+}
+?>
+<#15>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableColumnExists('ecr_description', 'show_description'))
+{
+	$ilDB->addTableColumn('ecr_description', 'show_description',
+			array(
+				'type'    => 'integer',
+				'length'  => '1',
+				'default' => '1',
+				'notnull' => true));
+}
+?>
+<#16>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if(!$ilDB->tableColumnExists('ecr_description', 'show_image'))
+{
+	$ilDB->addTableColumn('ecr_description', 'show_image',
+			array(
+				'type'    => 'integer',
+				'length'  => '1',
+				'default' => '1',
+				'notnull' => true));
+}
+?>
+<#17>
+<?php
+	/**
+	 * @var $ilDB ilDB
+	 */
+	if(!$ilDB->tableColumnExists('ecr_description', 'icon_type'))
+	{
+		$ilDB->addTableColumn('ecr_description', 'icon_type',
+			array(
+				'type'    => 'text',
+				'length'  => '2000',
+				'notnull' => false));
+	}
 ?>

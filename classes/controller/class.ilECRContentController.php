@@ -1,6 +1,6 @@
 <?php
 ilElectronicCourseReservePlugin::getInstance()->includeClass('controller/class.ilECRBaseController.php');
-
+require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 /**
  * Class ilECRContentController
  * @author Nadia Matuschek <nmatuschek@databay.de>
@@ -202,6 +202,91 @@ class ilECRContentController extends ilECRBaseController
 
 		$link->setInfo($this->plugin_object->txt('ecr_desc'));
 		$form->addItem($link);
+		
+		return $form->getHTML();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function showECRItemContent()
+	{
+		global $DIC;
+
+		$ilCtrl = $DIC->ctrl();
+		$tpl    = $DIC->ui()->mainTemplate();
+		$ilTabs = $DIC->tabs();
+		$lng    = $DIC->language();
+
+		$ref_id = (int)$_GET['ref_id'];
+		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		$item   = $this->plugin_object->queryItemData($ref_id);
+
+		$this->checkPermission('write');
+
+		$tpl->setTitle($obj->getTitle());
+
+		if($obj->getType() === 'file' )
+		{
+			if(array_key_exists('show_image', $item)
+				&& $item['show_image']
+				&& $item['show_image'] == 1
+				&& strlen($item['icon']) > 0)
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath($item['icon']));
+			}
+			else
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath('icon_file.svg'));
+			}
+			$ilCtrl->setParameterByClass('ilObjFileGUI', 'ref_id', $obj->getRefId());
+			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjFileGUI'), 'infoScreen'));
+		}
+		else if($obj->getType() === 'webr' )
+		{
+			if(array_key_exists('show_image', $item)
+				&& $item['show_image']
+				&& $item['show_image'] == 1
+				&& strlen($item['icon']) > 0)
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath($item['icon']));
+			}
+			else
+			{
+				$tpl->setTitleIcon(ilUtil::getImagePath('icon_webr.svg'));
+			}
+			$ilCtrl->setParameterByClass('ilObjLinkResourceGUI', 'ref_id', $obj->getRefId());
+			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjLinkResourceGUI'), 'infoScreen'));
+		}
+
+		$form = new ilPropertyFormGUI();
+		$form->setFormAction($url = $ilCtrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.updateItemSettings'));
+		$form->addCommandButton('ilECRContentController', $lng->txt('submit'));
+		$form->setTitle($this->plugin_object->txt('ecr_title'));
+
+		$show_description =  new ilCheckboxInputGUI($this->plugin_object->txt('show_description'), 'show_description');
+
+		if(array_key_exists('show_description', $item) 
+			&& $item['show_description'] 
+			&& $item['show_description'] == 1)
+		{
+			$show_description->setChecked(true);
+		}
+		$form->addItem($show_description);
+
+		$show_image = new ilCheckboxInputGUI($this->plugin_object->txt('show_image'), 'show_image');
+		if(array_key_exists('show_image', $item)
+			&& $item['show_image']
+			&& $item['show_image'] == 1)
+		{
+			$show_image->setChecked(true);
+		}
+
+		$hidden = new ilHiddenInputGUI('ref_id');
+		$hidden->setValue($ref_id);
+		$form->addItem($hidden);
+
+		$form->addItem($show_image);
 
 		return $form->getHTML();
 	}
@@ -212,7 +297,24 @@ class ilECRContentController extends ilECRBaseController
 		$esa_url= '<a href="' . $url . '&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>';
 		return str_replace('###URL_ESA###', $esa_url, $html);
 	}
+	
+	/**
+	 *
+	 */
+	public function updateItemSettings()
+	{
+		global $DIC;
+		$show_description = (int) $_POST['show_description'];
+		$show_image = (int) $_POST['show_image'];
+		$ref_id = (int) $_POST['ref_id'];
+		if($ref_id > 0)
+		{
+			$this->plugin_object->updateItemData($ref_id, $show_description, $show_image);
+		}
 
+		$DIC->ctrl()->redirect(new ilElectronicCourseReserveUIHookGUI(), 'ilECRContentController.showECRItemContent');
+	}
+	
 	/**
 	 * @return string
 	 */
@@ -256,11 +358,12 @@ class ilECRContentController extends ilECRBaseController
 
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-
-		if(!($obj instanceof ilObjCourse
+		
+		if(!(($obj instanceof ilObjCourse || $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
 			&& $DIC->access()->checkAccess($permission, '', $obj->getRefId())
 			&& $this->plugin_object->isAssignedToRequiredRole($DIC->user()->getId())))
 		{
+			
 			$DIC['ilErr']->raiseError($DIC->language()->txt("msg_no_perm_read"), $DIC['ilErr']->MESSAGE);
 		}
 	}

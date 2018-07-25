@@ -1,20 +1,37 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-include_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
-
+require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
 /**
  * Class ilECRInfoScreenModifier
  * @author Nadia Matuschek <nmatuschek@databay.de>
  */
 class ilECRInfoScreenModifier implements ilECRBaseModifier
 {
+
+	/**
+	 * @var ilObjDataCache
+	 */
+	protected $data_cache;
+
+	/**
+	 * @var ilAccessHandler
+	 */
+	protected $access;
+
+	public function __construct()
+	{
+		global $DIC;
+		$this->access = $DIC->access();
+		$this->data_cache = $DIC['ilObjDataCache'];
+	}
+	
 	/**
 	 * @inheritdoc
 	 */
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
-		if ($a_par['tpl_id'] !== 'Services/InfoScreen/tpl.infoscreen.html') {
+		if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
 			return false;
 		}
 
@@ -22,7 +39,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 			return false;
 		}
 
-		$refId = (int)$_GET['ref_id'];
+	$refId = (int)$_GET['ref_id'];
 		if (!$refId) {
 			return false;
 		}
@@ -49,10 +66,9 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 		$instance = $objectHelper->getInstanceByRefId((int)$_GET['ref_id']);
 
 		$dom = new \DOMDocument("1.0", "utf-8");
-		$dom->preserveWhiteSpace = true;
-		$dom->formatOutput = true;
-		if (!@$dom->loadHTML('<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body>' . $a_par['html'] . '</body></html>')) {
-			return ['mode' => \ilUIHookPluginGUI::KEEP, 'html' => ''];
+		if(!@$dom->loadHTML('<?xml encoding="utf-8" ?><html><body>' . $html . '</body></html>'))
+		{
+			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 
 		$firstInfoScreenSection = $dom->getElementById('infoscreen_section_1');

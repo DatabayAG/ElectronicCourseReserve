@@ -68,6 +68,14 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 
+
+		$plugin = ilElectronicCourseReservePlugin::getInstance();
+
+		$ref_id = (int)$_GET['ref_id'];
+		if($plugin->isFolderRelevant($ref_id))
+		{
+			$plugin->queryFolderData($ref_id);
+		}
 		/**
 		 * @var $modifier \ilECRBaseModifier
 		 */
@@ -119,14 +127,27 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 			$ref_id = (int)$_GET['ref_id'];
 			$obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 			if ($obj instanceof ilObjCourse &&
-				$ilAccess->checkAccess('read', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()))
+				$ilAccess->checkAccess('read', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())&& $this->plugin_object->isCourseRelevant($ref_id))
 			{
 				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
-				$ilTabs->addTab(
+				$DIC->tabs()->addTab(
 					'ecr_tab_title',
 					$this->getPluginObject()->ecr_txt('ecr_tab_title'),
 					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__],
 						'ilECRContentController.showECRContent')
+				);
+			}
+			else if( ( $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
+				&& $ilAccess->checkAccess('write', '', $obj->getRefId())
+				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()
+				&& $this->getPluginObject()->queryItemData($ref_id))
+			)
+			{
+				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
+				$DIC->tabs()->addTab(
+					'ecr_tab_title',
+					$this->getPluginObject()->txt('ecr_tab_title'),
+					$ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__], 'ilECRContentController.showECRItemContent')
 				);
 			}
 		}
@@ -140,11 +161,18 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		$this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
 		$this->plugin_object->includeClass('modifier/class.ilECRInfoScreenModifier.php');
 		$this->plugin_object->includeClass('modifier/class.ilECRBibliographicItemModifier.php');
+		$this->plugin_object->includeClass("modifier/class.ilECRCourseListGuiModifier.php");
+		$this->plugin_object->includeClass("modifier/class.ilECRFolderListGuiModifier.php");
+		$this->plugin_object->includeClass("modifier/class.ilECRilCopyObjectGuiModifier.php");
 
 		self::$modifier = [
+			new ilECRCourseListGuiModifier(),
 			new ilECRInfoScreenModifier(),
-			new ilECRBibliographicItemModifier(),
+			new ilECRFolderListGuiModifier(),
+			new ilECRilCopyObjectGuiModifier(),
+			new ilECRBibliographicItemModifier()
 		];
+	
 	}
 
 	/**

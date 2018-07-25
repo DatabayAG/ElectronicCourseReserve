@@ -31,3 +31,14 @@ token_append_to_bibl#:#Kurstitel als Query-Parameter übergeben
 token_append_to_bibl_info#:#Wenn aktiviert, wird der Titel des Kurses als Query-Parameter ('iltitle') im Link zum Recherchesystem angehängt. Dieser wird dann ebenfalls zur Token-Generierung herangezogen.
 token_append_obj_title#:#OpenURL in Literaturliste
 token_append_obj_title_info#:#Wenn aktiviert, werden die für das Recherchesystem relevanten Query-Parameter und das Token an die Links zur Bestandsabfrage von Werken in Literaturlisten angehängt, sofern diese unterhalb von Kursen liegen. Bitte beachten Sie, dass entsprechende Bibliotheken im Bereich "Administration » Literaturliste" konfiguriert sein müssen.
+notification_mail#:#Benachrichtigungs Mail
+notification_mail_info#:#Wenn aktiviert, wird eine Benachrichtigung per E-Mail versendet.
+recipients#:#Empfänger
+recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
+import_directory#:#Importverzeichnis
+import_directory_info#:#Bitte tragen Sie hier einen relativen Serverpfad ein, in dem ILIAS die zu importierenden Dateien auslesen soll. Bitte bedenken Sie, dass der Benutzer, in dessen Kontext PHP ausgeführt wird, Leserechte und Schreibrechte auf dieses Verzeichnis benötigt. Ihr konfigurierter Pfad lautet: <br/>%s
+error_move_mail#:#Es gab ein problem beim verschieben der Datei "%s" in den Backup Ordner.
+error_create_file_mail#:#Es gab ein Problem beim erzeugen des Datei Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
+error_create_url_mail#:#Es gab ein Problem beim erzeugen des Weblink Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
+show_description#:#Zeige Beschreibung
+show_image#:#Zeige Icon
