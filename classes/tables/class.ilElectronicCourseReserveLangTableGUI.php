@@ -13,6 +13,11 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 	private $params = array();
 
 	/**
+	 * @var ilCtrl 
+	 */
+	protected $ctrl;
+
+	/**
 	 * @inheritdoc
 	 */
 	public function __construct($a_parent_obj, $a_parent_cmd = "", $a_params = array())
@@ -20,6 +25,7 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 		global $ilCtrl, $lng;
 
 		$this->params = $a_params;
+		$this->ctrl = $ilCtrl;
 
 		$this->setId('esa_crs_lang_adm');
 		parent::__construct($a_parent_obj, $a_parent_cmd);
