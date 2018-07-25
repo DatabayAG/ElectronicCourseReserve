@@ -380,6 +380,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 			'url_search_system' => $this->pluginObj->getSetting('url_search_system'),
 			'enable_use_agreement' => $this->pluginObj->getSetting('enable_use_agreement'),
 			'token_append_obj_title' => $this->pluginObj->getSetting('token_append_obj_title'),
+			'token_append_to_bibl' => $this->pluginObj->getSetting('token_append_to_bibl'),
 			'is_mail_enabled'     => $this->pluginObj->getSetting('is_mail_enabled'),
 			'recipients'          => explode(',', $this->pluginObj->getSetting('mail_recipients')),
 			'import_directory'    => $this->pluginObj->getSetting('import_directory')

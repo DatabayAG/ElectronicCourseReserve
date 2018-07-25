@@ -20,7 +20,7 @@ class ilECRBibliographicItemModifier implements \ilECRBaseModifier
 
 		if (
 			!(in_array(strtolower($_GET['cmdClass']), ['ilobjbibliographicgui',]) && in_array(strtolower($_GET['cmd']),
-					['showcontent', 'render'])) &&
+					['showcontent', 'render', 'view'])) &&
 			!(in_array(strtolower($_GET['cmdClass']), ['ilrepositorygui',]) && in_array(strtolower($_GET['cmd']),
 					['render',]))
 		) {
