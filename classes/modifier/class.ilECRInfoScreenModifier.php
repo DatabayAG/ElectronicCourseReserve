@@ -49,8 +49,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 		if(!($obj instanceof ilObjCourse) || !$this->access->checkAccess('read', '', $obj->getRefId()))
 		{
-			//return parent::getHTML($a_comp, $a_part, $a_par);
-			//Todo: we don't have a parent!
+			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 		
 		$html = $a_par['html'];

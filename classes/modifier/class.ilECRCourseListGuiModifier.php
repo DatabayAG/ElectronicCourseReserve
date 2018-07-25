@@ -53,7 +53,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
 		$ref_id         = (int)$_GET['ref_id'];
 		$obj            = ilObjectFactory::getInstanceByRefId($ref_id, false);
 		if (!($obj instanceof ilObjCourse) || !$this->access->checkAccess('read', '', $obj->getRefId())) {
-			return '';
+			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 
 		$html = $a_par['html'];
