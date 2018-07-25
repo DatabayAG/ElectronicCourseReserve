@@ -21,8 +21,11 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
 		$ref_id = (int)$_GET['ref_id'];
-		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		if ($a_par['tpl_id'] == 'Services/Container/tpl.container_list_item.html' && $obj->getType() == 'crs') {
+		if ($a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html') {
+			return false;
+		}
+		$obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		if($obj->getType() == 'crs') {
 			return true;
 		}
 		return false;

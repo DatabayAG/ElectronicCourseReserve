@@ -16,8 +16,11 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 	{
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		
-		if($a_par['tpl_id'] == 'Services/InfoScreen/tpl.infoscreen.html' && $obj->getType() == 'crs')
+		if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
+			return false;
+		}
+
+		if($obj->getType() == 'crs')
 		{
 			return true;
 		}
