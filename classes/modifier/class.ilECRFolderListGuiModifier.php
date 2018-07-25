@@ -14,23 +14,35 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 	 */
 	protected $list_gui_helper;
 
+	/**
+	 * @var ilObjDataCache 
+	 */
+	protected $data_cache;
+
+	/**
+	 * @var ilAccessHandler 
+	 */
+	protected $access;
+
 	public function __construct()
 	{
+		global $DIC;
+		$this->access = $DIC->access();
+		$this->data_cache = $DIC['ilObjDataCache'];
+
 		$this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
 	}
 
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
-		global $DIC;
-		$cache = $DIC['ilObjDataCache'];
 
 		$ref_id = (int)$_GET['ref_id'];
 		if ($a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html') {
 			return false;
 		}
 
-		$obj_id = $cache->lookupObjId($ref_id);
-		$type = $cache->lookupType($obj_id);
+		$obj_id = $this->data_cache->lookupObjId($ref_id);
+		$type = $this->data_cache ->lookupType($obj_id);
 
 		if ($type == 'fold') {
 			return true;
@@ -40,11 +52,10 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 
 	public function modifyHtml($a_comp, $a_part, $a_par)
 	{
-		global $DIC;
 		$processed_html = '';
 		$ref_id         = (int)$_GET['ref_id'];
 		$obj            = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		if (!($obj instanceof ilObjFolder) || !$DIC->access()->checkAccess('read', '', $obj->getRefId())) {
+		if (!($obj instanceof ilObjFolder) || !$this->access->checkAccess('read', '', $obj->getRefId())) {
 			return '';
 		}
 

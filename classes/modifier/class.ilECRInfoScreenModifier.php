@@ -7,24 +7,34 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRInfoScreenModifier implements ilECRBaseModifier
 {
+
+	/**
+	 * @var ilObjDataCache
+	 */
+	protected $data_cache;
+
+	/**
+	 * @var ilAccessHandler
+	 */
+	protected $access;
+
 	public function __construct()
 	{
-	
+		global $DIC;
+		$this->access = $DIC->access();
+		$this->data_cache = $DIC['ilObjDataCache'];
 	}
 	
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
-		global $DIC;
-		$cache = $DIC['ilObjDataCache'];
-
 		$ref_id = (int)$_GET['ref_id'];
 
 		if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
 			return false;
 		}
 
-		$obj_id = $cache->lookupObjId($ref_id);
-		$type = $cache->lookupType($obj_id);
+		$obj_id = $this->data_cache->lookupObjId($ref_id);
+		$type = $this->data_cache->lookupType($obj_id);
 
 		if($type == 'crs')
 		{
@@ -35,11 +45,9 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 	
 	public function modifyHtml($a_comp, $a_part, $a_par)
 	{
-		global $DIC; 
-		
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
-		if(!($obj instanceof ilObjCourse) || !$DIC->access()->checkAccess('read', '', $obj->getRefId()))
+		if(!($obj instanceof ilObjCourse) || !$this->access->checkAccess('read', '', $obj->getRefId()))
 		{
 			//return parent::getHTML($a_comp, $a_part, $a_par);
 			//Todo: we don't have a parent!
