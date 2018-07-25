@@ -127,7 +127,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 			$ref_id = (int)$_GET['ref_id'];
 			$obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 			if ($obj instanceof ilObjCourse &&
-				$ilAccess->checkAccess('read', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())&& $this->plugin_object->isCourseRelevant($ref_id))
+				$ilAccess->checkAccess('read', '', $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()))
 			{
 				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
 				$DIC->tabs()->addTab(
