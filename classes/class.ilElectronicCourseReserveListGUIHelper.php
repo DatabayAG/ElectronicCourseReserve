@@ -20,7 +20,7 @@ class ilElectronicCourseReserveListGUIHelper
 			$node = $node_list->item($i);
 			if ($node !== null) {
 				$placeholder_div = $dom->createElement('div');
-				$placeholder_div->setAttribute('style', 'width:20px');
+				$placeholder_div->setAttribute('style', 'width:15px');
 				$node->parentNode->replaceChild($placeholder_div, $node);
 			}
 		}
