@@ -440,7 +440,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
 	/**
 	 * @param $item_ref_id
-	 * @return mixed
+	 * @return array
 	 */
 	public function queryItemData($item_ref_id)
 	{

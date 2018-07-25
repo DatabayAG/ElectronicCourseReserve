@@ -20,9 +20,9 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
-		$cms_class = $_GET['cmdClass'];
-		$cmd = $_GET['cmd'];
-		if ($cms_class == 'ilobjectcopygui' && $cmd !== 'initTargetSelection') {
+		$cmd_class = ilUtil::stripSlashes($_GET['cmdClass']);
+		$cmd = ilUtil::stripSlashes($_GET['cmd']);
+		if ($cmd_class == 'ilobjectcopygui' && $cmd !== 'initTargetSelection') {
 			return true;
 		}
 		return false;
@@ -58,7 +58,6 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 	 * @param DomXPath    $xpath
 	 * @param int         $item_ref_id
 	 * @param DOMDocument $dom
-	 * @param string $parent
 	 */
 	public function replaceCheckbox($xpath, $item_ref_id, $dom)
 	{
@@ -77,7 +76,6 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 	 * @param DomXPath    $xpath
 	 * @param int         $item_ref_id
 	 * @param DOMDocument $dom
-	 * @param string $parent
 	 */
 	public function removeRadioButton($xpath, $item_ref_id, $dom)
 	{
