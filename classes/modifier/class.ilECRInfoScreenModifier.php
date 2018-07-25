@@ -14,13 +14,19 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 	
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
+		global $DIC;
+		$cache = $DIC['ilObjDataCache'];
+
 		$ref_id = (int)$_GET['ref_id'];
-		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+
 		if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
 			return false;
 		}
 
-		if($obj->getType() == 'crs')
+		$obj_id = $cache->lookupObjId($ref_id);
+		$type = $cache->lookupType($obj_id);
+
+		if($type == 'crs')
 		{
 			return true;
 		}
