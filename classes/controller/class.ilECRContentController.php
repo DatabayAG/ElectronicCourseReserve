@@ -233,7 +233,8 @@ class ilECRContentController extends ilECRBaseController
 				&& $item['show_image'] == 1
 				&& strlen($item['icon']) > 0)
 			{
-				$tpl->setTitleIcon(ilUtil::getImagePath($item['icon']));
+				$image_path = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item['icon'];
+				$tpl->setTitleIcon($image_path);
 			}
 			else
 			{
@@ -249,7 +250,8 @@ class ilECRContentController extends ilECRBaseController
 				&& $item['show_image'] == 1
 				&& strlen($item['icon']) > 0)
 			{
-				$tpl->setTitleIcon(ilUtil::getImagePath($item['icon']));
+				$image_path = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item['icon'];
+				$tpl->setTitleIcon($image_path);
 			}
 			else
 			{
