@@ -139,10 +139,11 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 						'ilECRContentController.showECRContent')
 				);
 			}
-			else if( ( $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
+			else if(
+				( $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
 				&& $ilAccess->checkAccess('write', '', $obj->getRefId())
-				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()
-				&& $this->getPluginObject()->queryItemData($ref_id))
+				&& $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())
+				&& $this->getPluginObject()->queryItemData($ref_id)
 			)
 			{
 				$ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
