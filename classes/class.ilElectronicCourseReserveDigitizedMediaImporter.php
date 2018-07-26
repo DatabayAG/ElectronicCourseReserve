@@ -17,6 +17,7 @@ require_once 'Services/WebServices/Rest/classes/class.ilRestFileStorage.php';
 require_once 'Services/Xml/classes/class.ilXmlWriter.php';
 require_once dirname(__FILE__).'/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
+require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReservePostPurifier.php';
 
 class ilElectronicCourseReserveDigitizedMediaImporter
 {
@@ -389,6 +390,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			array($new_obj_ref_id)
 		);
 		$row = $DIC->database()->fetchAssoc($res);
+		$purifier = new ilElectronicCourseReservePostPurifier();
+		$description = $purifier->purify($parsed_item->getItem()->getDescription());
 
 		if(is_array($row) && array_key_exists('version', $row))
 		{
@@ -402,7 +405,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			'timestamp'     => array('integer', strtotime($parsed_item->getTimestamp())),
 			'icon'          => array('text', $icon['icon']),
 			'icon_type'     => array('text', $icon['icon_type']),
-			'description'   => array('text', $parsed_item->getItem()->getDescription()),
+			'description'   => array('text', $description),
 			'raw_xml'       => array('text', $raw_xml),
 			'folder_ref_id' => array('integer', $folder_ref_id)
 		));
