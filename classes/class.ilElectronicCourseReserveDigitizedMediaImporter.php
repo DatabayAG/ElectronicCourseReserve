@@ -133,6 +133,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$this->ensureUserRelatedPreconditions();
 			$this->ensureSystemPreconditions();
 			$this->ensureCorrectLockingState();
+			$this->cleanUpDeletedObjects();
 
 			$this->logger->write('Started determination with file pattern.');
 
@@ -531,6 +532,15 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			throw new ilException('Could create lock file: ' . self::getLockFilePath() . ' . Please check the filesystem permissions.');
 		}
+	}
+	/**
+	 */
+	protected function cleanUpDeletedObjects()
+	{
+		global $DIC;
+		$DIC->database()->manipulate(
+			'DELETE ecr.* FROM ecr_description ecr LEFT JOIN object_reference ON object_reference.ref_id = ecr.ref_id WHERE object_reference.ref_id IS NULL');
+		$this->logger->write('Removed deleted entries from table ecs_description.');
 	}
 
 	/**
