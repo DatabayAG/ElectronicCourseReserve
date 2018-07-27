@@ -17,9 +17,9 @@ in this document are to be interpreted as described in
 This plugin MUST be installed as a
 [User Interface Plugin](https://www.ilias.de/docu/goto_docu_pg_39405_42.html).
 
-The files must be saved in the following directory:
+The files MUST be saved in the following directory:
 
-<ILIAS>/Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve
+	<ILIAS>/Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve
 
 Correct file and folder permissions MUST be
 ensured by the responsible system administrator.

@@ -4,18 +4,18 @@ il.ElectronicCourseReserveObjectIcon = (function (scope) {
 	var pub = {}, pro = {};
 	
 	pub.config = {
-		replacementImage : null,
-		replaceImage     : null
+		replacementImage          : null,
+		replaceIdentifierOfSource : null
 	}; 
 
 	pub.setConfig = function(replaceImage, withImage) {
-		pub.config.replaceImage = replaceImage;
-		pub.config.replacementImage = withImage;
+		pub.config.replaceIdentifierOfSource = replaceImage;
+		pub.config.replacementImage  = withImage;
 	};
-	
+
 	pub.replace = function(){
-		if(pub.config.replacementImage !== null && pub.config.replaceImage !== null){
-			$(pub.config.replaceImage).attr('src', pub.config.replacementImage);
+		if(pub.config.replacementImage !== null && pub.config.replaceIdentifierOfSource !== null){
+			$(pub.config.replaceIdentifierOfSource).attr('src', pub.config.replacementImage);
 		}
 	};
 
