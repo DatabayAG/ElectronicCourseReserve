@@ -53,17 +53,26 @@
     <xs:complexType name="itemType">
         <xs:sequence>
             <xs:element type="xs:string" name="icon"/>
-            <xs:element name="label">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:maxLength value="255"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
 
             <xs:choice>
-                <xs:element type="xs:string" name="url"/>
                 <xs:sequence>
+                    <xs:element type="xs:string" name="url"/>
+                    <xs:element name="label">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:maxLength value="255"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
+                </xs:sequence>
+                <xs:sequence>
+                    <xs:element name="label">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:maxLength value="255"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:element>
                     <xs:element type="xs:string" name="file"/>
                     <xs:element type="xs:string" name="filename"/>
                 </xs:sequence>
