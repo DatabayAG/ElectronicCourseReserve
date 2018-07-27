@@ -3,15 +3,23 @@
            xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:element name="semesterapparat" type="semesterapparatType"/>
 
+    <xs:simpleType name="labelBaseType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="labelType">
+        <xs:simpleContent>
+            <xs:extension base="labelBaseType">
+                <xs:attribute type="xs:string" name="id" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
     <xs:complexType name="semesterapparatType">
         <xs:sequence>
-            <xs:element name="label">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:length value="255"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
+            <xs:element type="labelType" name="label"/>
             <xs:element type="timestampType" name="timestamp"/>
             <xs:element type="itemType" name="item"/>
         </xs:sequence>
@@ -48,7 +56,7 @@
             <xs:element name="label">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
-                        <xs:length value="255"/>
+                        <xs:maxLength value="255"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>

@@ -238,7 +238,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		libxml_use_internal_errors(true);
 		$xml = new DOMDocument();
-		$xml->load($xml_string);
+		$xml->loadXML($xml_string);
 
 		if (!$xml->schemaValidate(self::PATH_TO_XSD)) {
 			$msg = $this->pluginObj->txt(sprintf('error_with_xml_validation', ''));
