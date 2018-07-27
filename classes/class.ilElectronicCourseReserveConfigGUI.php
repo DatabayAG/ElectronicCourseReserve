@@ -235,7 +235,6 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 		$agreement_input->removePlugin('advlink');
 		$agreement_input->removePlugin('ilimgupload');
 		$agreement_input->setRTERootBlockElement('');
-		$agreement_input->usePurifier(true);
 		$agreement_input->disableButtons(array(
 			'charmap',
 			'undo',
@@ -254,10 +253,11 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 		));
 		
 		$agreement_input->setRTESupport($DIC->user()->getId(), 'ecr_ua', 'ecr_ua');
-		
-		// purifier
-		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
-		$agreement_input->setPurifier(ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
+
+		$this->pluginObj->includeClass('class.ilElectronicCourseReservePostPurifier.php');
+		$purifier = new \ilElectronicCourseReservePostPurifier();
+		$agreement_input->usePurifier(true);
+		$agreement_input->setPurifier($purifier);
 		
 		$this->form->addCommandButton('saveUseAgreement', $this->lng->txt('add'));
 		$this->form->addCommandButton('editUseAgreements', $this->lng->txt('cancel'));
@@ -641,7 +641,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 	}
 
 	/**
-	 * @throws \ilHtmlPurifierNotFoundException
+	 * 
 	 */
 	public function initEcrContentForm()
 	{
@@ -660,7 +660,6 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 
 		$ecr_content_input->removePlugin('advlink');
 		$ecr_content_input->setRTERootBlockElement('');
-		$ecr_content_input->usePurifier(true);
 		$ecr_content_input->disableButtons(array(
 			'charmap',
 			'undo',
@@ -681,8 +680,10 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 		$ecr_content_input->setRTESupport($this->user->getId(), 'ecr_content', 'ecr_content');
 		$ecr_content_input->setInfo($this->pluginObj->txt('insert_url_esa_info'));
 
-		require_once 'Services/Html/classes/class.ilHtmlPurifierFactory.php';
-		$ecr_content_input->setPurifier(\ilHtmlPurifierFactory::_getInstanceByType('frm_post'));
+		$this->pluginObj->includeClass('class.ilElectronicCourseReservePostPurifier.php');
+		$purifier = new \ilElectronicCourseReservePostPurifier();
+		$ecr_content_input->usePurifier(true);
+		$ecr_content_input->setPurifier($purifier);
 
 		$ecr_lang = new \ilHiddenInputGUI('ecr_lang');
 		if (isset($_GET['ecr_lang'])) {
