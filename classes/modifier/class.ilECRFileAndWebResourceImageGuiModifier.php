@@ -4,15 +4,10 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReserveListGUIHelper.php";
 
 /**
- * Class ilECRCourseListGuiModifier
+ * Class ilECRFileAndWebResourceImageGuiModifier
  */
-class ilECRFileGuiModifier implements ilECRBaseModifier
+class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 {
-	/**
-	 * @var ilElectronicCourseReserveListGUIHelper
-	 */
-	protected $list_gui_helper;
-
 	/**
 	 * @var ilObjDataCache
 	 */
@@ -33,7 +28,6 @@ class ilECRFileGuiModifier implements ilECRBaseModifier
 		global $DIC;
 		$this->access = $DIC->access();
 		$this->data_cache = $DIC['ilObjDataCache'];
-		$this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
 	}
 
 	/**
