@@ -77,7 +77,13 @@
     </xs:complexType>
     <xs:complexType name="semesterapparatType">
         <xs:sequence>
-            <xs:element type="xs:string" name="label"/>
+            <xs:element type="xs:string" name="label">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:length value="255"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
             <xs:element type="timestampType" name="timestamp"/>
             <xs:element type="itemType" name="item"/>
         </xs:sequence>
