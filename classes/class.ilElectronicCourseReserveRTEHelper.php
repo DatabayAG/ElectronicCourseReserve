@@ -9,12 +9,12 @@ class ilElectronicCourseReserveRTEHelper
 {
 
 	/**
-	 * param string $post_message
-* @param string $source_type
-* @param int $source_id
-* @param string $target_type
-* @param int $target_id
-*/
+	 * @param     $content_id
+	 * @param     $content
+	 * @param     $source_type
+	 * @param     $target_type
+	 * @param int $direction
+	 */
 	public static function moveMediaObjects($content_id, $content, $source_type,  $target_type,  $direction = 0)
 	{
 		include_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';

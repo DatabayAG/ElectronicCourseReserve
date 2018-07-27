@@ -9,6 +9,11 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
 class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 {
 	/**
+	 * @var array 
+	 */
+	protected $object_types = array('file', 'webr');
+	
+	/**
 	 * @var ilObjDataCache
 	 */
 	protected $data_cache;
@@ -50,7 +55,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 		$obj_id = $this->data_cache->lookupObjId($refId);
 		$type = $this->data_cache->lookupType($obj_id);
 
-		if($type == 'file' || $type == 'webr') {
+		if(in_array($type, $this->object_types)) {
 			$this->modified = true;
 			return true;
 		}
@@ -76,7 +81,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 			&& $item_data['show_image'] == 1) {
 
 			$replace = '#headerimage';
-			if(array_key_exists('icon_type', $item_data) && $item_data['icon_type'] === 'url'){
+			if(array_key_exists('icon_type', $item_data) && $item_data['icon_type'] === ilElectronicCourseReservePlugin::ICON_URL){
 				$with = $item_data['icon'];
 			}
 			else {
