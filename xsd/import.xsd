@@ -13,9 +13,13 @@
             <xs:element type="xs:string" name="icon"/>
             <xs:element type="xs:string" name="label"/>
 
-            <xs:element type="xs:string" name="file"/>
-            <xs:element type="xs:string" name="filename"/>
-            <xs:element type="xs:string" name="url"/>
+            <xs:choice>
+                <xs:element type="xs:string" name="url"/>
+            </xs:choice>
+            <xs:choice>
+                <xs:element type="xs:string" name="file"/>
+                <xs:element type="xs:string" name="filename"/>
+            </xs:choice>
 
             <xs:element type="xs:string" name="description"/>
             <xs:element type="metadataType" name="metadata" minOccurs="0"/>
