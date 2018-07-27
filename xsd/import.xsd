@@ -21,10 +21,10 @@
 
             <xs:choice>
                 <xs:element type="xs:string" name="url"/>
-            </xs:choice>
-            <xs:choice>
-                <xs:element type="xs:string" name="file"/>
-                <xs:element type="xs:string" name="filename"/>
+                <xs:sequence>
+                    <xs:element type="xs:string" name="file"/>
+                    <xs:element type="xs:string" name="filename"/>
+                </xs:sequence>        
             </xs:choice>
 
             <xs:element type="xs:string" name="description" minOccurs="0"/>
