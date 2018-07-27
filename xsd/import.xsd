@@ -27,7 +27,7 @@
                 <xs:element type="xs:string" name="filename"/>
             </xs:choice>
 
-            <xs:element type="xs:string" name="description"/>
+            <xs:element type="xs:string" name="description" minOccurs="0"/>
             <xs:element type="metadataType" name="metadata" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="type" use="required">
