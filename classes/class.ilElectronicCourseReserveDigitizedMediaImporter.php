@@ -44,6 +44,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	/**
 	 * @var string
 	 */
+	const PATH_TO_XSD = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/xsd/import.xsd';
+
+	/**
+	 * @var string
+	 */
 	const IMAGE_DIR = 'ecr_images';
 
 	/**
@@ -164,43 +169,47 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$content = @file_get_contents($pathname);
 
 				//Todo: Validate against xslt
-				$this->logger->write('MD5 checksum: ' . md5($content));
-				$this->logger->write('SHA1 checksum: ' . sha1($content));
+				$valid = $this->validateXmlAgainstXsd($content);
+				if($valid) {
+					$this->logger->write('MD5 checksum: ' . md5($content));
+					$this->logger->write('SHA1 checksum: ' . sha1($content));
 
-				$parser = new ilElectronicCourseReserveParser($pathname);
-				$parser->startParsing();
-				$parsed_item = $parser->getElectronicCourseReserveContainer();
+					$parser = new ilElectronicCourseReserveParser($pathname);
+					$parser->startParsing();
+					$parsed_item = $parser->getElectronicCourseReserveContainer();
 
-				if(! in_array($parsed_item->getType(), $this->valid_items))
-				{
-					$this->logger->write(sprintf('Type of item (%s) is unknown, skipping item.', $parsed_item->getType() ));
-					continue;
-				}
-
-				$this->logger->write('Starting item creation...');
-				if($parsed_item->getType() === self::ITEM_TYPE_FILE)
-				{
-					if ( ! $this->createFileItem($parsed_item, $content))
+					if(! in_array($parsed_item->getType(), $this->valid_items))
 					{
-						$msg =  $this->pluginObj->txt(sprintf('error_create_file_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+						$this->logger->write(sprintf('Type of item (%s) is unknown, skipping item.', $parsed_item->getType() ));
+						continue;
+					}
+
+					$this->logger->write('Starting item creation...');
+					if($parsed_item->getType() === self::ITEM_TYPE_FILE)
+					{
+						if ( ! $this->createFileItem($parsed_item, $content))
+						{
+							$msg =  $this->pluginObj->txt(sprintf('error_create_file_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+							$this->sendMailOnError($msg);
+						}
+					}
+					else if($parsed_item->getType() === self::ITEM_TYPE_URL)
+					{
+						if ( ! $this->createWebResourceItem($parsed_item, $content))
+						{
+							$msg =  $this->pluginObj->txt(sprintf('error_create_url_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+							$this->sendMailOnError($msg);
+						}
+					}
+					$this->logger->write('...item creation done.');
+
+					if( ! $this->moveXmlToBackupFolder($pathname))
+					{
+						$msg =  $this->pluginObj->txt(sprintf('error_move_mail', $pathname));
 						$this->sendMailOnError($msg);
 					}
 				}
-				else if($parsed_item->getType() === self::ITEM_TYPE_URL)
-				{
-					if ( ! $this->createWebResourceItem($parsed_item, $content))
-					{
-						$msg =  $this->pluginObj->txt(sprintf('error_create_url_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
-						$this->sendMailOnError($msg);
-					}
-				}
-				$this->logger->write('...item creation done.');
-
-				if( ! $this->moveXmlToBackupFolder($pathname))
-				{
-					$msg =  $this->pluginObj->txt(sprintf('error_move_mail', $pathname));
-					$this->sendMailOnError($msg);
-				}
+				
 
 			}
 		}
@@ -219,6 +228,36 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 
 		$this->logger->write('Digitized media import script finished');
+	}
+
+	/**
+	 * @param string $xml_string
+	 * @return bool
+	 */
+	protected function validateXmlAgainstXsd($xml_string) 
+	{
+		libxml_use_internal_errors(true);
+		$xml = new DOMDocument();
+		$xml->load($xml_string);
+
+		if (!$xml->schemaValidate(self::PATH_TO_XSD)) {
+			$msg = $this->pluginObj->txt(sprintf('error_with_xml_validation', ''));
+			//Todo: uncomment
+			#$this->sendMailOnError($msg);
+			$errors = libxml_get_errors();
+			$error_msg = '';
+			foreach ($errors as $error) {
+				$error_msg .= sprintf('XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
+					$error->message, $error->level, $error->code, $error->file,
+					$error->line, $error->column);
+			}
+			libxml_clear_errors();
+			libxml_use_internal_errors(false);
+			return false;
+		}
+		libxml_clear_errors();
+		libxml_use_internal_errors(false);
+		return true;
 	}
 
 	/**

@@ -5,7 +5,7 @@
 
     <xs:complexType name="semesterapparatType">
         <xs:sequence>
-            <xs:element type="xs:string" name="label">
+            <xs:element name="label">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:length value="255"/>
@@ -45,7 +45,7 @@
     <xs:complexType name="itemType">
         <xs:sequence>
             <xs:element type="xs:string" name="icon"/>
-            <xs:element type="xs:string" name="label">
+            <xs:element name="label">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:length value="255"/>
@@ -75,7 +75,7 @@
         <xs:sequence>
             <xs:element type="xs:string" name="title"  minOccurs="0"/>
             <xs:element type="xs:string" name="author" minOccurs="0"/>
-            
+
             <xs:choice>
                 <xs:sequence>
                     <!-- Book -->
@@ -98,7 +98,7 @@
             </xs:choice>
 
         </xs:sequence>
-        <xs:attribute type="xs:string" name="type" use="required">
+        <xs:attribute name="type" use="required">
             <xs:simpleType>
                 <xs:list itemType="MetaDataType"/>
             </xs:simpleType>
