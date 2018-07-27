@@ -140,7 +140,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="jourNalLocationType">
+    <xs:complexType name="journalLocationType">
         <xs:sequence>
             <xs:element type="xs:string" name="volume" minOccurs="0"/>
             <xs:element type="xs:string" name="issue" minOccurs="0"/>
@@ -156,7 +156,7 @@
             <xs:element type="xs:string" name="publisher" minOccurs="0"/>
             <xs:element type="xs:string" name="issn" minOccurs="0"/>
             <xs:element type="signatureType" name="signature" minOccurs="0"/>
-            <xs:element type="jourNalLocationType" name="location" minOccurs="0"/>
+            <xs:element type="journalLocationType" name="location" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 
