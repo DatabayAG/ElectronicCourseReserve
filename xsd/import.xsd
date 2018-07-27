@@ -11,7 +11,13 @@
     <xs:complexType name="itemType">
         <xs:sequence>
             <xs:element type="xs:string" name="icon"/>
-            <xs:element type="xs:string" name="label"/>
+            <xs:element type="xs:string" name="label">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:length value="255"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
 
             <xs:choice>
                 <xs:element type="xs:string" name="url"/>
