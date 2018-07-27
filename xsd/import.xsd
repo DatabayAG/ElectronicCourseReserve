@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="semesterapparat" type="semesterapparatType"/>
+
+    <xs:complexType name="semesterapparatType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="label">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:length value="255"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element type="timestampType" name="timestamp"/>
+            <xs:element type="itemType" name="item"/>
+        </xs:sequence>
+        <xs:attribute type="xs:int" name="iliasID" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="ImportType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="file"/>
+            <xs:enumeration value="url"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MetaDataType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="book"/>
+            <xs:enumeration value="article"/>
+            <xs:enumeration value="chapter"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="timestampType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute type="xs:string" name="format"/>
+                <xs:attribute type="xs:string" name="value"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="itemType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="icon"/>
+            <xs:element type="xs:string" name="label">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:length value="255"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+
+            <xs:choice>
+                <xs:element type="xs:string" name="url"/>
+                <xs:sequence>
+                    <xs:element type="xs:string" name="file"/>
+                    <xs:element type="xs:string" name="filename"/>
+                </xs:sequence>
+            </xs:choice>
+
+            <xs:element type="xs:string" name="description" minOccurs="0"/>
+            <xs:element type="metadataType" name="metadata" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="type" use="required">
+            <xs:simpleType>
+                <xs:list itemType="ImportType"/>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="metadataType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="title"  minOccurs="0"/>
+            <xs:element type="xs:string" name="author" minOccurs="0"/>
+            
+            <xs:choice>
+                <xs:sequence>
+                    <!-- Book -->
+                    <xs:element type="xs:string" name="place" minOccurs="0"/>
+                    <xs:element type="xs:string" name="publisher" minOccurs="0"/>
+                    <xs:element type="xs:string" name="year" minOccurs="0"/>
+                    <xs:element type="xs:string" name="isbn" minOccurs="0"/>
+                    <xs:element type="signatureType" name="signature" minOccurs="0"/>
+                </xs:sequence>
+                <xs:sequence>
+                    <!-- Article -->
+                    <xs:element type="journalType" name="journal" minOccurs="0"/>
+                </xs:sequence>
+                <xs:sequence>
+                    <!-- Chapter -->
+                    <xs:element type="xs:string" name="comment" minOccurs="0"/>
+                    <xs:element type="bookType" name="book" minOccurs="0"/>
+                    <xs:element type="locationType" name="location" minOccurs="0"/>
+                </xs:sequence>
+            </xs:choice>
+
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="type" use="required">
+            <xs:simpleType>
+                <xs:list itemType="MetaDataType"/>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="pagesType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute type="xs:string" name="from"/>
+                <xs:attribute type="xs:string" name="to"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="signatureType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute type="xs:string" name="bookingId"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="locationType">
+        <xs:sequence>
+            <xs:element type="pagesType" name="pages" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="bookType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="title" minOccurs="0"/>
+            <xs:element type="xs:string" name="author" minOccurs="0"/>
+            <xs:element type="xs:string" name="place" minOccurs="0"/>
+            <xs:element type="xs:string" name="publisher" minOccurs="0"/>
+            <xs:element type="xs:string" name="year" minOccurs="0"/>
+            <xs:element type="xs:string" name="isbn" minOccurs="0"/>
+            <xs:element type="signatureType" name="signature" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="journalLocationType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="volume" minOccurs="0"/>
+            <xs:element type="xs:string" name="issue" minOccurs="0"/>
+            <xs:element type="pagesType" name="pages" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="journalType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="title" minOccurs="0"/>
+            <xs:element type="xs:string" name="author" minOccurs="0"/>
+            <xs:element type="xs:string" name="place" minOccurs="0"/>
+            <xs:element type="xs:string" name="publisher" minOccurs="0"/>
+            <xs:element type="xs:string" name="issn" minOccurs="0"/>
+            <xs:element type="signatureType" name="signature" minOccurs="0"/>
+            <xs:element type="journalLocationType" name="location" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
