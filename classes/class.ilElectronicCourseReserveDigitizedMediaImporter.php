@@ -236,7 +236,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$errors = libxml_get_errors();
 			$error_msg = '';
 			foreach ($errors as $error) {
-				$error_msg .= sprintf('XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
+				$error_msg .= sprintf("\n" . 'XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
 					$error->message, $error->level, $error->code, $error->file,
 					$error->line, $error->column);
 			}
