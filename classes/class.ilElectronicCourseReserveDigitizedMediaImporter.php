@@ -52,6 +52,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	const IMAGE_DIR = 'ecr_images';
 
 	/**
+	 * @var boolean
+	 */
+	//Todo: set to true
+	const DELETE_FILES = false;
+
+	/**
 	 * @var $logger ilLog
 	 */
 	protected $logger;
@@ -88,7 +94,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		global $DIC;
 
-		$this->logger = $DIC->logger()->root();
 		$factory = null;
 		if (isset($GLOBALS['DIC']['mail.mime.sender.factory'])) {
 			$factory = $GLOBALS['DIC']['mail.mime.sender.factory'];
@@ -100,16 +105,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$this->from = $factory->system();
 		}
-		else
-		{
-			$this->from = ilMail::getIliasMailerAddress();
-		}
 
+		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 		$this->lock   = $DIC['plugin.esa.locker'];
 		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
-		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
-
+		
 	}
 
 	/**
@@ -168,8 +169,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 				$content = @file_get_contents($pathname);
 
-				//Todo: Validate against xslt
-				$valid = $this->validateXmlAgainstXsd($content);
+				$valid = $this->validateXmlAgainstXsd($filename, $content);
 				if($valid) {
 					$this->logger->write('MD5 checksum: ' . md5($content));
 					$this->logger->write('SHA1 checksum: ' . sha1($content));
@@ -189,7 +189,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					{
 						if ( ! $this->createFileItem($parsed_item, $content))
 						{
-							$msg =  $this->pluginObj->txt(sprintf('error_create_file_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+							$msg =  sprintf($this->pluginObj->txt('error_create_file_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
 							$this->sendMailOnError($msg);
 						}
 					}
@@ -197,7 +197,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					{
 						if ( ! $this->createWebResourceItem($parsed_item, $content))
 						{
-							$msg =  $this->pluginObj->txt(sprintf('error_create_url_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+							$msg =  sprintf($this->pluginObj->txt('error_create_url_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
 							$this->sendMailOnError($msg);
 						}
 					}
@@ -205,7 +205,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 					if( ! $this->moveXmlToBackupFolder($pathname))
 					{
-						$msg =  $this->pluginObj->txt(sprintf('error_move_mail', $pathname));
+						$msg =  sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
 						$this->sendMailOnError($msg);
 					}
 				}
@@ -229,26 +229,26 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
+	 * @param string $filename
 	 * @param string $xml_string
 	 * @return bool
 	 */
-	protected function validateXmlAgainstXsd($xml_string) 
+	protected function validateXmlAgainstXsd($filename, $xml_string) 
 	{
 		libxml_use_internal_errors(true);
 		$xml = new DOMDocument();
 		$xml->loadXML($xml_string);
 
 		if (!$xml->schemaValidate(self::PATH_TO_XSD)) {
-			$msg = $this->pluginObj->txt(sprintf('error_with_xml_validation', ''));
-			//Todo: uncomment
-			#$this->sendMailOnError($msg);
 			$errors = libxml_get_errors();
 			$error_msg = '';
 			foreach ($errors as $error) {
-				$error_msg .= sprintf('XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
+				$error_msg .= sprintf("\n" . 'XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
 					$error->message, $error->level, $error->code, $error->file,
 					$error->line, $error->column);
 			}
+			$msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $filename, $error_msg);
+			$this->sendMailOnError($msg);
 			libxml_clear_errors();
 			libxml_use_internal_errors(false);
 			return false;
@@ -273,9 +273,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 			try
 			{
-				//Todo uncomment
-				//ilUtil::moveUploadedFile($path_to_file, basename($path_to_file), $dir . DIRECTORY_SEPARATOR . basename($path_to_file), true, 'copy');
-				//unlink($path_to_file);
+				if(self::DELETE_FILES) {
+					ilUtil::moveUploadedFile($path_to_file, basename($path_to_file), $dir . DIRECTORY_SEPARATOR . basename($path_to_file), true, 'copy');
+					unlink($path_to_file);
+				}
+
 				return true;
 			}
 			catch(ilException $e)
@@ -357,7 +359,15 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				ilUtil::makeDirParents($dir);
 			}
 
-			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $filename, $dir . '/' . $filename, true, 'copy');
+			if(file_exists($parsed_item->getItem()->getFile())) {
+				copy($parsed_item->getItem()->getFile(), $dir . '/' . $filename);
+				if(file_exists($dir . '/' . $filename)) {
+					if(self::DELETE_FILES) {
+						unlink($parsed_item->getItem()->getFile());
+					}
+				}
+			}
+
 			$new_file->determineFileSize();
 			$new_file->update();
 
@@ -435,7 +445,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$version = $row['version'] + 1;
 		}
-		
+
 		$icon = $this->getIcon($parsed_item, $new_obj_ref_id);
 		$DIC->database()->insert('ecr_description', array(
 			'ref_id'        => array('integer', $new_obj_ref_id),
@@ -458,7 +468,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected function getIcon($parsed_item, $new_obj_ref_id)
 	{
 		$icon_type = $this->evaluateIconType($parsed_item->getItem()->getIcon());
-		if($icon_type === $this->pluginObj::ICON_URL){
+		$pl = $this->pluginObj;
+		if($icon_type === $pl::ICON_URL){
 			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
 		}else{
 			$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $parsed_item->getItem()->getIcon();
@@ -466,10 +477,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$dir = $this->getImageFolder($new_obj_ref_id);
 				$filename = basename($parsed_item->getItem()->getIcon());
 				$target = $dir . DIRECTORY_SEPARATOR . $filename;
-				ilUtil::moveUploadedFile($file, $filename, $target , true, 'copy' );
+				if(file_exists($file)) {
+					copy($file, $target);
+				}
 				if(file_exists($target)){
 					$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
-					#unlink($filename);
+					if(self::DELETE_FILES) {
+						unlink($filename);
+					}
 					return array('icon' => $file_path, 'icon_type' => $icon_type);
 				}
 			}
@@ -498,11 +513,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			return false;
 		}
 
+		$pl = $this->pluginObj;
 		preg_match('/http(s)?:\/\//', $icon, $matches);
 		if(count($matches) > 0 ){
-			return $this->pluginObj::ICON_URL;
+			return $pl::ICON_URL;
 		}else{
-			return  $this->pluginObj::ICON_FILE;
+			return $pl::ICON_FILE;
 		}
 	}
 
@@ -607,7 +623,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					}
 					else
 					{
-						// Todo:  $tree->moveTree();?
 						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
 					}
 				}
@@ -637,11 +652,34 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$mail = new ilMimeMail();
 			$mail->From($this->from);
-			$mail->To(explode(',', $this->pluginObj->getSetting('mail_recipients')));
+			$recipients = $this->pluginObj->getSetting('mail_recipients');
+			$mail->To($this->getEmailsForRecipients($recipients));
 			$mail->Subject("There was a problem with an Electronic Course Import Item");
 			$mail->Body($msg);
 			$mail->Send();
 		}
+	}
+
+	/**
+	 * @param string $recipients
+	 * @return array
+	 */
+	protected function getEmailsForRecipients($recipients)
+	{
+		$emails = [];
+		$recipients = explode(',' , $recipients);
+		if(is_array($recipients) && sizeof($recipients) > 0)
+		{
+			foreach($recipients as $value)
+			{
+				$user_id = ilObjUser::_loginExists($value);
+				if($user_id != false)
+				{
+					$emails [] = ilObjUser::_lookupEmail($user_id);
+				}
+			}
+		}
+		return $emails;
 	}
 
 	/**
