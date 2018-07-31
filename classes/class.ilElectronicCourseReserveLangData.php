@@ -86,7 +86,7 @@ class ilElectronicCourseReserveLangData
 		$this->db->replace('ecr_lang_data',
 			array
 			(
-				'ecr_conent' => array('clob', $ecr_content = self::lookupEcrContentByLangKey($this->getLangKey())),
+				'ecr_content' => array('clob', $ecr_content = self::lookupEcrContentByLangKey($this->getLangKey())),
 				'value'      => array('text', $this->getValue())
 			),
 			array
