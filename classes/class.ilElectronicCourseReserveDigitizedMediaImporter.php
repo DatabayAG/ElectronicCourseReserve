@@ -170,7 +170,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$content = @file_get_contents($pathname);
 
 				$valid = $this->validateXmlAgainstXsd($filename, $content);
-				if($valid) {
+				if ($valid === true) {
 					$this->logger->write('MD5 checksum: ' . md5($content));
 					$this->logger->write('SHA1 checksum: ' . sha1($content));
 
@@ -178,39 +178,34 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					$parser->startParsing();
 					$parsed_item = $parser->getElectronicCourseReserveContainer();
 
-					if(! in_array($parsed_item->getType(), $this->valid_items))
-					{
-						$this->logger->write(sprintf('Type of item (%s) is unknown, skipping item.', $parsed_item->getType() ));
+					if (!in_array($parsed_item->getType(), $this->valid_items)) {
+						$this->logger->write(sprintf('Type of item (%s) is unknown, skipping item.', $parsed_item->getType()));
 						continue;
 					}
 
 					$this->logger->write('Starting item creation...');
-					if($parsed_item->getType() === self::ITEM_TYPE_FILE)
-					{
-						if ( ! $this->createFileItem($parsed_item, $content))
-						{
-							$msg =  sprintf($this->pluginObj->txt('error_create_file_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
+					if ($parsed_item->getType() === self::ITEM_TYPE_FILE) {
+						if (!$this->createFileItem($parsed_item, $content)) {
+							$msg = sprintf($this->pluginObj->txt('error_create_file_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
 							$this->sendMailOnError($msg);
 						}
-					}
-					else if($parsed_item->getType() === self::ITEM_TYPE_URL)
-					{
-						if ( ! $this->createWebResourceItem($parsed_item, $content))
-						{
-							$msg =  sprintf($this->pluginObj->txt('error_create_url_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
-							$this->sendMailOnError($msg);
+					} else {
+						if ($parsed_item->getType() === self::ITEM_TYPE_URL) {
+							if (!$this->createWebResourceItem($parsed_item, $content)) {
+								$msg = sprintf($this->pluginObj->txt('error_create_url_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
+								$this->sendMailOnError($msg);
+							}
 						}
 					}
 					$this->logger->write('...item creation done.');
 
-					if( ! $this->moveXmlToBackupFolder($pathname))
-					{
-						$msg =  sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
+					if (!$this->moveXmlToBackupFolder($pathname)) {
+						$msg = sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
 						$this->sendMailOnError($msg);
 					}
+				} else {
+					$this->sendMailOnError($valid);
 				}
-				
-
 			}
 		}
 		catch(ilException $e)
@@ -231,7 +226,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	/**
 	 * @param string $filename
 	 * @param string $xml_string
-	 * @return bool
+	 * @return bool|string
 	 */
 	protected function validateXmlAgainstXsd($filename, $xml_string) 
 	{
@@ -248,10 +243,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					$error->line, $error->column);
 			}
 			$msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $filename, $error_msg);
-			$this->sendMailOnError($msg);
 			libxml_clear_errors();
 			libxml_use_internal_errors(false);
-			return false;
+			return $msg;
 		}
 		libxml_clear_errors();
 		libxml_use_internal_errors(false);
