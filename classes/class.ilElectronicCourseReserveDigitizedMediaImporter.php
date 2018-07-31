@@ -52,6 +52,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	const IMAGE_DIR = 'ecr_images';
 
 	/**
+	 * 
+	 */
+	//Todo: set to true
+	const DELETE_FILES = false;
+
+	/**
 	 * @var $logger ilLog
 	 */
 	protected $logger;
@@ -266,9 +272,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 			try
 			{
-				//Todo uncomment
-				//ilUtil::moveUploadedFile($path_to_file, basename($path_to_file), $dir . DIRECTORY_SEPARATOR . basename($path_to_file), true, 'copy');
-				//unlink($path_to_file);
+				if(self::DELETE_FILES) {
+					ilUtil::moveUploadedFile($path_to_file, basename($path_to_file), $dir . DIRECTORY_SEPARATOR . basename($path_to_file), true, 'copy');
+					unlink($path_to_file);
+				}
+
 				return true;
 			}
 			catch(ilException $e)
@@ -353,8 +361,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			if(file_exists($parsed_item->getItem()->getFile())) {
 				copy($parsed_item->getItem()->getFile(), $dir . '/' . $filename);
 				if(file_exists($dir . '/' . $filename)) {
-					//Todo: uncomment
-					#unlink($parsed_item->getItem()->getFile());
+					if(self::DELETE_FILES) {
+						unlink($parsed_item->getItem()->getFile());
+					}
 				}
 			}
 			
@@ -471,8 +480,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				}
 				if(file_exists($target)){
 					$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
-					//Todo: uncomment
-					#unlink($filename);
+					if(self::DELETE_FILES) {
+						unlink($filename);
+					}
 					return array('icon' => $file_path, 'icon_type' => $icon_type);
 				}
 			}
