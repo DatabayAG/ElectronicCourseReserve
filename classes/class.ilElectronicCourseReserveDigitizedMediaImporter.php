@@ -163,7 +163,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 				$content = @file_get_contents($pathname);
 
-				$valid = $this->validateXmlAgainstXsd($content);
+				$valid = $this->validateXmlAgainstXsd($filename, $content);
 				if($valid) {
 					$this->logger->write('MD5 checksum: ' . md5($content));
 					$this->logger->write('SHA1 checksum: ' . sha1($content));
@@ -226,7 +226,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 * @param string $xml_string
 	 * @return bool
 	 */
-	protected function validateXmlAgainstXsd($xml_string) 
+	protected function validateXmlAgainstXsd($filename, $xml_string) 
 	{
 		libxml_use_internal_errors(true);
 		$xml = new DOMDocument();
@@ -240,7 +240,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					$error->message, $error->level, $error->code, $error->file,
 					$error->line, $error->column);
 			}
-			$msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $error_msg);
+			$msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $filename, $error_msg);
 			$this->sendMailOnError($msg);
 			libxml_clear_errors();
 			libxml_use_internal_errors(false);
