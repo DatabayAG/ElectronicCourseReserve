@@ -1,74 +1,21 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
-require_once 'Services/Component/classes/class.ilPluginConfigGUI.php';
-require_once 'Services/User/classes/class.ilUserAutoComplete.php';
+require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
  * Class ilElectronicCourseReserveConfigGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilFileSystemGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI, ilElectronicCourseReserveContentConfigGUI
  */
-class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
+class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseGUI
 {
 	/**
-	 * @var \ilElectronicCourseReservePlugin
+	 * @inheritdoc
 	 */
-	public $pluginObj = null;
-
-	/**
-	 * @var \ilPropertyFormGUI
-	 */
-	public $form = null;
-
-	/**
-	 * @var ilTabsGUI 
-	 */
-	public $tabs;
-
-	/**
-	 * @var \ilCtrl 
-	 */
-	public $ctrl;
-
-	/**
-	 * @var \ilLanguage 
-	 */
-	public $lng;
-
-	/**
-	 * @var \ilTemplate 
-	 */
-	public $tpl;
-
-	/**
-	 * @var \ilSetting
-	 */
-	public $settings;
-
-	/**
-	 * @var \ilObjUser
-	 */
-	public $user;
-
-	/**
-	 * ilElectronicCourseReserveConfigGUI constructor.
-	 */
-	public function __construct()
+	protected function getDefaultCommand()
 	{
-		global $DIC;
-
-		$this->tabs = $DIC->tabs();
-		$this->ctrl = $DIC->ctrl();
-		$this->lng = $DIC->language();
-		$this->lng->loadLanguageModule('meta');
-		$this->user = $DIC->user();
-
-		$this->tpl = $DIC->ui()->mainTemplate();
-		$this->settings = $DIC['ilSetting'];
-
-		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
-		$this->pluginObj->includeClass('class.ilElectronicCourseReserveLangData.php');
+		return 'showGeneralConfiguration';
 	}
 
 	/**
@@ -76,10 +23,10 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 	 */
 	public function executeCommand()
 	{
-		$next_class = $this->ctrl->getNextClass();
-		switch ($next_class) {
+		$nextClass = $this->ctrl->getNextClass();
+		switch (strtolower($nextClass)) {
 			case 'ilfilesystemgui':
-				$this->tpl->setTitle($this->lng->txt("cmps_plugin").": ".$_GET["pname"]);
+				$this->tpl->setTitle($this->lng->txt('cmps_plugin'). ': ' . $_GET["pname"]);
 				$this->tpl->setDescription("");
 
 				$this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
@@ -94,13 +41,13 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 				$this->ctrl->setParameterByClass(__CLASS__, 'plugin_id', $_GET['plugin_id']);
 				$this->ctrl->setParameterByClass(__CLASS__, 'pname', $_GET['pname']);
 
-				$this->getTabs();
-				$this->getSubTabs($this->ctrl->getCmd());
+				$this->showTabs();
+				$this->tabs->setSubTabActive('import_directory');
 
-				$dir = ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory');
-				if ($this->isValidDirectory($dir) && is_dir($dir)) {
+				$importDirectory = ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory');
+				if ($this->isValidDirectory($importDirectory) && is_dir($importDirectory)) {
 					require_once 'Services/FileSystem/classes/class.ilFileSystemGUI.php';
-					$gui = new ilFileSystemGUI(ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory'));
+					$gui = new ilFileSystemGUI(ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory'));
 					$gui->setAllowFileCreation(true);
 					$gui->setAllowDirectoryCreation(false);
 					$gui->setAllowedSuffixes(array('xml'));
@@ -119,11 +66,58 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 				}
 				break;
 
+			case strtolower('ilElectronicCourseReserveAgreementConfigGUI'):
+				\ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveAgreementConfigGUI.php');
+				$this->ctrl->forwardCommand(new \ilElectronicCourseReserveAgreementConfigGUI(\ilElectronicCourseReservePlugin::getInstance()));
+				break;
+
+			case strtolower('ilElectronicCourseReserveContentConfigGUI'):
+				\ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveContentConfigGUI.php');
+				$this->ctrl->forwardCommand(new \ilElectronicCourseReserveContentConfigGUI(\ilElectronicCourseReservePlugin::getInstance()));
+				break;
+
 			default:
 				parent::executeCommand();
+				$this->tabs->setSubTabActive('settings');
 				break;
 		}
 	}
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function showTabs()
+	{
+		parent::showTabs();
+
+		$this->tabs->addSubTab(
+			'settings',
+			$this->lng->txt('settings'),
+			$this->ctrl->getLinkTarget($this, 'configure')
+		);
+
+		$importDirectory = \ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory');
+		if ($this->isValidDirectory($importDirectory) && is_dir($importDirectory)) {
+			$this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
+			$this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $_GET['cname']);
+			$this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id', $_GET['slot_id']);
+			$this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $_GET['plugin_id']);
+			$this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $_GET['pname']);
+
+			$this->tabs->addSubTab(
+				'import_directory',
+				$this->getPluginObject()->txt('import_directory'),
+				$this->ctrl->getLinkTargetByClass('ilfilesystemgui', 'listFiles')
+			);
+		}
+
+		if (in_array(strtolower($this->ctrl->getCmd()), ['listfiles']) || strtolower($_GET['cmdClass']) === 'ilfilesystemgui') {
+			$this->tabs->activateSubTab('import_directory');
+		} else {
+			$this->tabs->activateSubTab('configure');
+		}
+	}
+
 
 	/**
 	 * @param string $a_directory
@@ -140,709 +134,246 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 	}
 
 	/**
-	 * @param string $cmd
+	 * @param ilPropertyFormGUI|null $form
 	 */
-	public function performCommand($cmd)
+	protected function showGeneralConfiguration(\ilPropertyFormGUI $form = null)
 	{
-		$this->getTabs();
-		
-		switch($cmd)
-		{
-			case 'doUserAutoComplete':
-				$this->doUserAutoComplete();
-				break;
-			default:
-				$this->getSubTabs($cmd);
-				$this->$cmd();
-				break;
-		}
-	}
-
-	/**
-	 * 
-	 */
-	public function getTabs()
-	{
-		$this->tabs->clearTargets();
-
-		if (isset($_GET['plugin_id']) && $_GET['plugin_id']) {
-			$this->tabs->setBackTarget(
-				$this->lng->txt('cmps_plugin'),
-				$this->ctrl->getLinkTargetByClass('ilobjcomponentsettingsgui', 'showPlugin')
-			);
-		} else {
-			$this->tabs->setBackTarget(
-				$this->lng->txt('cmps_plugins'),
-				$this->ctrl->getLinkTargetByClass('ilobjcomponentsettingsgui', 'listPlugins')
-			);
-		}
-
-		$this->tabs->addTab('configure', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'configure'));
-		$this->tabs->addTab('showUseAgreementSettings', $this->pluginObj->txt('use_agreement'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
-		$this->tabs->addTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
-	}
-
-	/**
-	 * @param string $cmd
-	 */
-	public function getSubTabs($cmd)
-	{
-		switch ($cmd) {
-			case '':
-			case 'configure':
-			case 'editSettings':
-			case 'saveSettings':
-			case 'listFiles':
-			case 'extCommand_1':
-				$this->tabs->activateTab('configure');
-
-				$this->tabs->addSubTab(
-					'configure',
-					$this->lng->txt('settings'),
-					$this->ctrl->getLinkTarget($this, 'configure')
-				);
-
-				$dir = ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory');
-				if ($this->isValidDirectory($dir) && is_dir($dir)) {
-					$this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
-					$this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $_GET['cname']);
-					$this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id', $_GET['slot_id']);
-					$this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $_GET['plugin_id']);
-					$this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $_GET['pname']);
-
-					$this->tabs->addSubTab(
-						'import_directory',
-						$this->getPluginObject()->txt('import_directory'),
-						$this->ctrl->getLinkTargetByClass('ilfilesystemgui', 'listFiles')
-					);
-				}
-
-				if (in_array(strtolower($cmd), ['listfiles']) || strtolower($_GET['cmdClass']) === 'ilfilesystemgui') {
-					$this->tabs->activateSubTab('import_directory');
-				} else {
-					$this->tabs->activateSubTab('configure');
-				}
-				break;
-
-			case 'showUseAgreementSettings':
-			case 'editUseAgreements':
-			case 'editUseAgreement':
-			case 'showUseAgreementForm':
-				$this->tabs->activateTab('showUseAgreementSettings');
-				$this->tabs->addSubTab(
-					'showUseAgreementSettings',
-					$this->lng->txt('settings'),
-					$this->ctrl->getLinkTarget($this, 'showUseAgreementSettings')
-				);
-				$this->tabs->addSubTab(
-					'editUseAgreements',
-					$this->pluginObj->txt('edit_use_agreement'),
-					$this->ctrl->getLinkTarget($this, 'editUseAgreements')
-				);
-				break;
-
-			case 'showEcrLangVars':
-			case 'saveEcrLangVars':
-			case 'editEcrContent':
-				$this->tabs->activateTab('showEcrLangVars');
-				break;
-		}
-	}
-	
-	/**
-	 * 
-	 */
-	public function initUseAgreementSettingsForm()
-	{
-		if($this->form instanceof \ilPropertyFormGUI)
-		{
-			return;
-		}
-
-		$this->form = new \ilPropertyFormGUI();
-		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveUseAgreementSettings'));
-		$this->form->setTitle($this->lng->txt('settings'));
-		$this->form->addCommandButton('saveUseAgreementSettings', $this->lng->txt('save'));
-		
-		$enable_use_agreement = new ilCheckboxInputGUI($this->pluginObj->txt('enable_use_agreement'), 'enable_use_agreement');
-		$this->form->addItem($enable_use_agreement);
-
-	}
-
-	/**
-	 * 
-	 */
-	public function showUseAgreementSettings()
-	{
-		$this->tabs->activateSubTab('showUseAgreementSettings');
-		$this->initUseAgreementSettingsForm();
-		$this->populateValues();
-		$this->tpl->setContent($this->form->getHTML());
-	}
-
-	/**
-	 * 
-	 */
-	public function saveUseAgreementSettings()
-	{
-		$this->initUseAgreementSettingsForm();
-
-		if ($this->form->checkInput()) {
-			$this->pluginObj->setSetting('enable_use_agreement', (int)$this->form->getInput('enable_use_agreement'));
-			
-			ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
-			$this->ctrl->redirect($this, 'showUseAgreementSettings');
-		}
-
-		$this->form->setValuesByPost();
-		$this->tpl->setContent($this->form->getHTML());
-	}
-	
-	public function editUseAgreements()
-	{
-		global $DIC;
-		
-		$toolbar = $DIC->toolbar();
-		
-		require_once 'Services/UIComponent/Button/classes/class.ilLinkButton.php';
-		$button = ilLinkButton::getInstance();
-		$button->setCaption($this->pluginObj->txt('add_use_agreement'), false);
-		$button->setUrl($this->ctrl->getLinkTarget($this, 'showUseAgreementForm'));
-		$toolbar->addButtonInstance($button);
-		
-		$this->tabs->activateSubTab('editUseAgreements');
-		
-		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveAgreementTableGUI.php');
-		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveAgreementTableProvider.php');
-		
-		$table = new ilElectronicCourseReserveAgreementTableGUI($this);
-		$provider = new ilElectronicCourseReserveAgreementTableProvider();
-		$table->setData($provider->getTableData());
-		
-		$this->tpl->setContent($table->getHTML());		
-	}
-	
-	/**
-	 * 
-	 */
-	public function initUseAgreementForm()
-	{
-		global $DIC;
-		
-		if($this->form instanceof ilPropertyFormGUI)
-		{
-			return;
-		}
-		
-		$this->form = new ilPropertyFormGUI();
-		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveUseAgreement'));
-		$this->form->setTitle($this->pluginObj->txt('add_use_agreement'));
-		
-		$installed_langs  = $this->lng->getInstalledLanguages();
-		$this->lng->loadLanguageModule('meta');
-		foreach($installed_langs as $lang)
-		{
-			$lang_options[$lang] = $this->lng->txt('meta_l_'.$lang);
-		}
-		
-		$lang_select = new ilSelectInputGUI($this->lng->txt('language'), 'lang');
-		$lang_select->setOptions($lang_options);
-		$this->form->addItem($lang_select);
-		
-		$agreement_input = new ilTextAreaInputGUI($this->pluginObj->txt('use_agreement'), 'agreement');
-		$agreement_input->setRequired(true);
-		$agreement_input->setRows(15);
-		$agreement_input->setUseRte(true);
-		
-		$agreement_input->removePlugin('advlink');
-		$agreement_input->removePlugin('ilimgupload');
-		$agreement_input->setRTERootBlockElement('');
-		$agreement_input->disableButtons(array(
-			'charmap',
-			'undo',
-			'redo',
-			'justifyleft',
-			'justifycenter',
-			'justifyright',
-			'justifyfull',
-			'anchor',
-			'fullscreen',
-			'cut',
-			'copy',
-			'paste',
-			'pastetext',
-			'formatselect'
-		));
-		
-		$agreement_input->setRTESupport($DIC->user()->getId(), 'ecr_ua', 'ecr_ua');
-
-		$this->pluginObj->includeClass('class.ilElectronicCourseReservePostPurifier.php');
-		$purifier = new \ilElectronicCourseReservePostPurifier();
-		$agreement_input->usePurifier(true);
-		$agreement_input->setPurifier($purifier);
-		
-		$this->form->addCommandButton('saveUseAgreement', $this->lng->txt('add'));
-		$this->form->addCommandButton('editUseAgreements', $this->lng->txt('cancel'));
-		$this->form->addItem($agreement_input);
-	}
-	
-	/**
-	 * 
-	 */
-	public function showUseAgreementForm()
-	{
-		$this->tabs->activateSubTab('editUseAgreements');
-		$this->initUseAgreementForm();
-		$this->tpl->setContent($this->form->getHTML());
-	}
-	
-	/**
-	 * 
-	 */
-	public function  saveUseAgreement()
-	{
-		$this->initUseAgreementForm();
-		
-		if($this->form->checkInput())
-		{
-			$lang = $this->form->getInput('lang');
-			$agreement_text = $this->form->getInput('agreement');
-				
-			$this->pluginObj->includeClass('class.ilElectronicCourseReserveAgreement.php');
-			$agreement_obj = new ilElectronicCourseReserveAgreement();
-			$agreement_obj->setLang($lang);
-			$agreement_obj->setAgreement($agreement_text);
-				
-			$agreement_obj->saveAgreement();
-			$this->ctrl->redirect($this, 'editUseAgreements');
-		}
-	}
-	
-	/**
-	 * 
-	 */	
-	public function editUseAgreement()
-	{
-		$ecr_lang = $_GET['ecr_lang'];
-		$this->tabs->activateSubTab('editUseAgreements');
-		$this->initUseAgreementForm();
-
-		$this->getUseAgreementValues($ecr_lang);
-		$this->tpl->setContent($this->form->getHTML());
-	}
-	
-	/**
-	 * @param $ecr_lang
-	 */
-	public function getUseAgreementValues($ecr_lang)
-	{
-		$this->pluginObj->includeClass('class.ilElectronicCourseReserveAgreement.php');
-		$use_agreement = new ilElectronicCourseReserveAgreement();
-		$use_agreement->loadByLang($ecr_lang);
-		
-		$values['lang'] = $use_agreement->getLang();
-		$values['agreement'] = $use_agreement->getAgreement();
-		
-		$this->form->setValuesByArray($values);
-	}
-	
-	/**
-	 *
-	 */
-	protected function configure()
-	{
-		$this->tabs->activateTab('configure');
-		$this->editSettings();
-	}
-
-	/**
-	 *
-	 */
-	protected function editSettings()
-	{
-		global  $DIC, $ilSetting;
-		$tpl = $DIC->ui()->mainTemplate();
-		$ilSetting = $DIC['ilSetting'];
-
-		if(!$ilSetting->get('soap_user_administration'))
-		{
-			$ids     = ilObject::_getIdsForTitle('System Settings', 'adm');
-			$id      = current($ids);
-			$ref_ids = ilObject::_getAllReferences($id);
-			$ref_id  = current($ref_ids);
-			$url     = $this->getPluginObject()->getLinkTarget(
+		if (!$this->settings->get('soap_user_administration')) {
+			$ids = \ilObject::_getIdsForTitle('System Settings', 'adm');
+			$id = current($ids);
+			$ref_ids = \ilObject::_getAllReferences($id);
+			$ref_id = current($ref_ids);
+			$url = $this->ctrl->getLinkTarget(
 				array(
 					'iladministrationgui',
 					'ilobjsystemfoldergui'
 				),
 				array(
-					'admin'  => 'settings',
+					'admin' => 'settings',
 					'ref_id' => $ref_id
 				),
 				'showWebServices'
 			);
-			ilUtil::sendFailure(sprintf($this->pluginObj->txt('ecr_soap_activation_required'), $url));
+			\ilUtil::sendFailure(sprintf($this->getPluginObject()->txt('ecr_soap_activation_required'), $url));
 		}
 
-		$this->initSettingsForm();
-		$this->populateValues();
-		$tpl->setContent($this->form->getHTML());
+		if (null === $form) {
+			$form = $this->getGeneralSettingsForm();
+		}
+
+		$this->populateValues($form);
+		$this->tpl->setContent($form->getHTML());
+	}
+
+	/**
+	 * @param ilPropertyFormGUI $form
+	 */
+	protected function populateValues(\ilPropertyFormGUI $form)
+	{
+		$form->setValuesByArray([
+			'gpg_homedir' => $this->getPluginObject()->getSetting('gpg_homedir'),
+			'sign_key_email' => $this->getPluginObject()->getSetting('sign_key_email'),
+			'limit_to_groles' => $this->getPluginObject()->getSetting('limit_to_groles'),
+			'global_roles' => explode(',', $this->getPluginObject()->getSetting('global_roles')),
+			'url_search_system' => $this->getPluginObject()->getSetting('url_search_system'),
+			'enable_use_agreement' => $this->getPluginObject()->getSetting('enable_use_agreement'),
+			'token_append_obj_title' => $this->getPluginObject()->getSetting('token_append_obj_title'),
+			'token_append_to_bibl' => $this->getPluginObject()->getSetting('token_append_to_bibl'),
+			'is_mail_enabled' => $this->getPluginObject()->getSetting('is_mail_enabled'),
+			'recipients' => explode(',', $this->getPluginObject()->getSetting('mail_recipients')),
+			'import_directory' => $this->getPluginObject()->getSetting('import_directory')
+		]);
 	}
 
 	/**
 	 *
 	 */
-	protected function populateValues()
+	protected function getGeneralSettingsForm()
 	{
-		$this->form->setValuesByArray(array(
-			'gpg_homedir' => $this->pluginObj->getSetting('gpg_homedir'),
-			'sign_key_email' => $this->pluginObj->getSetting('sign_key_email'),
-			'limit_to_groles' => $this->pluginObj->getSetting('limit_to_groles'),
-			'global_roles' => explode(',', $this->pluginObj->getSetting('global_roles')),
-			'url_search_system' => $this->pluginObj->getSetting('url_search_system'),
-			'enable_use_agreement' => $this->pluginObj->getSetting('enable_use_agreement'),
-			'token_append_obj_title' => $this->pluginObj->getSetting('token_append_obj_title'),
-			'token_append_to_bibl' => $this->pluginObj->getSetting('token_append_to_bibl'),
-			'is_mail_enabled'     => $this->pluginObj->getSetting('is_mail_enabled'),
-			'recipients'          => explode(',', $this->pluginObj->getSetting('mail_recipients')),
-			'import_directory'    => $this->pluginObj->getSetting('import_directory')
-		));
-	}
-
-	/**
-	 *
-	 */
-	protected function initSettingsForm()
-	{
-		global $DIC; 
-		$lng = $DIC->language();
-		$ilCtrl = $DIC->ctrl(); 
-		$rbacreview = $DIC->rbac()->review();
-		$ilObjDataCache = $DIC['ilObjDataCache'];
-
-		if($this->form instanceof ilPropertyFormGUI)
-		{
-			return;
+		$disabled = false;
+		if ($this->lock->isLocked()) {
+			$disabled = true;
 		}
 
-		$this->form = new ilPropertyFormGUI();
-		$this->form->setFormAction($ilCtrl->getFormAction($this, 'saveSettings'));
-		$this->form->setTitle($lng->txt('settings'));
-		$this->form->addCommandButton('saveSettings', $lng->txt('save'));
+		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
+		$form = new ilPropertyFormGUI();
+		$form->setFormAction($this->ctrl->getFormAction($this, 'saveSettings'));
+		$form->setTitle($this->lng->txt('settings'));
 
-		$form_gpg_homedir = new ilTextInputGUI($this->pluginObj->txt('ecr_gpg_homedir'), 'gpg_homedir');
+		$form_gpg_homedir = new \ilTextInputGUI($this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir');
+		$form_gpg_homedir->setDisabled($disabled);
 		$form_gpg_homedir->setRequired(true);
-		$form_gpg_homedir->setInfo($this->pluginObj->txt('ecr_gpg_homedir_info'));
+		$form_gpg_homedir->setInfo($this->getPluginObject()->txt('ecr_gpg_homedir_info'));
 
-		$form_key_email = new ilTextInputGUI($this->pluginObj->txt('ecr_sign_key_email'), 'sign_key_email');
+		$form_key_email = new \ilTextInputGUI($this->getPluginObject()->txt('ecr_sign_key_email'), 'sign_key_email');
+		$form_key_email->setDisabled($disabled);
 		$form_key_email->setRequired(true);
-		$form_key_email->setInfo($this->pluginObj->txt('ecr_sign_key_email_info'));
+		$form_key_email->setInfo($this->getPluginObject()->txt('ecr_sign_key_email_info'));
 
-		$form_key_passphrase = new ilPasswordInputGUI($this->pluginObj->txt('ecr_sign_key_passphrase'), 'sign_key_passphrase');
+		$form_key_passphrase = new \ilPasswordInputGUI($this->getPluginObject()->txt('ecr_sign_key_passphrase'), 'sign_key_passphrase');
+		$form_key_passphrase->setDisabled($disabled);
 		$form_key_passphrase->setRetypeValue(true);
 		$form_key_passphrase->setSkipSyntaxCheck(true);
-		$form_key_passphrase->setInfo($this->pluginObj->txt('ecr_sign_key_passphrase_info'));
+		$form_key_passphrase->setInfo($this->getPluginObject()->txt('ecr_sign_key_passphrase_info'));
 
-		$form_search_system_url = new ilTextInputGUI($this->pluginObj->txt('ecr_url_search_system'), 'url_search_system');
+		$form_search_system_url = new \ilTextInputGUI($this->getPluginObject()->txt('ecr_url_search_system'), 'url_search_system');
+		$form_search_system_url->setDisabled($disabled);
 		$form_search_system_url->setRequired(true);
 		$form_search_system_url->setValidationRegexp('/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/');
-		$form_search_system_url->setValidationFailureMessage($this->pluginObj->txt('ecr_url_search_system_invalid'));
-		$form_search_system_url->setInfo($this->pluginObj->txt('ecr_url_search_system_info'));
+		$form_search_system_url->setValidationFailureMessage($this->getPluginObject()->txt('ecr_url_search_system_invalid'));
+		$form_search_system_url->setInfo($this->getPluginObject()->txt('ecr_url_search_system_info'));
 
-		$tokenAppendCrsTitle = new \ilCheckboxInputGUI($this->pluginObj->txt('token_append_obj_title'), 'token_append_obj_title');
-		$tokenAppendCrsTitle->setInfo($this->pluginObj->txt('token_append_obj_title_info'));
+		$tokenAppendCrsTitle = new \ilCheckboxInputGUI($this->getPluginObject()->txt('token_append_obj_title'), 'token_append_obj_title');
+		$tokenAppendCrsTitle->setDisabled($disabled);
+		$tokenAppendCrsTitle->setInfo($this->getPluginObject()->txt('token_append_obj_title_info'));
 		$tokenAppendCrsTitle->setValue(1);
 
-		$tokenAppendToBibItems = new \ilCheckboxInputGUI($this->pluginObj->txt('token_append_to_bibl'), 'token_append_to_bibl');
-		$tokenAppendToBibItems->setInfo($this->pluginObj->txt('token_append_to_bibl_info'));
+		$tokenAppendToBibItems = new \ilCheckboxInputGUI($this->getPluginObject()->txt('token_append_to_bibl'), 'token_append_to_bibl');
+		$tokenAppendToBibItems->setDisabled($disabled);
+		$tokenAppendToBibItems->setInfo($this->getPluginObject()->txt('token_append_to_bibl_info'));
 		$tokenAppendToBibItems->setValue(1);
 
-		$form_limit_to_groles = new ilCheckboxInputGUI($this->pluginObj->txt('limit_to_groles'), 'limit_to_groles');
-		include_once 'Services/Form/classes/class.ilMultiSelectInputGUI.php';
-		$sub_mlist = new ilMultiSelectInputGUI(
-			$this->pluginObj->txt('global_roles'),
+		$limitToGlobalRoles = new \ilCheckboxInputGUI($this->getPluginObject()->txt('limit_to_groles'), 'limit_to_groles');
+		$limitToGlobalRoles->setDisabled($disabled);
+		require_once 'Services/Form/classes/class.ilMultiSelectInputGUI.php';
+		$permittedRoles = new \ilMultiSelectInputGUI(
+			$this->getPluginObject()->txt('global_roles'),
 			'global_roles'
 		);
-		$roles = array();
-		foreach($rbacreview->getGlobalRoles() as $role_id)
-		{
-			if( $role_id != ANONYMOUS_ROLE_ID )
-				$roles[$role_id] = $ilObjDataCache->lookupTitle($role_id);
+		$permittedRoles->setDisabled($disabled);
+		$roles = [];
+		foreach($this->rbacreview->getGlobalRoles() as $role_id) {
+			if ($role_id != ANONYMOUS_ROLE_ID ) {
+				$roles[$role_id] = $this->objectCache->lookupTitle($role_id);
+			}
 		}
-		$sub_mlist->setOptions($roles);
-		$form_limit_to_groles->addSubItem($sub_mlist);
+		$permittedRoles->setOptions($roles);
+		$limitToGlobalRoles->addSubItem($permittedRoles);
 
-		$this->form->addItem($form_gpg_homedir);
-		$this->form->addItem($form_key_email);
-		$this->form->addItem($form_key_passphrase);
-		$this->form->addItem($form_search_system_url);
-		$this->form->addItem($tokenAppendCrsTitle);
-		$this->form->addItem($tokenAppendToBibItems);
-		$this->form->addItem($form_limit_to_groles);
-
-		$mail = new ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail'), 'is_mail_enabled');
+		$mail = new \ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail'), 'is_mail_enabled');
 		$mail->setInfo($this->getPluginObject()->txt('notification_mail_info'));
+		$mail->setDisabled($disabled);
 
-		// RECIPIENT
-		$dsDataLink = $DIC->ctrl()->getLinkTarget($this, 'doUserAutoComplete', '', true);
-		$recipients = new ilTextInputGUI($this->getPluginObject()->txt('recipients'), 'recipients');
+		$dsDataLink = $this->ctrl->getLinkTarget($this, 'doUserAutoComplete', '', true);
+		$recipients = new \ilTextInputGUI($this->getPluginObject()->txt('recipients'), 'recipients');
 		$recipients->setRequired(true);
-		$recipients->setValue(array());
+		$recipients->setValue([]);
 		$recipients->setDataSource($dsDataLink);
 		$recipients->setMaxLength(null);
 		$recipients->setMulti(true);
 		$recipients->setInfo($this->getPluginObject()->txt('recipients_info'));
 		$mail->addSubItem($recipients);
-		$this->form->addItem($mail);
+		$recipients->setDisabled($disabled);
 
-		$import_dir = new \ilTextInputGUI($this->getPluginObject()->txt('import_directory'), 'import_directory');
-		$dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $this->pluginObj->getSetting('import_directory');
-		$import_dir->setInfo(sprintf($this->getPluginObject()->txt('import_directory_info'), $dir));
-		$import_dir->setRequired(true);
-		$import_dir->setSize(120);
-		$import_dir->setMaxLength(512);
-		$this->form->addItem($import_dir);
+		$importDirectory = new \ilTextInputGUI($this->getPluginObject()->txt('import_directory'), 'import_directory');
+		$dir = \ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $this->getPluginObject()->getSetting('import_directory');
+		$importDirectory->setInfo(sprintf($this->getPluginObject()->txt('import_directory_info'), $dir));
+		$importDirectory->setRequired(true);
+		$importDirectory->setSize(120);
+		$importDirectory->setMaxLength(512);
+		$importDirectory->setDisabled($disabled);
 
+		$form->addItem($form_gpg_homedir);
+		$form->addItem($form_key_email);
+		$form->addItem($form_key_passphrase);
+		$form->addItem($form_search_system_url);
+		$form->addItem($tokenAppendCrsTitle);
+		$form->addItem($tokenAppendToBibItems);
+		$form->addItem($limitToGlobalRoles);
+		$form->addItem($mail);
+		$form->addItem($importDirectory);
+
+		$form->addCommandButton('saveSettings', $this->lng->txt('save'));
+		if ($disabled) {
+			$form->addCommandButton('confirmReleaseLock', $this->lng->txt('release_lock'));
+		}
+
+		return $form;
 	}
 
 	/**
 	 *
 	 */
-	public function saveSettings()
+	protected function saveSettings()
 	{
-		global $DIC;
-
-		$tpl = $DIC->ui()->mainTemplate(); 
-		$lng = $DIC->language(); 
-		$ilCtrl = $DIC->ctrl();
-
-		$this->initSettingsForm();
-
-		if($this->form->checkInput())
-		{
-			$recipients = $this->form->getInput('recipients');
-			$this->pluginObj->setSetting('limit_to_groles', (int)$this->form->getInput('limit_to_groles'));
-			$this->pluginObj->setSetting('global_roles', implode(',', (array)$this->form->getInput('global_roles')));
-			$this->pluginObj->setSetting('gpg_homedir', $this->form->getInput('gpg_homedir'));
-			$this->pluginObj->setSetting('sign_key_email', $this->form->getInput('sign_key_email'));
-			$this->pluginObj->setSetting('is_mail_enabled', $this->form->getInput('is_mail_enabled'));
-			$this->pluginObj->setSetting('mail_recipients', implode(',', $recipients));
-			$this->pluginObj->setSetting('import_directory',  $this->form->getInput('import_directory'));
-
-			if($this->form->getInput('sign_key_passphrase'))
-			{
-				/** @var \Zend\Crypt\BlockCipher $symmetric */
-				$symmetric = $DIC['plugin.esa.crypt.blockcipher'];
-
-				$this->pluginObj->setSetting('sign_key_passphrase', $symmetric->encrypt($this->form->getInput('sign_key_passphrase')));
-			}
-			$this->pluginObj->setSetting('url_search_system', $this->form->getInput('url_search_system'));
-			$this->pluginObj->setSetting('token_append_obj_title', (int)$this->form->getInput('token_append_obj_title'));
-			$this->pluginObj->setSetting('token_append_to_bibl', (int)$this->form->getInput('token_append_to_bibl'));
-
-			ilUtil::sendSuccess($lng->txt('saved_successfully'), true);
-			$ilCtrl->redirect($this);
+		if ($this->lock->isLocked()) {
+			\ilUtil::sendInfo($this->lng->txt('could_not_save_job_prob_runs'), true);
+			$this->ctrl->redirect($this);
 		}
 
-		$this->form->setValuesByPost();
-		$tpl->setContent($this->form->getHTML());
-	}
+		$form = $this->getGeneralSettingsForm();
+		if ($form->checkInput()) {
+			$recipients = (array)$form->getInput('recipients');
 
-	/**
-	 * 
-	 */
-	public function showEcrLangVars()
-	{
-		$this->tabs->activateSubTab('showEcrLangVars');
-		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableGUI.php');
-		$this->pluginObj->includeClass('tables/class.ilElectronicCourseReserveLangTableProvider.php');
+			$this->getPluginObject()->setSetting('limit_to_groles', (int)$form->getInput('limit_to_groles'));
+			$this->getPluginObject()->setSetting('global_roles', implode(',', (array)$form->getInput('global_roles')));
+			$this->getPluginObject()->setSetting('gpg_homedir', $form->getInput('gpg_homedir'));
+			$this->getPluginObject()->setSetting('sign_key_email', $form->getInput('sign_key_email'));
+			$this->getPluginObject()->setSetting('is_mail_enabled', $form->getInput('is_mail_enabled'));
+			$this->getPluginObject()->setSetting('mail_recipients', implode(',', $recipients));
+			$this->getPluginObject()->setSetting('import_directory', $form->getInput('import_directory'));
 
-		$table = new \ilElectronicCourseReserveLangTableGUI($this, 'showEcrLangVars');
-		$provider = new \ilElectronicCourseReserveLangTableProvider();
-		$table->setData($provider->getTableData());
-
-		$this->tpl->setContent($table->getHTML());
-	}
-
-	/**
-	 * 
-	 */
-	public function saveEcrLangVars()
-	{
-		$ecr_lang_data = new \ilElectronicCourseReserveLangData();
-
-		$installed_langs = ilLanguage::_getInstalledLanguages();
-		foreach ($installed_langs as $lang) {
-			if (isset($_POST[$lang])) {
-				$ecr_lang_data->setLangKey($lang);
-				$ecr_lang_data->setValue(trim(\ilUtil::stripSlashes($_POST[$lang])));
-				$ecr_lang_data->saveTranslation();
-			}
-		}
-
-		ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
-		$this->showEcrLangVars();
-	}
-
-	/**
-	 * 
-	 */
-	public function editEcrContent()
-	{
-		if (!isset($_GET['ecr_lang'])) {
-			\ilUtil::sendFailure($this->lng->txt('obj_not_found'), true);
-			$this->ctrl->redirect($this, 'showEcrLangVars');
-			return;
-		}
-
-		$lang_key = trim($_GET['ecr_lang']);
-		$lang_obj_id = \ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
-		if (!$lang_obj_id) {
-			\ilUtil::sendFailure($this->lng->txt('obj_not_found'), true);
-			$this->ctrl->redirect($this, 'showEcrLangVars');
-		}
-
-		$this->initEcrContentForm();
-
-		$ecr_content = \ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($lang_key);
-		$content = \ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
-
-		$this->form->setValuesByArray(array(
-			'ecr_content' => $content,
-			'ecr_lang' => $lang_key
-		));
-
-		$this->tpl->setContent($this->form->getHTML());
-	}
-
-	/**
-	 * 
-	 */
-	public function saveEcrContent()
-	{
-		$this->initEcrContentForm();
-		$this->form->checkInput();
-
-		$content = \ilRTE::_replaceMediaObjectImageSrc($this->form->getInput('ecr_content'), 0);
-
-		$this->pluginObj->includeClass('class.ilElectronicCourseReserveRTEHelper.php');
-
-		$lang_key = $this->form->getInput('ecr_lang');
-		$lang_obj_id = \ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
-
-		\ilElectronicCourseReserveRTEHelper::moveMediaObjects($lang_obj_id, $this->form->getInput('ecr_content'), 'ecr_content~:html', 'ecr_content:html');
-
-		// remove usage of deleted media objects
-		include_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
-		$oldMediaObjects = \ilObjMediaObject::_getMobsOfObject('ecr_content:html', $lang_obj_id);
-		$curMediaObjects = \ilRTE::_getMediaObjects($this->form->getInput('ecr_content'), 0);
-		foreach ($oldMediaObjects as $oldMob) {
-			$found = false;
-
-			foreach ($curMediaObjects as $curMob) {
-				if ($oldMob == $curMob) {
-					$found = true;
-					break;
-				}
+			if ($form->getInput('sign_key_passphrase')) {
+				$this->getPluginObject()->setSetting('sign_key_passphrase', $this->encrypter->encrypt($form->getInput('sign_key_passphrase')));
 			}
 
-			if (!$found) {
-				if (\ilObjMediaObject::_exists($oldMob)) {
-					\ilObjMediaObject::_removeUsage($oldMob, 'ecr_content:html', $lang_obj_id);
-					$mob_obj = new \ilObjMediaObject($oldMob);
-					$mob_obj->delete();
-				}
-			}
+			$this->getPluginObject()->setSetting('url_search_system', $form->getInput('url_search_system'));
+			$this->getPluginObject()->setSetting('token_append_obj_title', (int)$form->getInput('token_append_obj_title'));
+			$this->getPluginObject()->setSetting('token_append_to_bibl', (int)$form->getInput('token_append_to_bibl'));
+
+			\ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+			$this->ctrl->redirect($this);
 		}
 
-		\ilElectronicCourseReserveLangData::writeEcrContent($lang_key, $content);
-
-		\ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
-		$this->ctrl->setParameter($this, 'ecr_lang', $lang_key);
-		$this->ctrl->redirect($this, 'editEcrContent');
+		$form->setValuesByPost();
+		$this->tpl->setContent($form->getHTML());
 	}
 
 	/**
 	 * 
 	 */
-	public function initEcrContentForm()
+	protected function doUserAutoComplete()
 	{
-		if ($this->form instanceof \ilPropertyFormGUI) {
-			return;
-		}
-
-		$this->form = new \ilPropertyFormGUI();
-		$this->form->setFormAction($this->ctrl->getFormAction($this, 'saveEcrContent'));
-		$this->form->setTitle($this->pluginObj->txt('edit_ecr_content'). ': '. $this->lng->txt('meta_l_'. $_GET['ecr_lang']));
-
-		$ecr_content_input = new \ilTextAreaInputGUI($this->pluginObj->txt('ecr_content'), 'ecr_content');
-		$ecr_content_input->setRequired(true);
-		$ecr_content_input->setRows(15);
-		$ecr_content_input->setUseRte(true);
-
-		$ecr_content_input->removePlugin('advlink');
-		$ecr_content_input->setRTERootBlockElement('');
-		$ecr_content_input->disableButtons(array(
-			'charmap',
-			'undo',
-			'redo',
-			'justifyleft',
-			'justifycenter',
-			'justifyright',
-			'justifyfull',
-			'anchor',
-			'fullscreen',
-			'cut',
-			'copy',
-			'paste',
-			'pastetext',
-			'formatselect'
-		));
-
-		$ecr_content_input->setRTESupport($this->user->getId(), 'ecr_content', 'ecr_content');
-		$ecr_content_input->setInfo($this->pluginObj->txt('insert_url_esa_info'));
-
-		$this->pluginObj->includeClass('class.ilElectronicCourseReservePostPurifier.php');
-		$purifier = new \ilElectronicCourseReservePostPurifier();
-		$ecr_content_input->usePurifier(true);
-		$ecr_content_input->setPurifier($purifier);
-
-		$ecr_lang = new \ilHiddenInputGUI('ecr_lang');
-		if (isset($_GET['ecr_lang'])) {
-			$ecr_lang->setValue($_GET['ecr_lang']);
-		}
-
-		$this->form->addItem($ecr_lang);
-
-		$this->form->addCommandButton('saveEcrContent', $this->lng->txt('save'));
-		$this->form->addCommandButton('showEcrLangVars', $this->lng->txt('cancel'));
-		$this->form->addItem($ecr_content_input);
-	}
-
-	/**
-	 * Do auto completion
-	 * @return void
-	 */
-	public function doUserAutoComplete()
-	{
-
-		if(!isset($_GET['autoCompleteField']))
-		{
-			$a_fields = array('login','firstname','lastname','email', 'recipients');
+		if (!isset($_GET['autoCompleteField'])) {
+			$a_fields = array('login', 'firstname', 'lastname', 'email', 'recipients');
 			$result_field = 'login';
-		}
-		else
-		{
-			$a_fields = array((string) $_GET['autoCompleteField']);
-			$result_field = (string) $_GET['autoCompleteField'];
+		} else {
+			$a_fields = array((string)$_GET['autoCompleteField']);
+			$result_field = (string)$_GET['autoCompleteField'];
 		}
 
-		$GLOBALS['ilLog']->write(print_r($a_fields,true));
-		$auto = new ilUserAutoComplete();
+		require_once 'Services/User/classes/class.ilUserAutoComplete.php';
+		$auto = new \ilUserAutoComplete();
 		$auto->setSearchFields($a_fields);
 		$auto->setResultField($result_field);
 		$auto->enableFieldSearchableCheck(true);
-		echo $auto->getList($_REQUEST['term']);
+		echo $auto->getList(\ilUtil::stripSlashes($_REQUEST['term']));
 		exit();
+	}
+
+	/**
+	 *
+	 */
+	protected function confirmReleaseLock()
+	{
+		require_once 'Services/Utilities/classes/class.ilConfirmationGUI.php';
+		$confirmation = new \ilConfirmationGUI();
+		$confirmation->setFormAction($this->ctrl->getFormAction($this, 'showConfigurationForm'));
+		$confirmation->setConfirm($this->lng->txt('confirm'), 'performReleaseLock');
+		$confirmation->setCancel($this->lng->txt('cancel'), 'showConfigurationForm');
+		$confirmation->setHeaderText($this->getPluginObject()->txt('sure_release_lock'));
+
+		$this->tpl->setContent($confirmation->getHTML());
+	}
+
+	/**
+	 *
+	 */
+	protected function performReleaseLock()
+	{
+		$this->lock->releaseLock();
+
+		\ilUtil::sendSuccess($this->getPluginObject()->txt('released_lock'), true);
+		$this->ctrl->redirect($this, 'showConfigurationForm');
 	}
 }
