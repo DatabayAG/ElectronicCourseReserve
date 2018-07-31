@@ -88,7 +88,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		global $DIC;
 
-		$this->logger = $DIC->logger()->root();
 		$factory = null;
 		if (isset($GLOBALS['DIC']['mail.mime.sender.factory'])) {
 			$factory = $GLOBALS['DIC']['mail.mime.sender.factory'];
@@ -100,16 +99,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$this->from = $factory->system();
 		}
-		else
-		{
-			$this->from = ilMail::getIliasMailerAddress();
-		}
 
+		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 		$this->lock   = $DIC['plugin.esa.locker'];
 		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
-		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
-
+		
 	}
 
 	/**
@@ -168,7 +163,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 				$content = @file_get_contents($pathname);
 
-				//Todo: Validate against xslt
 				$valid = $this->validateXmlAgainstXsd($content);
 				if($valid) {
 					$this->logger->write('MD5 checksum: ' . md5($content));
@@ -189,7 +183,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					{
 						if ( ! $this->createFileItem($parsed_item, $content))
 						{
-							$msg =  $this->pluginObj->txt(sprintf('error_create_file_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+							$msg =  sprintf($this->pluginObj->txt('error_create_file_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
 							$this->sendMailOnError($msg);
 						}
 					}
@@ -197,7 +191,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					{
 						if ( ! $this->createWebResourceItem($parsed_item, $content))
 						{
-							$msg =  $this->pluginObj->txt(sprintf('error_create_url_mail', $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+							$msg =  sprintf($this->pluginObj->txt('error_create_url_mail'), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
 							$this->sendMailOnError($msg);
 						}
 					}
@@ -205,7 +199,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 					if( ! $this->moveXmlToBackupFolder($pathname))
 					{
-						$msg =  $this->pluginObj->txt(sprintf('error_move_mail', $pathname));
+						$msg =  sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
 						$this->sendMailOnError($msg);
 					}
 				}
@@ -239,9 +233,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$xml->loadXML($xml_string);
 
 		if (!$xml->schemaValidate(self::PATH_TO_XSD)) {
-			$msg = $this->pluginObj->txt(sprintf('error_with_xml_validation', ''));
-			//Todo: uncomment
-			#$this->sendMailOnError($msg);
 			$errors = libxml_get_errors();
 			$error_msg = '';
 			foreach ($errors as $error) {
@@ -249,6 +240,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					$error->message, $error->level, $error->code, $error->file,
 					$error->line, $error->column);
 			}
+			$msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $error_msg);
+			$this->sendMailOnError($msg);
 			libxml_clear_errors();
 			libxml_use_internal_errors(false);
 			return false;
@@ -357,7 +350,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				ilUtil::makeDirParents($dir);
 			}
 
-			ilUtil::moveUploadedFile($parsed_item->getItem()->getFile(), $filename, $dir . '/' . $filename, true, 'copy');
+			if(file_exists($parsed_item->getItem()->getFile())) {
+				copy($parsed_item->getItem()->getFile(), $dir . '/' . $filename);
+				if(file_exists($dir . '/' . $filename)) {
+					//Todo: uncomment
+					#unlink($parsed_item->getItem()->getFile());
+				}
+			}
+			
 			$new_file->determineFileSize();
 			$new_file->update();
 
@@ -466,9 +466,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				$dir = $this->getImageFolder($new_obj_ref_id);
 				$filename = basename($parsed_item->getItem()->getIcon());
 				$target = $dir . DIRECTORY_SEPARATOR . $filename;
-				ilUtil::moveUploadedFile($file, $filename, $target , true, 'copy' );
+				if(file_exists($file)) {
+					copy($file, $target);
+				}
 				if(file_exists($target)){
 					$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
+					//Todo: uncomment
 					#unlink($filename);
 					return array('icon' => $file_path, 'icon_type' => $icon_type);
 				}
@@ -638,6 +641,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$mail = new ilMimeMail();
 			$mail->From($this->from);
 			$mail->To(explode(',', $this->pluginObj->getSetting('mail_recipients')));
+			//Todo remove
+			$mail->To('gvollbach@databay.de');
 			$mail->Subject("There was a problem with an Electronic Course Import Item");
 			$mail->Body($msg);
 			$mail->Send();
