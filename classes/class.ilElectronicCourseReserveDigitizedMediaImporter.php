@@ -611,14 +611,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					{
 						return $ref_id;
 					}
-					else if( $ref_id > 0 && ilObject::_isInTrash($ref_id))
-					{
-						$this->logger->write(sprintf('Object with ref_id (%s) is in trash, skipping.', $ref_id));
-					}
 					else
 					{
 						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
 					}
+				}
+				else if( $ref_id > 0 && ilObject::_isInTrash($ref_id))
+				{
+					$this->logger->write(sprintf('Object with ref_id (%s) is in trash, skipping.', $ref_id));
 				}
 			}
 			else
