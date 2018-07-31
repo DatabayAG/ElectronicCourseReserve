@@ -35,7 +35,7 @@ notification_mail#:#Notification Mail
 notification_mail_info#:#Wenn activated, an email notification will be sent if an error occurs while importing new objects.
 recipients#:#Recipients
 recipients_info#:#Please insert the login names of the recipients.
-import_directory#:#Importdirectory
+import_directory#:#Import Directory
 import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. Your configured path is: <br/>%s
 error_move_mail#:#There was an error moving "%s" to backup dir.
 error_create_file_mail#:#There was an error creating the file item for course ref id %s and folder import id %s. 

@@ -5,6 +5,10 @@ require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once 'Services/Component/classes/class.ilPluginConfigGUI.php';
 require_once 'Services/User/classes/class.ilUserAutoComplete.php';
 
+/**
+ * Class ilElectronicCourseReserveConfigGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilFileSystemGUI
+ */
 class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 {
 	/**
@@ -66,7 +70,75 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 		$this->pluginObj->includeClass('class.ilElectronicCourseReserveLangData.php');
 	}
-	
+
+	/**
+	 * @inheritdoc
+	 */
+	public function executeCommand()
+	{
+		$next_class = $this->ctrl->getNextClass();
+		switch ($next_class) {
+			case 'ilfilesystemgui':
+				$this->tpl->setTitle($this->lng->txt("cmps_plugin").": ".$_GET["pname"]);
+				$this->tpl->setDescription("");
+
+				$this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
+				$this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $_GET['cname']);
+				$this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id', $_GET['slot_id']);
+				$this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $_GET['plugin_id']);
+				$this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $_GET['pname']);
+
+				$this->ctrl->setParameterByClass(__CLASS__, 'ctype', $_GET['ctype']);
+				$this->ctrl->setParameterByClass(__CLASS__, 'cname', $_GET['cname']);
+				$this->ctrl->setParameterByClass(__CLASS__, 'slot_id', $_GET['slot_id']);
+				$this->ctrl->setParameterByClass(__CLASS__, 'plugin_id', $_GET['plugin_id']);
+				$this->ctrl->setParameterByClass(__CLASS__, 'pname', $_GET['pname']);
+
+				$this->getTabs();
+				$this->getSubTabs($this->ctrl->getCmd());
+
+				$dir = ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory');
+				if ($this->isValidDirectory($dir) && is_dir($dir)) {
+					require_once 'Services/FileSystem/classes/class.ilFileSystemGUI.php';
+					$gui = new ilFileSystemGUI(ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory'));
+					$gui->setAllowFileCreation(true);
+					$gui->setAllowDirectoryCreation(false);
+					$gui->setAllowedSuffixes(array('xml'));
+					$commands = $gui->getActionCommands();
+					$commands = array_filter($commands, function($cmd) {
+						return $cmd['method'] != 'renameFileForm';
+					});
+					$gui->clearCommands();
+					foreach ($commands as $cmd) {
+						$gui->addCommand($cmd['object'], $cmd['method'], $cmd['name'], $cmd['single'], $cmd['allow_dir']);
+					}
+					$this->ctrl->forwardCommand($gui);
+					return;
+				} else {
+					$this->ctrl->redirect($this);
+				}
+				break;
+
+			default:
+				parent::executeCommand();
+				break;
+		}
+	}
+
+	/**
+	 * @param string $a_directory
+	 * @return bool
+	 */
+	protected function isValidDirectory($a_directory)
+	{
+		$a_directory = basename($a_directory);
+		if (substr($a_directory, 0, 1) === '/' || substr($a_directory, 0, 1) === '.' || $a_directory === '') {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * @param string $cmd
 	 */
@@ -91,6 +163,20 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 	 */
 	public function getTabs()
 	{
+		$this->tabs->clearTargets();
+
+		if (isset($_GET['plugin_id']) && $_GET['plugin_id']) {
+			$this->tabs->setBackTarget(
+				$this->lng->txt('cmps_plugin'),
+				$this->ctrl->getLinkTargetByClass('ilobjcomponentsettingsgui', 'showPlugin')
+			);
+		} else {
+			$this->tabs->setBackTarget(
+				$this->lng->txt('cmps_plugins'),
+				$this->ctrl->getLinkTargetByClass('ilobjcomponentsettingsgui', 'listPlugins')
+			);
+		}
+
 		$this->tabs->addTab('configure', $this->lng->txt('settings'), $this->ctrl->getLinkTarget($this, 'configure'));
 		$this->tabs->addTab('showUseAgreementSettings', $this->pluginObj->txt('use_agreement'), $this->ctrl->getLinkTarget($this, 'showUseAgreementSettings'));
 		$this->tabs->addTab('showEcrLangVars', $this->pluginObj->txt('adm_ecr_tab_title'), $this->ctrl->getLinkTarget($this, 'showEcrLangVars'));
@@ -102,6 +188,42 @@ class ilElectronicCourseReserveConfigGUI extends \ilPluginConfigGUI
 	public function getSubTabs($cmd)
 	{
 		switch ($cmd) {
+			case '':
+			case 'configure':
+			case 'editSettings':
+			case 'saveSettings':
+			case 'listFiles':
+			case 'extCommand_1':
+				$this->tabs->activateTab('configure');
+
+				$this->tabs->addSubTab(
+					'configure',
+					$this->lng->txt('settings'),
+					$this->ctrl->getLinkTarget($this, 'configure')
+				);
+
+				$dir = ilUtil::getDataDir() . '/' . $this->pluginObj->getSetting('import_directory');
+				if ($this->isValidDirectory($dir) && is_dir($dir)) {
+					$this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
+					$this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $_GET['cname']);
+					$this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id', $_GET['slot_id']);
+					$this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $_GET['plugin_id']);
+					$this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $_GET['pname']);
+
+					$this->tabs->addSubTab(
+						'import_directory',
+						$this->getPluginObject()->txt('import_directory'),
+						$this->ctrl->getLinkTargetByClass('ilfilesystemgui', 'listFiles')
+					);
+				}
+
+				if (in_array(strtolower($cmd), ['listfiles']) || strtolower($_GET['cmdClass']) === 'ilfilesystemgui') {
+					$this->tabs->activateSubTab('import_directory');
+				} else {
+					$this->tabs->activateSubTab('configure');
+				}
+				break;
+
 			case 'showUseAgreementSettings':
 			case 'editUseAgreements':
 			case 'editUseAgreement':
