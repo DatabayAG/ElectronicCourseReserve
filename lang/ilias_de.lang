@@ -25,7 +25,7 @@ enable_use_agreement#:#Nutzungsvereinbarung aktivieren
 adm_ecr_tab_title#:#Elektronischer Semesterapparat in Kursen
 edit_ecr_content#:#Seiteninhalt bearbeiten
 ecr_content#:#Seiteninhalt des Semesterapparats
-insert_url_esa_info#:#Um den Link zum Semesterapparat in die Seite einzubinden verwenden Sie im Text folgenden Platzhalter: ###URL_ESA###
+insert_url_esa_info#:#<span style="font-weight: bold;">Um den Link zum Semesterapparat in die Seite einzubinden verwenden Sie im Text folgenden Platzhalter: ###URL_ESA###</span>
 tab_translation_value#:#Text des Navigationsreiters
 token_append_to_bibl#:#Kurstitel als Query-Parameter übergeben
 token_append_to_bibl_info#:#Wenn aktiviert, wird der Titel des Kurses als Query-Parameter ('iltitle') im Link zum Recherchesystem angehängt. Dieser wird dann ebenfalls zur Token-Generierung herangezogen.

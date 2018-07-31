@@ -34,7 +34,7 @@ class ilElectronicCourseReserveContentConfigGUI extends \ilElectronicCourseReser
 	/**
 	 *
 	 */
-	protected function savTabTranslationsVars()
+	protected function saveTabTranslationsVars()
 	{
 		$translationData = new \ilElectronicCourseReserveLangData();
 

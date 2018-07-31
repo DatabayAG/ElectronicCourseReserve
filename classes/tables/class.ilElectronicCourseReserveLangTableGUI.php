@@ -39,7 +39,7 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 		$this->addColumn($lng->txt('language'), 'lang_key', '30%');
 		$this->addColumn(\ilElectronicCourseReservePlugin::getInstance()->txt('tab_translation_value'), 'value', '60%');
 		$this->addColumn($lng->txt('actions'), '', '10%');
-		$this->addCommandButton('savTabTranslationsVars', $lng->txt('save'));
+		$this->addCommandButton('saveTabTranslationsVars', $lng->txt('save'));
 	}
 
 

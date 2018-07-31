@@ -25,7 +25,7 @@ enable_use_agreement#:#Enable Use Agreement
 adm_ecr_tab_title#:#Electronic Course Reserve in Courses
 edit_ecr_content#:#Edit Page Content
 ecr_content#:#Content of Electronic Course Reserve
-insert_url_esa_info#:#To include the link to the Electronic Course Reserve in the page, use the following placeholder in the text: ### URL_ESA ###
+insert_url_esa_info#:#<span style="font-weight: bold;">To include the link to the Electronic Course Reserve in the page, use the following placeholder in the text: ### URL_ESA ###</span>
 tab_translation_value#:#Label for Tab
 token_append_to_bibl#:#Append Course Title to Search System URL
 token_append_to_bibl_info#:#If enabled, the course title will be appended (as 'iltitle') when building the URL to the search system. It will also be part of the token generation.
