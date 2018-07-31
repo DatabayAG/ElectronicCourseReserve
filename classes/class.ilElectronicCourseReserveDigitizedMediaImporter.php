@@ -52,7 +52,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	const IMAGE_DIR = 'ecr_images';
 
 	/**
-	 * 
+	 * @var boolean
 	 */
 	//Todo: set to true
 	const DELETE_FILES = false;
@@ -623,7 +623,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					}
 					else
 					{
-						// Todo:  $tree->moveTree();?
 						$this->logger->write(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
 					}
 				}
@@ -663,7 +662,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param string $recipients
-	 * @return array|string
+	 * @return array
 	 */
 	protected function getEmailsForRecipients($recipients)
 	{
