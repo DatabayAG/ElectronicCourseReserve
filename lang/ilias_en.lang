@@ -23,9 +23,9 @@ edit_use_agreement#:#Edit Use Agreement
 add_use_agreement#:#Add Use Agreement
 enable_use_agreement#:#Enable Use Agreement
 adm_ecr_tab_title#:#Electronic Course Reserve in Courses
-edit_ecr_content#:#Edit page content
+edit_ecr_content#:#Edit Page Content
 ecr_content#:#Content of Electronic Course Reserve
-insert_url_esa_info#:#To include the link to the Electronic Course Reserve in the page, use the following placeholder in the text: ### URL_ESA ###
+insert_url_esa_info#:#<span style="font-weight: bold;">To include the link to the Electronic Course Reserve in the page, use the following placeholder in the text: ### URL_ESA ###</span>
 tab_translation_value#:#Label for Tab
 token_append_to_bibl#:#Append Course Title to Search System URL
 token_append_to_bibl_info#:#If enabled, the course title will be appended (as 'iltitle') when building the URL to the search system. It will also be part of the token generation.
@@ -43,3 +43,7 @@ error_create_url_mail#:#There was an error creating the url item for course ref 
 show_description#:#Show Description
 show_image#:#Show Image
 error_with_xml_validation#:#There were problems with the validation of %s. %s
+process_locked#:#The script is probably running. Please remove the lock if you are sure no import task is running.
+release_lock#:#Release Lock
+sure_release_lock#:#Are you sure you want to release the lock?
+could_not_save_job_prob_runs#:#ILIAS could not save the settings. The job is currently running, please wait until it is finished.
