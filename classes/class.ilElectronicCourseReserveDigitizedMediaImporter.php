@@ -654,7 +654,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$mail = new ilMimeMail();
 			$mail->From($this->from);
 			$recipients = $this->pluginObj->getSetting('mail_recipients');
-			$mail->To($this->getEmailsForLoginArray($recipients));
+			$mail->To($this->getEmailsForRecipients($recipients));
 			$mail->Subject("There was a problem with an Electronic Course Import Item");
 			$mail->Body($msg);
 			$mail->Send();
@@ -665,7 +665,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 * @param string $recipients
 	 * @return array|string
 	 */
-	protected function getEmailsForLoginArray($recipients)
+	protected function getEmailsForRecipients($recipients)
 	{
 		$emails = [];
 		$recipients = explode(',' , $recipients);
