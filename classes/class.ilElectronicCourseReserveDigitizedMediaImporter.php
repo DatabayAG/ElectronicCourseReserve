@@ -52,11 +52,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	const IMAGE_DIR = 'ecr_images';
 
 	/**
-	 * @var string
-	 */
-	const LOCK_FILENAME = 'ecr.lock';
-
-	/**
 	 * @var $logger ilLog
 	 */
 	protected $logger;
@@ -82,6 +77,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	public $pluginObj = null;
 
 	/**
+	 * @var ILIAS\Plugin\ElectronicCourseReserve\Locker\LockerInterface
+	 */
+	protected $lock;
+
+	/**
 	 *
 	 */
 	public function __construct()
@@ -105,18 +105,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$this->from = ilMail::getIliasMailerAddress();
 		}
 
+		$this->lock   = $DIC['plugin.esa.locker'];
 		$this->logger = $DIC->logger()->root();
 		$this->user   = $DIC->user();
 		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 
-	}
-
-	/**
-	 * @return string
-	 */
-	public static function getLockFilePath()
-	{
-		return ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::LOCK_FILENAME;
 	}
 
 	/**
@@ -137,7 +130,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$this->ensureUserRelatedPreconditions();
 			$this->ensureSystemPreconditions();
-			$this->ensureCorrectLockingState();
+
+			if ($this->lock->acquireLock()) {
+				$this->logger->info('Acquired lock.');
+			} else {
+				$this->logger->info('Script is probably running, please remove the lock if you are sure no task is running.');
+				return;
+			}
+
 			$this->cleanUpDeletedObjects();
 
 			$this->logger->write('Started determination with file pattern.');
@@ -218,12 +218,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$this->logger->write($e->getMessage());
 		}
 
-		try
-		{
-			$this->releaseLock();
-		}
-		catch(ilException $e)
-		{
+		try {
+			$this->lock->releaseLock();
+			$this->logger->info('Released lock.');
+		} catch (ilException $e) {
 			$this->logger->write($e->getMessage());
 		}
 
@@ -538,40 +536,6 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}
 	}
 
-	/**
-	 * @throws ilException
-	 */
-	protected function releaseLock()
-	{
-		if(@unlink(self::getLockFilePath()))
-		{
-			$this->logger->write('Removed lock file: ' . self::getLockFilePath() . '.');
-		}
-		else
-		{
-			throw new ilException('Could not delete lock file: ' . self::getLockFilePath() . '. Please remove this file manually before you start the next job.');
-		}
-	}
-
-	/**
-	 * @throws ilException
-	 */
-	protected function ensureCorrectLockingState()
-	{
-		if(file_exists(self::getLockFilePath()))
-		{
-			throw new ilException('Script is probably running. Please remove the following lock file if you are sure no esr task is running: ' . self::getLockFilePath());
-		}
-
-		if(@file_put_contents(self::getLockFilePath(), getmypid(), LOCK_EX))
-		{
-			$this->logger->write('Created lock file: ' . self::getLockFilePath());
-		}
-		else
-		{
-			throw new ilException('Could create lock file: ' . self::getLockFilePath() . ' . Please check the filesystem permissions.');
-		}
-	}
 	/**
 	 */
 	protected function cleanUpDeletedObjects()

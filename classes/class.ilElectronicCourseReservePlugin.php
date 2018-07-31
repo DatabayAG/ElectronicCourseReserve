@@ -122,6 +122,13 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 				
 				return $gpg;
 			};
+
+			$GLOBALS['DIC']['plugin.esa.locker'] = function (\ILIAS\DI\Container $c) {
+				return new \ILIAS\Plugin\ElectronicCourseReserve\Locker\PidBased(
+					$c['ilSetting'],
+					$c->logger()->root()
+				);
+			};
 		}
 	}
 
