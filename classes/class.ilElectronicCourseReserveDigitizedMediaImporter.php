@@ -229,6 +229,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
+	 * @param string $filename
 	 * @param string $xml_string
 	 * @return bool
 	 */
@@ -366,7 +367,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					}
 				}
 			}
-			
+
 			$new_file->determineFileSize();
 			$new_file->update();
 
@@ -444,7 +445,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$version = $row['version'] + 1;
 		}
-		
+
 		$icon = $this->getIcon($parsed_item, $new_obj_ref_id);
 		$DIC->database()->insert('ecr_description', array(
 			'ref_id'        => array('integer', $new_obj_ref_id),
@@ -467,7 +468,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected function getIcon($parsed_item, $new_obj_ref_id)
 	{
 		$icon_type = $this->evaluateIconType($parsed_item->getItem()->getIcon());
-		if($icon_type === $this->pluginObj::ICON_URL){
+		$pl = $this->pluginObj;
+		if($icon_type === $pl::ICON_URL){
 			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
 		}else{
 			$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $parsed_item->getItem()->getIcon();
@@ -511,11 +513,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			return false;
 		}
 
+		$pl = $this->pluginObj;
 		preg_match('/http(s)?:\/\//', $icon, $matches);
 		if(count($matches) > 0 ){
-			return $this->pluginObj::ICON_URL;
+			return $pl::ICON_URL;
 		}else{
-			return  $this->pluginObj::ICON_FILE;
+			return $pl::ICON_FILE;
 		}
 	}
 
@@ -650,13 +653,34 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$mail = new ilMimeMail();
 			$mail->From($this->from);
-			$mail->To(explode(',', $this->pluginObj->getSetting('mail_recipients')));
-			//Todo remove
-			$mail->To('gvollbach@databay.de');
+			$recipients = $this->pluginObj->getSetting('mail_recipients');
+			$mail->To($this->getEmailsForLoginArray($recipients));
 			$mail->Subject("There was a problem with an Electronic Course Import Item");
 			$mail->Body($msg);
 			$mail->Send();
 		}
+	}
+
+	/**
+	 * @param string $recipients
+	 * @return array|string
+	 */
+	protected function getEmailsForLoginArray($recipients)
+	{
+		$emails = [];
+		$recipients = explode(',' , $recipients);
+		if(is_array($recipients) && sizeof($recipients) > 0)
+		{
+			foreach($recipients as $value)
+			{
+				$user_id = ilObjUser::_loginExists($value);
+				if($user_id != false)
+				{
+					$emails [] = ilObjUser::_lookupEmail($user_id);
+				}
+			}
+		}
+		return $emails;
 	}
 
 	/**
