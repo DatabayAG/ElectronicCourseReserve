@@ -285,7 +285,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 
 		$form->addCommandButton('saveSettings', $this->lng->txt('save'));
 		if ($disabled) {
-			$form->addCommandButton('confirmReleaseLock', $this->lng->txt('release_lock'));
+			$form->addCommandButton('confirmReleaseLock', $this->getPluginObject()->txt('release_lock'));
 		}
 
 		return $form;
