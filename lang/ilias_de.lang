@@ -47,3 +47,4 @@ process_locked#:#Aktuell befindet sich ein Importvorgang in Bearbeitung. Bitte e
 release_lock#:#Lock Entfernen
 sure_release_lock#:#Sind Sie sicher, dass Sie das Lock entfernen möchten?
 could_not_save_job_prob_runs#:#Die Einstellungen konnten nicht gespeichert werden. Der Job ist mit der Bearbeitung noch nicht fertig.
+released_lock#:#Das Lock wurde entfernt.

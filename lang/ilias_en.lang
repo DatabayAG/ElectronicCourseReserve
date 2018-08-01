@@ -47,3 +47,4 @@ process_locked#:#The script is probably running. Please remove the lock if you a
 release_lock#:#Release Lock
 sure_release_lock#:#Are you sure you want to release the lock?
 could_not_save_job_prob_runs#:#ILIAS could not save the settings. The job is currently running, please wait until it is finished.
+released_lock#:#The lock has been removed.
