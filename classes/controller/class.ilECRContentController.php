@@ -18,6 +18,8 @@ class ilECRContentController extends ilECRBaseController
 	protected $lng;
 	protected $logger;
 	protected $settings;
+	protected $user;
+	protected $access;
 
 	/**
 	 * ilECRContentController constructor.
@@ -35,6 +37,7 @@ class ilECRContentController extends ilECRBaseController
 		$this->logger   = $DIC->logger()->root();
 		$this->settings = $DIC['ilSetting'];
 		$this->user     = $DIC->user();
+		$this->access   = $DIC->access();
 	}
 
 	/**
@@ -94,9 +97,8 @@ class ilECRContentController extends ilECRBaseController
 
 	private function showUseAgreement()
 	{
-		global $DIC;
 		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAgreement.php');
-		$tpl = $DIC->ui()->mainTemplate();
+		$tpl = $this->tpl;
 
 		// CONFIRMATION
 		include_once('Services/Utilities/classes/class.ilConfirmationGUI.php');
@@ -110,9 +112,9 @@ class ilECRContentController extends ilECRBaseController
 		$c_gui->setConfirm($this->lng->txt('confirm'), 'saveAcceptedUserAgreement');
 
 		$agreement = new ilElectronicCourseReserveAgreement();
-		$agreement->loadByLang($DIC->user()->getLanguage());
+		$agreement->loadByLang($this->user->getLanguage());
 		$text = $agreement->getAgreement();
-		$c_gui->addItem('accepted_ua', $DIC->user()->getId(), $text);
+		$c_gui->addItem('accepted_ua', $this->user->getId(), $text);
 
 		$tpl->setContent($c_gui->getHTML());
 		$tpl->show();
@@ -178,7 +180,7 @@ class ilECRContentController extends ilECRBaseController
 			return $html;
 		}
 
-		$html = $this->getDefaultECRContent($obj);
+		$html = $this->getDefaultECRContent();
 		return $html;
 	}
 
@@ -186,7 +188,7 @@ class ilECRContentController extends ilECRBaseController
 	 * @param $obj
 	 * @return string
 	 */
-	protected function getDefaultECRContent($obj)
+	protected function getDefaultECRContent()
 	{
 		$form = new ilPropertyFormGUI();
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
@@ -206,20 +208,13 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	public function showECRItemContent()
 	{
-		global $DIC;
-
-		$ilCtrl = $DIC->ctrl();
-		$tpl    = $DIC->ui()->mainTemplate();
-		$ilTabs = $DIC->tabs();
-		$lng    = $DIC->language();
-
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 		$item   = $this->plugin_object->queryItemData($ref_id);
 
 		$this->checkPermission('write');
 
-		$tpl->setTitle($obj->getTitle());
+		$this->tpl->setTitle($obj->getTitle());
 
 		if($obj->getType() === 'file' )
 		{
@@ -229,14 +224,14 @@ class ilECRContentController extends ilECRBaseController
 				&& strlen($item['icon']) > 0)
 			{
 				$image_path = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item['icon'];
-				$tpl->setTitleIcon($image_path);
+				$this->tpl->setTitleIcon($image_path);
 			}
 			else
 			{
-				$tpl->setTitleIcon(ilUtil::getImagePath('icon_file.svg'));
+				$this->tpl->setTitleIcon(ilUtil::getImagePath('icon_file.svg'));
 			}
-			$ilCtrl->setParameterByClass('ilObjFileGUI', 'ref_id', $obj->getRefId());
-			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjFileGUI'), 'infoScreen'));
+			$this->ctrl->setParameterByClass('ilObjFileGUI', 'ref_id', $obj->getRefId());
+			$this->tabs->setBackTarget($this->lng->txt('back'), $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjFileGUI'), 'infoScreen'));
 		}
 		else if($obj->getType() === 'webr' )
 		{
@@ -246,19 +241,19 @@ class ilECRContentController extends ilECRBaseController
 				&& strlen($item['icon']) > 0)
 			{
 				$image_path = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item['icon'];
-				$tpl->setTitleIcon($image_path);
+				$this->tpl->setTitleIcon($image_path);
 			}
 			else
 			{
-				$tpl->setTitleIcon(ilUtil::getImagePath('icon_webr.svg'));
+				$this->tpl->setTitleIcon(ilUtil::getImagePath('icon_webr.svg'));
 			}
-			$ilCtrl->setParameterByClass('ilObjLinkResourceGUI', 'ref_id', $obj->getRefId());
-			$ilTabs->setBackTarget($lng->txt('back'), $ilCtrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjLinkResourceGUI'), 'infoScreen'));
+			$this->ctrl->setParameterByClass('ilObjLinkResourceGUI', 'ref_id', $obj->getRefId());
+			$this->tabs->setBackTarget($this->lng->txt('back'), $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjLinkResourceGUI'), 'infoScreen'));
 		}
 
 		$form = new ilPropertyFormGUI();
-		$form->setFormAction($url = $ilCtrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.updateItemSettings'));
-		$form->addCommandButton('ilECRContentController', $lng->txt('submit'));
+		$form->setFormAction($url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.updateItemSettings'));
+		$form->addCommandButton('ilECRContentController', $this->lng->txt('submit'));
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
 
 		$show_description =  new ilCheckboxInputGUI($this->plugin_object->txt('show_description'), 'show_description');
@@ -300,7 +295,6 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	public function updateItemSettings()
 	{
-		global $DIC;
 		$show_description = (int) $_POST['show_description'];
 		$show_image = (int) $_POST['show_image'];
 		$ref_id = (int) $_POST['ref_id'];
@@ -309,7 +303,7 @@ class ilECRContentController extends ilECRBaseController
 			$this->plugin_object->updateItemData($ref_id, $show_description, $show_image);
 		}
 
-		$DIC->ctrl()->redirect(new ilElectronicCourseReserveUIHookGUI(), 'ilECRContentController.showECRItemContent');
+		$this->ctrl->redirect(new ilElectronicCourseReserveUIHookGUI(), 'ilECRContentController.showECRItemContent');
 	}
 	
 	/**
@@ -351,17 +345,14 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	public function checkPermission($permission = 'write')
 	{
-		global $DIC;
-
 		$ref_id = (int)$_GET['ref_id'];
 		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
 		
 		if(!(($obj instanceof ilObjCourse || $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
-			&& $DIC->access()->checkAccess($permission, '', $obj->getRefId())
-			&& $this->plugin_object->isAssignedToRequiredRole($DIC->user()->getId())))
+			&& $this->access->checkAccess($permission, '', $obj->getRefId())
+			&& $this->plugin_object->isAssignedToRequiredRole($this->user->getId())))
 		{
-			
-			$DIC['ilErr']->raiseError($DIC->language()->txt("msg_no_perm_read"), $DIC['ilErr']->MESSAGE);
+			ilUtil::sendFailure($this->lng->txt("msg_no_perm_read"), true);
 		}
 	}
 }
