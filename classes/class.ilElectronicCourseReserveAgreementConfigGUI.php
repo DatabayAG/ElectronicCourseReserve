@@ -1,6 +1,7 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
@@ -41,7 +42,6 @@ class ilElectronicCourseReserveAgreementConfigGUI extends \ilElectronicCourseRes
 	 */
 	protected function getSettingsForm()
 	{
-		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 		$form = new \ilPropertyFormGUI();
 		$form->setFormAction($this->ctrl->getFormAction($this, 'saveSettings'));
 		$form->setTitle($this->lng->txt('settings'));
@@ -120,7 +120,6 @@ class ilElectronicCourseReserveAgreementConfigGUI extends \ilElectronicCourseRes
 	 */
 	protected function getUserAgreementForm()
 	{
-		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 		$form = new \ilPropertyFormGUI();
 		$form->setFormAction($this->ctrl->getFormAction($this, 'saveUserAgreement'));
 		$form->setTitle($this->getPluginObject()->txt('add_use_agreement'));

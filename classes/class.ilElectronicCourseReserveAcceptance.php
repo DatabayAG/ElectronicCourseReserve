@@ -55,7 +55,6 @@ class ilElectronicCourseReserveAcceptance
 	
 	public function getAgreementId()
 	{
-		$user_language = $this->user->getLanguage();
 		$res = $this->db->queryF('SELECT agreement_id FROM ecr_lang_agreements WHERE is_active = %s AND lang = %s', 
 			array('integer', 'text'), array(1, $this->user->getLanguage()));
 		

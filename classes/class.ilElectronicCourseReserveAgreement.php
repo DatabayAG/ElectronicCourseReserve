@@ -19,27 +19,25 @@ class ilElectronicCourseReserveAgreement
 	 */
 	public $user;
 	
-	
 	protected $agreement_id;
-	
+
 	protected $agreement;
 	
 	protected $lang;
-	
+
 	protected $time_created;
-	
+
 	protected $is_active;
-	
-	
+
 	public function __construct()
 	{
 		global $DIC;
-		
-		$this->db = $DIC->database();
-		$this->log = $DIC->logger()->root();
+
+		$this->db   = $DIC->database();
+		$this->log  = $DIC->logger()->root();
 		$this->user = $DIC->user();
 	}
-	
+
 	/**
 	 * @param $lang
 	 */
@@ -50,9 +48,8 @@ class ilElectronicCourseReserveAgreement
 			'SELECT * FROM ecr_lang_agreements WHERE lang = %s AND is_active = %s ORDER BY time_created DESC',
 			array('text', 'integer'), array($lang, 1)
 		);
-		
-		if($row = $this->db->fetchAssoc($res))
-		{
+
+		if ($row = $this->db->fetchAssoc($res)) {
 			$this->agreement_id = $row['agreement_id'];
 			$this->lang         = $row['lang'];
 			$this->agreement    = $row['agreement'];
@@ -60,11 +57,11 @@ class ilElectronicCourseReserveAgreement
 			$this->is_active    = $row['is_active'];
 		}
 	}
-	
+
 	public function saveAgreement()
 	{
 		$this->deactivateAgreements();
-		
+
 		$next_id = $this->db->nextId('ecr_lang_agreements');
 		$this->db->insert('ecr_lang_agreements',
 			array(
@@ -72,20 +69,22 @@ class ilElectronicCourseReserveAgreement
 				'lang'         => array('text', $this->getLang()),
 				'agreement'    => array('clob', $this->getAgreement()),
 				'time_created' => array('integer', time()),
-				'is_active'    => array('integer', 1) 	
+				'is_active'    => array('integer', 1)
 			));
-		
-		$this->log->info('ecr_lang_agreements: User-id ('.$this->user->getId().') created agreement_id ('. $this->getAgreementId().')');
+
+		$this->log->info('ecr_lang_agreements: User-id (' . $this->user->getId() . ') created agreement_id (' . $this->getAgreementId() . ')');
 	}
-	
+
 	private function deactivateAgreements()
 	{
-		$this->db->update('ecr_lang_agreements', 
+		$this->db->update('ecr_lang_agreements',
 			array('is_active' => array('integer', 0)),
-			array('lang'        => array('text', $this->getLang()),
-			      'is_active'   => array('integer', 1)));
+			array(
+				'lang'      => array('text', $this->getLang()),
+				'is_active' => array('integer', 1)
+			));
 	}
-	
+
 	/**
 	 * @return mixed
 	 */
@@ -93,7 +92,7 @@ class ilElectronicCourseReserveAgreement
 	{
 		return $this->agreement_id;
 	}
-	
+
 	/**
 	 * @param int $agreement_id
 	 */
@@ -101,7 +100,7 @@ class ilElectronicCourseReserveAgreement
 	{
 		$this->agreement_id = $agreement_id;
 	}
-	
+
 	/**
 	 * @return mixed
 	 */
@@ -109,7 +108,7 @@ class ilElectronicCourseReserveAgreement
 	{
 		return $this->lang;
 	}
-	
+
 	/**
 	 * @param string $lang ISO 639-1 two-letter code
 	 */
@@ -117,7 +116,7 @@ class ilElectronicCourseReserveAgreement
 	{
 		$this->lang = $lang;
 	}
-	
+
 	/**
 	 * @return string
 	 */
@@ -125,15 +124,15 @@ class ilElectronicCourseReserveAgreement
 	{
 		return $this->agreement;
 	}
-	
+
 	/**
 	 * @param string $agreement
 	 */
 	public function setAgreement($agreement)
 	{
-		$this->agreement = $agreement; 
+		$this->agreement = $agreement;
 	}
-	
+
 	/**
 	 * @return int
 	 */
@@ -141,7 +140,7 @@ class ilElectronicCourseReserveAgreement
 	{
 		return $this->time_created;
 	}
-	
+
 	/**
 	 * @return int
 	 */
@@ -149,7 +148,7 @@ class ilElectronicCourseReserveAgreement
 	{
 		return $this->is_active;
 	}
-	
+
 	/**
 	 * @param int $is_active
 	 */

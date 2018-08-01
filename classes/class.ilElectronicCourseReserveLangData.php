@@ -50,7 +50,7 @@ class ilElectronicCourseReserveLangData
 
 	/**
 	 * @param $identifier
-	 * @return mixed|string|void
+	 * @return mixed|string
 	 */
  	public function txt($identifier)
  	{
@@ -59,12 +59,6 @@ class ilElectronicCourseReserveLangData
 
  		if(!isset(self::$ecr_lang_data[$lang_key]))
 		{
-			$lang_value = $this->readFromDB();
-			if(strlen($lang_value))
-			{
-				return $lang_value;
-			}
-
 			return ilElectronicCourseReservePlugin::getInstance()->txt($identifier);
 		}
 		return self::$ecr_lang_data[$lang_key];
