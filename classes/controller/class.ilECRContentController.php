@@ -43,7 +43,7 @@ class ilECRContentController extends ilECRBaseController
 	public function executeCommand()
 	{
 //		$this->checkPermission('write');
-		$cmd = $this->ctrl()->getCmd();
+		$cmd = $this->ctrl->getCmd();
 		if(method_exists($this, $cmd))
 		{
 			$this->$cmd();
@@ -77,7 +77,7 @@ class ilECRContentController extends ilECRBaseController
 			return true;
 		}
 
-		$this->showUseAgreement($ref_id);
+		$this->showUseAgreement();
 	}
 
 	public function handleAcceptanceCmd()
@@ -188,15 +188,10 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	protected function getDefaultECRContent($obj)
 	{
-		require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 		$form = new ilPropertyFormGUI();
 		$form->setTitle($this->plugin_object->txt('ecr_title'));
 
-		$crs_ref_id = new ilNonEditableValueGUI($this->plugin_object->txt('crs_ref_id'), 'crs_ref_id');
-		$crs_ref_id->setValue($obj->getRefId());
-		$form->addItem($crs_ref_id);
-
-		$link = new ilNonEditableValueGUI('', 'ecr', true);
+		$link = new ilNonEditableValueGUI($this->plugin_object->txt('ecr_url_search_system'), 'ecr', true);
 		$url  = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.performRedirect');
 		$link->setValue('<a href="' . $url . '&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>');
 

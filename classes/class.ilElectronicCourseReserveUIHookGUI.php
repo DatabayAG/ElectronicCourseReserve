@@ -122,7 +122,6 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 		$isAdminContext = !isset($_GET['baseClass']) || strtolower($_GET['baseClass']) === 'iladministrationgui';
 
 		if (!$isAdminContext && !isset($_GET['pluginCmd']) && 'tabs' == $a_part && isset($_GET['ref_id'])) {
-			$ilTabs = $DIC->tabs();
 			$ilCtrl = $DIC->ctrl();
 			$ilAccess = $DIC->access();
 			$ilUser = $DIC->user();
