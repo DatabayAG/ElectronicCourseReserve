@@ -204,7 +204,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 						$this->sendMailOnError($msg);
 					}
 				} else {
-					$this->sendMailOnError($valid);
+					$this->sendMailOnError($valid, $pathname);
 				}
 			}
 		}
@@ -639,8 +639,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 	/**
 	 * @param $msg
+	 * @param $attachment
 	 */
-	protected function sendMailOnError($msg)
+	protected function sendMailOnError($msg, $attachment = null)
 	{
 		if((int) $this->pluginObj->getSetting('is_mail_enabled') === 1)
 		{
@@ -650,6 +651,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$mail->To($this->getEmailsForRecipients($recipients));
 			$mail->Subject("There was a problem with an Electronic Course Import Item");
 			$mail->Body($msg);
+			if($attachment !== null) {
+				$mail->Attach($attachment);
+			}
 			$mail->Send();
 		}
 	}
