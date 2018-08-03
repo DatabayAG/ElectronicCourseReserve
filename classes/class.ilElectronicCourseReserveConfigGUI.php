@@ -51,7 +51,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 					$gui = new ilFileSystemGUI(ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory'));
 					$gui->setAllowFileCreation(true);
 					$gui->setAllowDirectoryCreation(false);
-					$gui->setAllowedSuffixes(array('xml'));
+					$gui->setAllowedSuffixes(array('xml', 'jpeg', 'jpg', 'svg', 'png'));
 					$commands = $gui->getActionCommands();
 					$commands = array_filter($commands, function($cmd) {
 						return $cmd['method'] != 'renameFileForm';
