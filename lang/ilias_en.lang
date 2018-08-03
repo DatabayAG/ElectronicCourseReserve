@@ -51,4 +51,6 @@ could_not_save_job_prob_runs#:#ILIAS could not save the settings. The job is cur
 released_lock#:#The lock has been removed.
 form_header_import#:#Import-Process
 form_header_access#:#Zugriff
-ecr_contents_adm_tbl_head#:#Here you can globally defined the translation for the 'Electronic Course Reserve' tab in courses. Furthermore you can manage the contents of this tab via the TinyMCE editor. 
+ecr_contents_adm_tbl_head#:#Here you can globally defined the translation for the 'Electronic Course Reserve' tab in courses. Furthermore you can manage the contents of this tab via the TinyMCE editor.
+ecr_example_url#:#Example URL 
+ecr_example_url_info#:#This is an example URL based on the current configuration. Please <span style="font-weight: bold">don't</span> use this link for obligatory orders.

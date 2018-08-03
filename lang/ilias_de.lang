@@ -51,4 +51,6 @@ could_not_save_job_prob_runs#:#Die Einstellungen konnten nicht gespeichert werde
 released_lock#:#Das Lock wurde entfernt.
 form_header_import#:#Import-Prozess
 form_header_access#:#Zugriff
-ecr_contents_adm_tbl_head#:#Hier können Sie global für die in ILIAS installierten Sprachen die jeweilige Übersetzung des Tabs 'Elektronischer Semesterapparat' in Kursen pflegen. Des Weiteren können Sie für die einzelnen Sprachen global den Inhalt des Tabs mit dem TinyMCE pflegen. 
+ecr_contents_adm_tbl_head#:#Hier können Sie global für die in ILIAS installierten Sprachen die jeweilige Übersetzung des Tabs 'Elektronischer Semesterapparat' in Kursen pflegen. Des Weiteren können Sie für die einzelnen Sprachen global den Inhalt des Tabs mit dem TinyMCE pflegen.
+ecr_example_url#:#Beispiel-URL 
+ecr_example_url_info#:#Hier sehen Sie einen Beispiel-URL ausgehend von der aktuell vorgenommen Konfiguration. Bitte nutzen Sie diesen Link <span style="font-weight: bold">nicht</span> für verbindliche Bestellungen.

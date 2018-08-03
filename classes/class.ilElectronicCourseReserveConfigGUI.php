@@ -223,6 +223,44 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		$form_search_system_url->setValidationFailureMessage($this->getPluginObject()->txt('ecr_url_search_system_invalid'));
 		$form_search_system_url->setInfo($this->getPluginObject()->txt('ecr_url_search_system_info'));
 
+
+		$form->setValuesByArray([
+			'gpg_homedir' => $this->getPluginObject()->getSetting('gpg_homedir'),
+			'sign_key_email' => $this->getPluginObject()->getSetting('sign_key_email'),
+			'limit_to_groles' => $this->getPluginObject()->getSetting('limit_to_groles'),
+			'global_roles' => explode(',', $this->getPluginObject()->getSetting('global_roles')),
+			'url_search_system' => $this->getPluginObject()->getSetting('url_search_system'),
+			'enable_use_agreement' => $this->getPluginObject()->getSetting('enable_use_agreement'),
+			'token_append_obj_title' => $this->getPluginObject()->getSetting('token_append_obj_title'),
+			'token_append_to_bibl' => $this->getPluginObject()->getSetting('token_append_to_bibl'),
+			'is_mail_enabled' => $this->getPluginObject()->getSetting('is_mail_enabled'),
+			'recipients' => explode(',', $this->getPluginObject()->getSetting('mail_recipients')),
+			'import_directory' => $this->getPluginObject()->getSetting('import_directory')
+		]);
+		
+		if (
+			$this->getPluginObject()->getSetting('gpg_homedir') &&
+			$this->getPluginObject()->getSetting('sign_key_email') &&
+			$this->getPluginObject()->getSetting('sign_key_passphrase') &&
+			$this->getPluginObject()->getSetting('url_search_system')
+		) {
+
+			$dummyCrs = new \ilObjCourse();
+			$dummyCrs->setId(PHP_INT_MAX);
+			$dummyCrs->setRefId(PHP_INT_MAX);
+			$dummyCrs->setTitle('Example');
+
+			$exampleUrlTpl = $this->getPluginObject()->getTemplate('tpl.example_url.html', true, true);
+			/** @var ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder $linkBuilder */
+			$linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
+			$exampleUrlTpl->setVariable('URL', $linkBuilder->getLibraryOrderLink($dummyCrs));
+
+			$exampleLink = new \ilNonEditableValueGUI($this->getPluginObject()->txt('ecr_example_url'), '', true);
+			$exampleLink->setInfo($this->getPluginObject()->txt('ecr_example_url_info'));
+			$exampleLink->setValue($exampleUrlTpl->get());
+			$form_search_system_url->addSubItem($exampleLink);
+		}
+
 		$tokenAppendCrsTitle = new \ilCheckboxInputGUI($this->getPluginObject()->txt('token_append_obj_title'), 'token_append_obj_title');
 		$tokenAppendCrsTitle->setDisabled($disabled);
 		$tokenAppendCrsTitle->setInfo($this->getPluginObject()->txt('token_append_obj_title_info'));
