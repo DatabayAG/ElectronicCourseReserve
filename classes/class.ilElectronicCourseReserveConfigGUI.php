@@ -246,8 +246,8 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		) {
 
 			$dummyCrs = new \ilObjCourse();
-			$dummyCrs->setId(PHP_INT_MAX);
-			$dummyCrs->setRefId(PHP_INT_MAX);
+			$dummyCrs->setId(-1);
+			$dummyCrs->setRefId(-1);
 			$dummyCrs->setTitle('Example');
 
 			$exampleUrlTpl = $this->getPluginObject()->getTemplate('tpl.example_url.html', true, true);
