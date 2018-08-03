@@ -3,7 +3,7 @@ ecr_tab_title#:#Electronic Course Reserve
 ecr_title#:#Electronic Course Reserve
 ecr_desc#:#Please click on this link to be redirected to the search system.
 ecr_gpg_homedir#:#Home Directory
-ecr_gpg_homedir_info#:#Please insert the absolute server path to your <span style="font-weight:bold">GnuPG</span> home directory. The key used for signing the data to be transported to the search system is read from that directory. <span style="color:red;font-weight:bold">Important: The directory must be writeable by the user php is executed with (e.g. wwwrun in apache context).</span>
+ecr_gpg_homedir_info#:#This plugins depends on <span style="font-weight:bold">GnuPG</span> (<a href="https://wiki.ubuntuusers.de/GnuPG/" target="_blank" rel="noopener noreferrer">https://wiki.ubuntuusers.de/GnuPG/</a>). Please insert the absolute server path to your <span style="font-weight:bold">GnuPG</span> home directory. The key used for signing the data to be transported to the search system is read from that directory. <span style="color:red;font-weight:bold">Important: The directory must be writeable by the user php is executed with (e.g. wwwrun, www-data, etc.).</span>
 ecr_sign_key_email#:#Email Address (Key)
 ecr_sign_key_email_info#:#Please enter the key (email address) used for signing the data.
 ecr_sign_key_passphrase#:#Passphrase
@@ -31,7 +31,7 @@ tab_translation_value#:#Label for Tab
 token_append_obj_title#:#Append Course Title to Search System URL
 token_append_obj_title_info#:#If enabled, the course title will be appended (as 'iltitle') when building the URL to the search system. It will also be part of the token generation.
 token_append_to_bibl#:#OpenURL in Bibliography
-token_append_to_bibl_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects, if these are used as content in ILIAS courses. Please note that at least one library has to be added in <a href="%s"><span style="font-style: italic">Administration » Bibliography</span></a>.
+token_append_to_bibl_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects, if these are used as content in ILIAS courses. Please note that at least one library has to be added in <a href="%s" target="_blank" rel="noopener noreferrer"><span style="font-style: italic">Administration » Bibliography</span></a>.
 notification_mail#:#Notification Mail
 notification_mail_info#:#If activated, an email notification will be sent if an error occurs while importing XML files.
 recipients#:#Recipients

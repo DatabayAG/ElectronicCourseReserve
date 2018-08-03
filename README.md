@@ -34,7 +34,8 @@ to be important to log.
 
 ## Dependencies
 
-* CronElectronicCourseReserve Plugin
+* CronElectronicCourseReserve Plugin (https://gitlab.databay.de/ilias/esa_cron.git)
+* GnuPG (https://wiki.ubuntuusers.de/GnuPG/)
 
 ## License
 
