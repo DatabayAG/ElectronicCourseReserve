@@ -488,7 +488,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				}
 			}
 			else {
-				$this->logger->warning(sprintf('File of type %s, is not a valid icon type, skipping icon for course %s and folder %s.', $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+				$this->logger->warning(sprintf('File of type %s, is not a valid icon type, skipping icon for course ref id %s and folder import id %s.', $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
 			}
 		}
 		return array('icon' => '', 'icon_type' => '');
