@@ -3,7 +3,7 @@ ecr_tab_title#:#Elektronischer Semesterapparat
 ecr_title#:#Elektronischer Semesterapparat
 ecr_desc#:#Klicken Sie auf diesen Link, um zum Recherchesystem zu gelangen.
 ecr_gpg_homedir#:#Homedir
-ecr_gpg_homedir_info#:#Bitte tragen Sie hier den absoluten Serverpfad zum Homedir von <span style="font-weight:bold">GnuPG</span> ein. Aus diesem Verzeichnis wird der unten anzugebene Schlüssel ausgelesen, um die an das Recherche-System übergebenen Daten zu signieren. <span style="color:red;font-weight:bold">Wichtig: Das Verzeichnis muss für den Benutzer, in dessen Kontext PHP ausgeführt wird (z.B. wwwrun), schreibbar sein.</span>
+ecr_gpg_homedir_info#:#Dieses Plugin setzt die Installation von <span style="font-weight:bold">GnuPG</span> (<a href="https://wiki.ubuntuusers.de/GnuPG/" target="_blank" rel="noopener noreferrer">https://wiki.ubuntuusers.de/GnuPG/</a>) voraus. Bitte tragen Sie hier den absoluten Serverpfad zum Homedir von <span style="font-weight:bold">GnuPG</span> ein. Aus diesem Verzeichnis wird der unten anzugebene Schlüssel ausgelesen, um die an das Recherche-System übergebenen Daten zu signieren. <span style="color:red;font-weight:bold">Wichtig: Das Verzeichnis muss für den Benutzer, in dessen Kontext PHP ausgeführt wird (z.B. wwwrun, www-data, etc.), schreibbar sein.</span>
 ecr_sign_key_email#:#E-Mail-Adresse (Schlüssel)
 ecr_sign_key_email_info#:#Bitte geben Sie hier den Schlüssel ein (im Format einer E-Mail-Adresse), mit dem der Fingerabdruck der zu sendenden Daten erzeugt werden soll.
 ecr_sign_key_passphrase#:#Passphrase
@@ -31,7 +31,7 @@ tab_translation_value#:#Text des Navigationsreiters
 token_append_obj_title#:#Kurstitel als Query-Parameter übergeben
 token_append_obj_title_info#:#Wenn aktiviert, wird der Titel des Kurses als Query-Parameter ('iltitle') im Link zum Recherchesystem angehängt. Dieser wird dann ebenfalls zur Token-Generierung herangezogen.
 token_append_to_bibl#:#OpenURL in Literaturliste
-token_append_to_bibl_info#:#Wenn aktiviert, werden die für das Recherchesystem relevanten Query-Parameter und das Token an die Links zur Bestandsabfrage von Werken in Literaturlisten angehängt, sofern diese unterhalb von Kursen liegen. Bitte beachten Sie, dass entsprechende Bibliotheken im Bereich <a href="%s"><span style="font-style: italic">Administration » Literaturliste</span></a> konfiguriert sein müssen.
+token_append_to_bibl_info#:#Wenn aktiviert, werden die für das Recherchesystem relevanten Query-Parameter und das Token an die Links zur Bestandsabfrage von Werken in Literaturlisten angehängt, sofern diese unterhalb von Kursen liegen. Bitte beachten Sie, dass entsprechende Bibliotheken im Bereich <a href="%s" target="_blank" rel="noopener noreferrer"><span style="font-style: italic">Administration » Literaturliste</span></a> konfiguriert sein müssen.
 notification_mail#:#Benachrichtigungs Mail
 notification_mail_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn der Import einzelner XML-Importdateien fehlgeschlagen ist.
 recipients#:#Empfänger
