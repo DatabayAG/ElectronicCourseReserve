@@ -237,7 +237,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 			'recipients' => explode(',', $this->getPluginObject()->getSetting('mail_recipients')),
 			'import_directory' => $this->getPluginObject()->getSetting('import_directory')
 		]);
-		
+
 		if (
 			$this->getPluginObject()->getSetting('gpg_homedir') &&
 			$this->getPluginObject()->getSetting('sign_key_email') &&
