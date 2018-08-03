@@ -463,24 +463,32 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		$icon_type = $this->evaluateIconType($parsed_item->getItem()->getIcon());
 		$pl = $this->pluginObj;
+		$valid_icon_types = array('jpeg', 'jpg', 'png', 'svg');
+
 		if($icon_type === $pl::ICON_URL){
 			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
 		}else{
 			$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $parsed_item->getItem()->getIcon();
-			if(file_exists($file)){
-				$dir = $this->getImageFolder($new_obj_ref_id);
-				$filename = basename($parsed_item->getItem()->getIcon());
-				$target = $dir . DIRECTORY_SEPARATOR . $filename;
-				if(file_exists($file)) {
-					copy($file, $target);
-				}
-				if(file_exists($target)){
-					$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
-					if(self::DELETE_FILES) {
-						unlink($filename);
+			$extension = pathinfo($file, PATHINFO_EXTENSION);
+			if(in_array($extension, $valid_icon_types)){
+				if(file_exists($file)){
+					$dir = $this->getImageFolder($new_obj_ref_id);
+					$filename = basename($parsed_item->getItem()->getIcon());
+					$target = $dir . DIRECTORY_SEPARATOR . $filename;
+					if(file_exists($file)) {
+						copy($file, $target);
 					}
-					return array('icon' => $file_path, 'icon_type' => $icon_type);
+					if(file_exists($target)){
+						$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
+						if(self::DELETE_FILES) {
+							unlink($filename);
+						}
+						return array('icon' => $file_path, 'icon_type' => $icon_type);
+					}
 				}
+			}
+			else {
+				$this->logger->warning(sprintf('File of type %s, is not a valid icon type, skipping icon for course %s and folder %s.', $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
 			}
 		}
 		return array('icon' => '', 'icon_type' => '');
