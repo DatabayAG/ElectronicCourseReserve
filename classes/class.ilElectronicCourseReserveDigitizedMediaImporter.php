@@ -470,7 +470,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		}else{
 			$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $parsed_item->getItem()->getIcon();
 			$extension = pathinfo($file, PATHINFO_EXTENSION);
-			if(in_array($extension, $valid_icon_types)){
+			if(in_array(strtolower($extension), $valid_icon_types)){
 				if(file_exists($file)){
 					$dir = $this->getImageFolder($new_obj_ref_id);
 					$filename = basename($parsed_item->getItem()->getIcon());
