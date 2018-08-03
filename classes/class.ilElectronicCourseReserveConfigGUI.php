@@ -230,7 +230,17 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 
 		$tokenAppendToBibItems = new \ilCheckboxInputGUI($this->getPluginObject()->txt('token_append_to_bibl'), 'token_append_to_bibl');
 		$tokenAppendToBibItems->setDisabled($disabled);
-		$tokenAppendToBibItems->setInfo($this->getPluginObject()->txt('token_append_to_bibl_info'));
+
+		$bibObjIds = array_keys(\ilObject::_getObjectsByType('bibs'));
+		$bibObjId = current($bibObjIds);
+		$bibRefIds = \ilObject::_getAllReferences($bibObjId);
+		$this->ctrl->setParameterByClass('ilobjbibliographicadmingui', 'ref_id', current($bibRefIds));
+		$bitAdmUrl = $this->ctrl->getLinkTargetByClass(['ilAdministrationGUI', 'ilobjbibliographicadmingui'], 'view');
+		$this->ctrl->setParameterByClass('ilobjbibliographicadmingui', 'ref_id', null);
+		$tokenAppendToBibItems->setInfo(sprintf(
+			$this->getPluginObject()->txt('token_append_to_bibl_info'),
+			$bitAdmUrl
+		));
 		$tokenAppendToBibItems->setValue(1);
 
 		$accessFormSection = new \ilFormSectionHeaderGUI();

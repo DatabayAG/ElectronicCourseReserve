@@ -28,10 +28,10 @@ edit_ecr_content#:#Seiteninhalt bearbeiten
 ecr_content#:#Seiteninhalt des Semesterapparats
 insert_url_esa_info#:#<span style="font-weight: bold;">Um den Link zum Semesterapparat in die Seite einzubinden verwenden Sie im Text folgenden Platzhalter: ###URL_ESA###</span>
 tab_translation_value#:#Text des Navigationsreiters
-token_append_to_bibl#:#Kurstitel als Query-Parameter übergeben
-token_append_to_bibl_info#:#Wenn aktiviert, wird der Titel des Kurses als Query-Parameter ('iltitle') im Link zum Recherchesystem angehängt. Dieser wird dann ebenfalls zur Token-Generierung herangezogen.
-token_append_obj_title#:#OpenURL in Literaturliste
-token_append_obj_title_info#:#Wenn aktiviert, werden die für das Recherchesystem relevanten Query-Parameter und das Token an die Links zur Bestandsabfrage von Werken in Literaturlisten angehängt, sofern diese unterhalb von Kursen liegen. Bitte beachten Sie, dass entsprechende Bibliotheken im Bereich "Administration » Literaturliste" konfiguriert sein müssen.
+token_append_obj_title#:#Kurstitel als Query-Parameter übergeben
+token_append_obj_title_info#:#Wenn aktiviert, wird der Titel des Kurses als Query-Parameter ('iltitle') im Link zum Recherchesystem angehängt. Dieser wird dann ebenfalls zur Token-Generierung herangezogen.
+token_append_to_bibl#:#OpenURL in Literaturliste
+token_append_to_bibl_info#:#Wenn aktiviert, werden die für das Recherchesystem relevanten Query-Parameter und das Token an die Links zur Bestandsabfrage von Werken in Literaturlisten angehängt, sofern diese unterhalb von Kursen liegen. Bitte beachten Sie, dass entsprechende Bibliotheken im Bereich <a href="%s"><span style="font-style: italic">Administration » Literaturliste</span></a> konfiguriert sein müssen.
 notification_mail#:#Benachrichtigungs Mail
 notification_mail_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn der Import einzelner XML-Importdateien fehlgeschlagen ist.
 recipients#:#Empfänger
