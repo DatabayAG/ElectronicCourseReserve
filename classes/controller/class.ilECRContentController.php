@@ -20,6 +20,8 @@ class ilECRContentController extends ilECRBaseController
 	protected $settings;
 	protected $user;
 	protected $access;
+	protected $uiFactory;
+	protected $uiRenderer;
 
 	/**
 	 * ilECRContentController constructor.
@@ -38,6 +40,8 @@ class ilECRContentController extends ilECRBaseController
 		$this->settings = $DIC['ilSetting'];
 		$this->user     = $DIC->user();
 		$this->access   = $DIC->access();
+		$this->uiFactory   = $DIC->ui()->factory();
+		$this->uiRenderer = $DIC->ui()->renderer();
 	}
 
 	/**
@@ -53,34 +57,37 @@ class ilECRContentController extends ilECRBaseController
 		}
 	}
 
+	/**
+	 * @return bool
+	 */
 	private function checkUseAgreementCondition()
 	{
-		$is_use_agreement_enabled =$this->plugin_object->getSetting('enable_use_agreement');
-
-		if($is_use_agreement_enabled)
-		{
-			$this->checkUserAcceptance();
-		}
-		else
-		{
+		$is_use_agreement_enabled = $this->plugin_object->getSetting('enable_use_agreement');
+		if ($is_use_agreement_enabled) {
+			return $this->checkUserAcceptance();
+		} else {
 			return true;
 		}
 	}
 
+	/**
+	 * @return bool
+	 */
 	private function checkUserAcceptance()
 	{
 		$ref_id = (int)$_GET['ref_id'];
-		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		$obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
 		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAcceptance.php');
 
 		$ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
-		if($ilUserAcceptance->hasUserAcceptedAgreement())
-		{
+		if ($ilUserAcceptance->hasUserAcceptedAgreement()) {
 			return true;
 		}
 
 		$this->showUseAgreement();
+
+		return false;
 	}
 
 	public function handleAcceptanceCmd()
@@ -98,27 +105,36 @@ class ilECRContentController extends ilECRBaseController
 	private function showUseAgreement()
 	{
 		$this->plugin_object->includeClass('class.ilElectronicCourseReserveAgreement.php');
-		$tpl = $this->tpl;
 
-		// CONFIRMATION
-		include_once('Services/Utilities/classes/class.ilConfirmationGUI.php');
-		$c_gui = new ilConfirmationGUI();
-
-		$url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.handleAcceptanceCmd');
-
-		$c_gui->setFormAction($url);
-		$c_gui->setHeaderText($this->plugin_object->txt('use_agreement'));
-		$c_gui->setCancel($this->lng->txt('cancel'), 'cancelAcceptance');
-		$c_gui->setConfirm($this->lng->txt('confirm'), 'saveAcceptedUserAgreement');
+		$agreementTpl = $this->plugin_object->getTemplate('tpl.crs_acceptance_agreement.html', true, true);
+		$agreementTpl->setVariable('TXT_USER_AGREEMENT', $this->plugin_object->txt('use_agreement'));
 
 		$agreement = new ilElectronicCourseReserveAgreement();
 		$agreement->loadByLang($this->user->getLanguage());
-		$text = $agreement->getAgreement();
-		$c_gui->addItem('accepted_ua', $this->user->getId(), $text);
+		$agreementTpl->setVariable('AGREEMENT_CONTENT', $agreement->getAgreement());
 
-		$tpl->setContent($c_gui->getHTML());
-		$tpl->show();
-		exit;
+		$confirmBtn = $this->uiRenderer->render(
+			$this->uiFactory->button()->standard(
+				$this->lng->txt('confirm'),
+				$this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'], 'ilECRContentController.saveAcceptedUserAgreement')
+			)
+		);
+		$cancelBtn = $this->uiRenderer->render(
+			$this->uiFactory->button()->standard(
+				$this->lng->txt('cancel'),
+				$this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'], 'ilECRContentController.cancelAcceptance')
+			)
+		);
+
+		foreach ([$confirmBtn, $cancelBtn] as $btn) {
+			$agreementTpl->setCurrentBlock('button');
+			$agreementTpl->setVariable('BUTTON', $btn);
+			$agreementTpl->parseCurrentBlock();
+		}
+
+		\ilUtil::sendQuestion($agreementTpl->get());
+
+		$this->tpl->setContent('');
 	}
 
 	public function cancelAcceptance()
@@ -141,6 +157,7 @@ class ilECRContentController extends ilECRBaseController
 		$ilUserAcceptance->saveUserAcceptance();
 		$url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.showECRContent', '', false, false);
 
+		\ilUtil::sendSuccess($this->plugin_object->txt('ecr_accepted_agreement'), true);
 		$this->ctrl->redirectToURL($url);
 	}
 
@@ -152,10 +169,11 @@ class ilECRContentController extends ilECRBaseController
 		$this->plugin_object->includeClass('class.ilElectronicCourseReserveLangData.php');
 
 		$ref_id = (int)$_GET['ref_id'];
-		$obj    = ilObjectFactory::getInstanceByRefId($ref_id, false);
+		$obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
-		$this->checkUseAgreementCondition();
-//		$this->checkPermission('write');
+		if (!$this->checkUseAgreementCondition()) {
+			return;
+		}
 
 		$this->tpl->setTitle($obj->getTitle());
 		$this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
