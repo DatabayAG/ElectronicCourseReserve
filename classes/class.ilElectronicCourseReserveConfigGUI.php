@@ -233,7 +233,11 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		$tokenAppendToBibItems->setInfo($this->getPluginObject()->txt('token_append_to_bibl_info'));
 		$tokenAppendToBibItems->setValue(1);
 
+		$accessFormSection = new \ilFormSectionHeaderGUI();
+		$accessFormSection->setTitle($this->getPluginObject()->txt('form_header_access'));
+
 		$limitToGlobalRoles = new \ilCheckboxInputGUI($this->getPluginObject()->txt('limit_to_groles'), 'limit_to_groles');
+		$limitToGlobalRoles->setInfo($this->getPluginObject()->txt('global_roles_info'));
 		$limitToGlobalRoles->setDisabled($disabled);
 		require_once 'Services/Form/classes/class.ilMultiSelectInputGUI.php';
 		$permittedRoles = new \ilMultiSelectInputGUI(
@@ -249,6 +253,9 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		}
 		$permittedRoles->setOptions($roles);
 		$limitToGlobalRoles->addSubItem($permittedRoles);
+
+		$importFormSection = new \ilFormSectionHeaderGUI();
+		$importFormSection->setTitle($this->getPluginObject()->txt('form_header_import'));
 
 		$mail = new \ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail'), 'is_mail_enabled');
 		$mail->setInfo($this->getPluginObject()->txt('notification_mail_info'));
@@ -279,7 +286,9 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		$form->addItem($form_search_system_url);
 		$form->addItem($tokenAppendCrsTitle);
 		$form->addItem($tokenAppendToBibItems);
+		$form->addItem($accessFormSection);
 		$form->addItem($limitToGlobalRoles);
+		$form->addItem($importFormSection);
 		$form->addItem($mail);
 		$form->addItem($importDirectory);
 

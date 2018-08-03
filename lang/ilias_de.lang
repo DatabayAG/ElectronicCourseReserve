@@ -16,6 +16,7 @@ ecr_sign_error_occured#:#Es ist ein Fehler aufgetreten. Bitte kontaktieren Sie d
 ecr_soap_activation_required#:#Bitte <a href="%1$s">aktivieren Sie SOAP</a>.
 limit_to_groles#:#Zugriff auf bestimmte globale Rollen beschränken
 global_roles#:#Globale Rollen
+global_roles_info#:#Wählen Sie hier jene globale Rollen, für die der Zugriff auf den Tab 'Elektronischer Semesterapparat' gewährt werden soll. Bitte beachten Sie, dass die jeweiligen Benutzer auch die Berechtigung besitzen müssen, die Einstellungen des Kurses zu bearbeiten.  
 crs_ref_id#:#Kurs-RefId
 use_agreement#:#Nutzungsvereinbarung
 use_agreements#:#Nutzungsvereinbarungen
@@ -32,11 +33,11 @@ token_append_to_bibl_info#:#Wenn aktiviert, wird der Titel des Kurses als Query-
 token_append_obj_title#:#OpenURL in Literaturliste
 token_append_obj_title_info#:#Wenn aktiviert, werden die für das Recherchesystem relevanten Query-Parameter und das Token an die Links zur Bestandsabfrage von Werken in Literaturlisten angehängt, sofern diese unterhalb von Kursen liegen. Bitte beachten Sie, dass entsprechende Bibliotheken im Bereich "Administration » Literaturliste" konfiguriert sein müssen.
 notification_mail#:#Benachrichtigungs Mail
-notification_mail_info#:#Wenn aktiviert, wird eine Benachrichtigung, im Fehlerfall beim Import,  per E-Mail versendet.
+notification_mail_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn der Import einzelner XML-Importdateien fehlgeschlagen ist.
 recipients#:#Empfänger
 recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
 import_directory#:#Importverzeichnis
-import_directory_info#:#Bitte tragen Sie hier einen relativen Serverpfad ein, in dem ILIAS die zu importierenden Dateien auslesen soll. Bitte bedenken Sie, dass der Benutzer, in dessen Kontext PHP ausgeführt wird, Leserechte und Schreibrechte auf dieses Verzeichnis benötigt. Ihr konfigurierter Pfad lautet: <br/>%s
+import_directory_info#:#Bitte tragen Sie hier einen <span style="font-weight: bold">relativen</span> Serverpfad (ausgehend von Ihrem externen ILIAS-Datenverzeichnis) ein, in dem ILIAS die zu importierenden Dateien auslesen soll (z.B. 'esa_import'). Bitte bedenken Sie, dass der Benutzer, in dessen Kontext PHP ausgeführt wird, Leserechte und Schreibrechte auf dieses Verzeichnis benötigt. Die zu imporierenden XML- und Bild-Dateien <span style="font-weight: bold">müssen</span> in diesem Verzeichnis abgelegt werden.<br>Ihr konfigurierter Pfad lautet: <br/>%s
 error_move_mail#:#Es gab ein problem beim verschieben der Datei "%s" in den Backup Ordner.
 error_create_file_mail#:#Es gab ein Problem beim erzeugen des Datei Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
 error_create_url_mail#:#Es gab ein Problem beim erzeugen des Weblink Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
@@ -48,3 +49,6 @@ release_lock#:#Lock Entfernen
 sure_release_lock#:#Sind Sie sicher, dass Sie das Lock entfernen möchten?
 could_not_save_job_prob_runs#:#Die Einstellungen konnten nicht gespeichert werden. Der Job ist mit der Bearbeitung noch nicht fertig.
 released_lock#:#Das Lock wurde entfernt.
+form_header_import#:#Import-Prozess
+form_header_access#:#Zugriff
+ecr_contents_adm_tbl_head#:#Hier können Sie global für die in ILIAS installierten Sprachen die jeweilige Übersetzung des Tabs 'Elektronischer Semesterapparat' in Kursen pflegen. Des Weiteren können Sie für die einzelnen Sprachen global den Inhalt des Tabs mit dem TinyMCE pflegen. 

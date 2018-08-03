@@ -16,6 +16,7 @@ ecr_sign_error_occured#:#An error occured. Please contact your administrator.
 ecr_soap_activation_required#:#Please <a href="%1$s">enable the administration via SOAP</a>.
 limit_to_groles#:#Limit access to certain global Roles
 global_roles#:#Global Roles
+global_roles_info#:#Please choose the global roles access to the 'Electronic Course Reserve' tab in courses is granted for. Please keep in mind that ILIAS users additionally <span style="font-weight: bold">must</span> have the permission to edit the contents of the respective courses.
 crs_ref_id#:#Course-RefId
 use_agreement#:#Use Agreement
 use_agreements#:#Use Agreements
@@ -32,11 +33,11 @@ token_append_to_bibl_info#:#If enabled, the course title will be appended (as 'i
 token_append_obj_title#:#OpenURL in Bibliography
 token_append_obj_title_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects, if these are used as content in ILIAS courses. Please note that at least one library has to be added in "Administration » Bibliography".
 notification_mail#:#Notification Mail
-notification_mail_info#:#Wenn activated, an email notification will be sent if an error occurs while importing new objects.
+notification_mail_info#:#If activated, an email notification will be sent if an error occurs while importing XML files.
 recipients#:#Recipients
 recipients_info#:#Please insert the login names of the recipients.
 import_directory#:#Import Directory
-import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. Your configured path is: <br/>%s
+import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. The path <span style="font-weight: bold">must</span> be entered as a <span style="font-weight: bold">relative</span> directory path, located below your external data directory (e.g. 'esa_import'). The XML and image files to be imported <span style="font-weight: bold">must</span> be stored in this directory.<br>Your configured path is: <br/>%s
 error_move_mail#:#There was an error moving "%s" to backup dir.
 error_create_file_mail#:#There was an error creating the file item for course ref id %s and folder import id %s. 
 error_create_url_mail#:#There was an error creating the url item for course ref id %s and folder import id %s. 
@@ -48,3 +49,6 @@ release_lock#:#Release Lock
 sure_release_lock#:#Are you sure you want to release the lock?
 could_not_save_job_prob_runs#:#ILIAS could not save the settings. The job is currently running, please wait until it is finished.
 released_lock#:#The lock has been removed.
+form_header_import#:#Import-Process
+form_header_access#:#Zugriff
+ecr_contents_adm_tbl_head#:#Here you can globally defined the translation for the 'Electronic Course Reserve' tab in courses. Furthermore you can manage the contents of this tab via the TinyMCE editor. 
