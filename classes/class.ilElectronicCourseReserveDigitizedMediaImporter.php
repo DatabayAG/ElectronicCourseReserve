@@ -266,11 +266,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 			try
 			{
-				if(self::DELETE_FILES) {
-					ilUtil::moveUploadedFile($path_to_file, basename($path_to_file), $dir . DIRECTORY_SEPARATOR . basename($path_to_file), true, 'copy');
-					unlink($path_to_file);
+				if(file_exists($path_to_file)) {
+					copy($path_to_file, $dir . DIRECTORY_SEPARATOR . basename($path_to_file));
+					if(file_exists($dir . DIRECTORY_SEPARATOR . basename($path_to_file))) {
+						if(self::DELETE_FILES) {
+							unlink($path_to_file);
+						}
+					}
 				}
-
 				return true;
 			}
 			catch(ilException $e)
