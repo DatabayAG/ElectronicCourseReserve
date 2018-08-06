@@ -359,6 +359,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		}
 
 		$form = $this->getGeneralSettingsForm();
+		$import_path = '';
 		if ($form->checkInput()) {
 			$recipients = (array)$form->getInput('recipients');
 
@@ -368,7 +369,8 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 			$this->getPluginObject()->setSetting('sign_key_email', $form->getInput('sign_key_email'));
 			$this->getPluginObject()->setSetting('is_mail_enabled', $form->getInput('is_mail_enabled'));
 			$this->getPluginObject()->setSetting('mail_recipients', implode(',', $recipients));
-			$this->getPluginObject()->setSetting('import_directory', $form->getInput('import_directory'));
+			$import_path = $form->getInput('import_directory');
+			$this->getPluginObject()->setSetting('import_directory', $import_path);
 
 			if ($form->getInput('sign_key_passphrase')) {
 				$this->getPluginObject()->setSetting('sign_key_passphrase', $this->encrypter->encrypt($form->getInput('sign_key_passphrase')));
@@ -383,6 +385,9 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		}
 
 		$form->setValuesByPost();
+		if(strlen($import_path) > 0){
+			ilUtil::makeDirParents($import_path);
+		}
 		$this->tpl->setContent($form->getHTML());
 	}
 
