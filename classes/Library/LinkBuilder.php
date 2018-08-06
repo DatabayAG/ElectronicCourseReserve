@@ -113,17 +113,25 @@ class LinkBuilder
 		$passphrase = strlen($this->plugin->getSetting('sign_key_passphrase')) ? $this->blockCipher->decrypt($this->plugin->getSetting('sign_key_passphrase')) : '';
 
 		$key_id = null;
-		foreach ($this->gpg->listKeys(true) as $result) {
-			foreach ($result as $key) {
-				if (strpos($key['uid'][0], '<' . $this->plugin->getSetting('sign_key_email') . '>') !== false) {
-					$sign_result = $this->gpg->sign($data_to_sign, $key_id, $passphrase, false, true);
-					$signed_data = $sign_result->data;
-					$sign_error = $sign_result->err;
+		$keys = $this->gpg->listKeys(true);
 
-					if ($signed_data && !$sign_error) {
-						$signature = $this->gpg->sign($data_to_sign, $key_id, $passphrase, false, true)->data;
-						$params['iltoken'] = base64_encode($signature);
-						break 2;
+		if (count($keys) > 0) {
+			foreach ($keys as $result) {
+				if (!is_array($result)) {
+					continue;
+				}
+
+				foreach ($result as $key) {
+					if (strpos($key['uid'][0], '<' . $this->plugin->getSetting('sign_key_email') . '>') !== false) {
+						$sign_result = $this->gpg->sign($data_to_sign, $key_id, $passphrase, false, true);
+						$signed_data = $sign_result->data;
+						$sign_error = $sign_result->err;
+
+						if ($signed_data && !$sign_error) {
+							$signature = $this->gpg->sign($data_to_sign, $key_id, $passphrase, false, true)->data;
+							$params['iltoken'] = base64_encode($signature);
+							break 2;
+						}
 					}
 				}
 			}
