@@ -54,8 +54,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	/**
 	 * @var boolean
 	 */
-	//Todo: set to true
-	const DELETE_FILES = false;
+	const DELETE_FILES = true;
 
 	/**
 	 * @var $logger ilLog
