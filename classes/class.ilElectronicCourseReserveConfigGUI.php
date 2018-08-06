@@ -359,7 +359,6 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		}
 
 		$form = $this->getGeneralSettingsForm();
-		$import_path = '';
 		if ($form->checkInput()) {
 			$recipients = (array)$form->getInput('recipients');
 
@@ -380,14 +379,15 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 			$this->getPluginObject()->setSetting('token_append_obj_title', (int)$form->getInput('token_append_obj_title'));
 			$this->getPluginObject()->setSetting('token_append_to_bibl', (int)$form->getInput('token_append_to_bibl'));
 
+			if(strlen($import_path) > 0 && !is_dir(\ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $import_path)){
+				ilUtil::makeDirParents(\ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $import_path);
+			}
 			\ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
 			$this->ctrl->redirect($this);
 		}
 
 		$form->setValuesByPost();
-		if(strlen($import_path) > 0){
-			ilUtil::makeDirParents($import_path);
-		}
+
 		$this->tpl->setContent($form->getHTML());
 	}
 
