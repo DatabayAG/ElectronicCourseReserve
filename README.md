@@ -10,6 +10,9 @@ in this document are to be interpreted as described in
 * [Install](#install)
 * [Logging](#logging)
 * [Dependencies](#dependencies)
+  * [GnuPG](#gnupg)
+    * [Key Pair Generation](#key-pair-generation)
+    * [Public Key Export](#public-key-export)
 * [License](#license)
 
 ## Install
@@ -36,6 +39,36 @@ to be important to log.
 
 * CronElectronicCourseReserve Plugin (https://gitlab.databay.de/ilias/esa_cron.git)
 * GnuPG (https://wiki.ubuntuusers.de/GnuPG/)
+
+### GnuPG
+
+The plugin uses *GnuPG* for token generation. Therefore you MUST create a public/private key pair, located in a keyring of an arbitrary server directory you MUST define in the plugin administration.
+
+In the following examples, */srv/www/esa.invorbereitung.de/data/esainvorbe/.esa* is used as directory, and *esa@databay.de* is used as email address. A directory of your choice MAY be used. This directory MUST be readable by the operating system user the PHP interpreter is executed with (www-data, www-run, etc.),
+
+#### Key Pair Generation
+
+    gpg --homedir /srv/www/esa.invorbereitung.de/data/esainvorbe/.esa --gen-key
+  
+ 
+  * If you get asked for selecting a kind, choose: **DSA and Elgamal**
+  * Keysize: **2048**
+  * Key Expiration: **0**
+  * Realname und Comment (Example): Elektronischer Semesterapparat
+  * Email Address (Example): esa@databay.de
+  * Passphrase (Your Secret): *****
+
+#### Public Key Export
+
+    gpg --homedir /srv/www/esa.invorbereitung.de/data/esainvorbe/.esa --armor --export esa@databay.de > esa_pub_key.asc
+
+The public key file *esa_pub_key.asc* has to be shared with the library.
+
+In the ILIAS configuration screen you'll have to enter the following values:
+
+* Absolute Server Path/HomeDirectory: /srv/www/esa.invorbereitung.de/data/esainvorbe/.esa
+* Email Address: esa@databay.de
+* Passphrase: *****
 
 ## License
 
