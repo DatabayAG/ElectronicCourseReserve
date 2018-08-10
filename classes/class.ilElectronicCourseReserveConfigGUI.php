@@ -162,6 +162,8 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 			$form = $this->getGeneralSettingsForm();
 		}
 
+		$this->renderPossibleImportDirectoryIssues();
+
 		$this->populateValues($form);
 		$this->tpl->setContent($form->getHTML());
 	}
@@ -382,6 +384,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 			if(strlen($import_path) > 0 && !is_dir(\ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $import_path)){
 				ilUtil::makeDirParents(\ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $import_path);
 			}
+
 			\ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
 			$this->ctrl->redirect($this);
 		}
@@ -437,5 +440,22 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 
 		\ilUtil::sendSuccess($this->getPluginObject()->txt('released_lock'), true);
 		$this->ctrl->redirect($this, 'showConfigurationForm');
+	}
+
+	/**
+	 * 
+	 */
+	protected function renderPossibleImportDirectoryIssues()
+	{
+		if (strlen($this->getPluginObject()->getSetting('import_directory')) > 0) {
+			$dir = \ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $this->getPluginObject()->getSetting('import_directory');
+
+			if (
+				!is_dir($dir) ||
+				!is_readable($dir) ||
+				!is_writeable($dir)) {
+				\ilUtil::sendInfo($this->getPluginObject()->txt('import_directory_info_perms'));
+			}
+		}
 	}
 }

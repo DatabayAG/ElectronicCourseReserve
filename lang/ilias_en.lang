@@ -37,7 +37,8 @@ notification_mail_info#:#If activated, an email notification will be sent if an 
 recipients#:#Recipients
 recipients_info#:#Please insert the login names of the recipients.
 import_directory#:#Import Directory
-import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. The path <span style="font-weight: bold">must</span> be entered as a <span style="font-weight: bold">relative</span> directory path, located below your external data directory (e.g. 'esa_import'). The XML and image files to be imported <span style="font-weight: bold">must</span> be stored in this directory.<br>Your configured path is: <br/>%s
+import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. The path <span style="font-weight: bold">must</span> be entered as a <span style="font-weight: bold">relative</span> directory path, located below your external data directory (e.g. 'esa_import'). The XML and image files to be imported <span style="font-weight: bold">must</span> be stored in this directory. ILIAS will try to create this directory when saving this form.<br>Your configured path is: <br/>%s
+import_directory_info_perms#:#The entered import directory does not exists, or ILIAS does not have read and write permissions for this directory.
 error_move_mail#:#There was an error moving "%s" to backup dir.
 error_create_file_mail#:#There was an error creating the file item for course ref id %s and folder import id %s. 
 error_create_url_mail#:#There was an error creating the url item for course ref id %s and folder import id %s. 
