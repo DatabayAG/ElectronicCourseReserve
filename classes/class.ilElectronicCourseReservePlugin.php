@@ -129,6 +129,21 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 					$c->logger()->root()
 				);
 			};
+
+			$GLOBALS['DIC']['plugin.esa.logger.writer.ilias'] = function (\ILIAS\DI\Container $c) {
+				$logLevel = \ilLoggingDBSettings::getInstance()->getLevel();
+
+				return new \ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer\Ilias($c['ilLog'], $logLevel);
+			};
+
+			$GLOBALS['DIC']['plugin.esa.cronjob.logger'] = function (\ILIAS\DI\Container $c) {
+				$logger = new \ILIAS\Plugin\ElectronicCourseReserve\Logging\Log();
+
+				$logger->addWriter(new \ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer\StdOut());
+				$logger->addWriter($c['plugin.esa.logger.writer.ilias']);
+
+				return $logger;
+			};
 		}
 	}
 
