@@ -247,20 +247,26 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 			$this->getPluginObject()->getSetting('url_search_system')
 		) {
 
-			$dummyCrs = new \ilObjCourse();
-			$dummyCrs->setId(-1);
-			$dummyCrs->setRefId(-1);
-			$dummyCrs->setTitle('Example');
+			try {
+				$dummyCrs = new \ilObjCourse();
+				$dummyCrs->setId(-1);
+				$dummyCrs->setRefId(-1);
+				$dummyCrs->setTitle('Example');
 
-			$exampleUrlTpl = $this->getPluginObject()->getTemplate('tpl.example_url.html', true, true);
-			/** @var ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder $linkBuilder */
-			$linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
-			$exampleUrlTpl->setVariable('URL', $linkBuilder->getLibraryOrderLink($dummyCrs));
+				$exampleUrlTpl = $this->getPluginObject()->getTemplate('tpl.example_url.html', true, true);
+				/** @var ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder $linkBuilder */
+				$linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
+				$exampleUrlTpl->setVariable('URL', $linkBuilder->getLibraryOrderLink($dummyCrs));
 
-			$exampleLink = new \ilNonEditableValueGUI($this->getPluginObject()->txt('ecr_example_url'), '', true);
-			$exampleLink->setInfo($this->getPluginObject()->txt('ecr_example_url_info'));
-			$exampleLink->setValue($exampleUrlTpl->get());
-			$form_search_system_url->addSubItem($exampleLink);
+				$exampleLink = new \ilNonEditableValueGUI($this->getPluginObject()->txt('ecr_example_url'), '', true);
+				$exampleLink->setInfo($this->getPluginObject()->txt('ecr_example_url_info'));
+				$exampleLink->setValue($exampleUrlTpl->get());
+				$form_search_system_url->addSubItem($exampleLink);
+			} catch (\Throwable $e) {
+				$form_search_system_url->setAlert($e->getMessage());
+			} catch (\Exception $e) {
+				$form_search_system_url->setAlert($e->getMessage());
+			}
 		}
 
 		$tokenAppendCrsTitle = new \ilCheckboxInputGUI($this->getPluginObject()->txt('token_append_obj_title'), 'token_append_obj_title');
