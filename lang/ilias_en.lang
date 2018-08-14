@@ -56,3 +56,5 @@ ecr_contents_adm_tbl_head#:#Here you can globally defined the translation for th
 ecr_example_url#:#Example URL 
 ecr_example_url_info#:#This is an example URL based on the current configuration. Please <span style="font-weight: bold">don't</span> use this link for obligatory orders.
 ecr_accepted_agreement#:#The user agreement has been accepted.
+error_with_import_item#:#there was a problem while importing a Electronic Course Reserver item
+error_mail_greeting#:#Hello, [BR][BR]

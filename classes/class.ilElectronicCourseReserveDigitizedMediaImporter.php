@@ -670,8 +670,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$mail->From($this->from);
 			$recipients = $this->pluginObj->getSetting('mail_recipients');
 			$mail->To($this->getEmailsForRecipients($recipients));
-			$mail->Subject("There was a problem with an Electronic Course Import Item");
-			$mail->Body($msg);
+			$mail->Subject($this->pluginObj->txt(sprintf('error_with_import_item', '')));
+			$mail_text = str_replace('[BR]', "\n", $this->pluginObj->txt('error_mail_greeting')
+							. $msg . ilMail::_getInstallationSignature());
+			$mail->Body($mail_text);
 			if($attachment !== null) {
 				$mail->Attach($attachment);
 			}

@@ -56,3 +56,5 @@ ecr_contents_adm_tbl_head#:#Hier können Sie global für die in ILIAS installier
 ecr_example_url#:#Beispiel-URL 
 ecr_example_url_info#:#Hier sehen Sie einen Beispiel-URL ausgehend von der aktuell vorgenommen Konfiguration. Bitte nutzen Sie diesen Link <span style="font-weight: bold">nicht</span> für verbindliche Bestellungen.
 ecr_accepted_agreement#:#Die Nutzungsvereinbarungen wurden erfolgreich akzeptiert
+error_with_import_item#:#es ist ein Problem beim Import eines Electronic Course Objektes aufgetreten
+error_mail_greeting#:#Hallo, [BR][BR]
