@@ -52,7 +52,14 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 					$gui->setAllowFileCreation(true);
 					$gui->setAllowDirectoryCreation(false);
 					$gui->setAllowedSuffixes(array('xml', 'jpeg', 'jpg', 'svg', 'png'));
-					$commands = $gui->getActionCommands();
+					if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.0', '<')) {
+						$reflGui = new \ReflectionObject($gui);
+						$refProp = $reflGui->getProperty('commands');
+						$refProp->setAccessible(true);
+						$commands = (array)$refProp->getValue($gui);
+					} else {
+						$commands = $gui->getActionCommands();
+					}
 					$commands = array_filter($commands, function($cmd) {
 						return $cmd['method'] != 'renameFileForm';
 					});
