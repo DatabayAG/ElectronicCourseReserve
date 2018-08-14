@@ -104,6 +104,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 		if ($factory !== null && $factory instanceof ilMailMimeSenderFactory) {
 			$this->from = $factory->system();
+		} else {
+			$this->from = \ilMail::getIliasMailerAddress();
 		}
 
 		$this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
