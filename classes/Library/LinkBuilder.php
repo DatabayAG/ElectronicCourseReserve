@@ -112,7 +112,6 @@ class LinkBuilder
 
 		$passphrase = strlen($this->plugin->getSetting('sign_key_passphrase')) ? $this->blockCipher->decrypt($this->plugin->getSetting('sign_key_passphrase')) : '';
 
-		$key_id = null;
 		$keys = $this->gpg->listKeys(true);
 
 		foreach ($keys as $result) {
@@ -121,6 +120,8 @@ class LinkBuilder
 			}
 
 			foreach ($result as $key) {
+				$key_id = $key['keyid'];
+
 				if (strpos($key['uid'][0], '<' . $this->plugin->getSetting('sign_key_email') . '>') !== false) {
 					$sign_result = $this->gpg->sign($data_to_sign, $key_id, $passphrase, false, true);
 					$signed_data = $sign_result->data;
