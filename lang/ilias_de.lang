@@ -58,3 +58,4 @@ ecr_example_url_info#:#Hier sehen Sie einen Beispiel-URL ausgehend von der aktue
 ecr_accepted_agreement#:#Die Nutzungsvereinbarungen wurden erfolgreich akzeptiert
 error_with_import_item#:#es ist ein Problem beim Import eines Electronic Course Objektes aufgetreten
 error_mail_greeting#:#Hallo, [BR][BR]
+ecr_cron_configuration_page#:#Cron-Job-Konfiguration

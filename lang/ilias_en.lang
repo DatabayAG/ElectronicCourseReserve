@@ -58,3 +58,4 @@ ecr_example_url_info#:#This is an example URL based on the current configuration
 ecr_accepted_agreement#:#The user agreement has been accepted.
 error_with_import_item#:#there was a problem while importing a Electronic Course Reserver item
 error_mail_greeting#:#Hello, [BR][BR]
+ecr_cron_configuration_page#:#Cron-Job-Konfiguration

@@ -70,6 +70,12 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 	/** @var bool */
 	protected static $initialized = false;
 
+	/** @var array */
+	protected static $active_plugins_check_cache = array();
+
+	/** @var array */
+	protected static $active_plugins_cache = array();
+
 	/**
 	 * @inheritdoc
 	 */
@@ -456,4 +462,56 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 		return $this->item_data;
 	}
 
+	/**
+	 * @param string $component
+	 * @param string $slot
+	 * @param string $plugin_class
+	 *
+	 * @return bool
+	 */
+	public function isPluginInstalled($component, $slot, $plugin_class)
+	{
+		if (isset(self::$active_plugins_check_cache[$component][$slot][$plugin_class])) {
+			return self::$active_plugins_check_cache[$component][$slot][$plugin_class];
+		}
+
+		foreach (
+			$GLOBALS['ilPluginAdmin']->getActivePluginsForSlot(IL_COMP_SERVICE, $component,
+				$slot) as $plugin_name
+		) {
+			$plugin = \ilPluginAdmin::getPluginObject(IL_COMP_SERVICE, $component, $slot, $plugin_name);
+			if (\class_exists($plugin_class) && $plugin instanceof $plugin_class) {
+				return (self::$active_plugins_check_cache[$component][$slot][$plugin_class] = true);
+			}
+		}
+
+		return (self::$active_plugins_check_cache[$component][$slot][$plugin_class] = false);
+	}
+
+	/**
+	 * @param string $component
+	 * @param string $slot
+	 * @param string $plugin_class
+	 *
+	 * @return \ilPlugin
+	 * @throws \ilException
+	 */
+	public function getPlugin($component, $slot, $plugin_class)
+	{
+		if (isset(self::$active_plugins_cache[$component][$slot][$plugin_class])) {
+			return self::$active_plugins_cache[$component][$slot][$plugin_class];
+		}
+
+		foreach (
+			$GLOBALS['ilPluginAdmin']->getActivePluginsForSlot(IL_COMP_SERVICE, $component,
+				$slot) as $plugin_name
+		) {
+			$plugin = \ilPluginAdmin::getPluginObject(IL_COMP_SERVICE, $component, $slot, $plugin_name);
+			if (\class_exists($plugin_class) && $plugin instanceof $plugin_class) {
+				return (self::$active_plugins_cache[$component][$slot][$plugin_class] = $plugin);
+			}
+		}
+
+		throw new \ilException($plugin_class . ' plugin not installed!');
+	}
 }

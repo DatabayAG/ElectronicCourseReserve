@@ -352,6 +352,29 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		$form->addItem($accessFormSection);
 		$form->addItem($limitToGlobalRoles);
 		$form->addItem($importFormSection);
+		if (\ilElectronicCourseReservePlugin::getInstance()->isPluginInstalled(
+			'Cron', 'crnhk', 'ilCronElectronicCourseReservePlugin'
+		)) {
+			$configUrl = new \ilNonEditableValueGUI(
+				\ilElectronicCourseReservePlugin::getInstance()->txt('ecr_cron_configuration_page'), '', true
+			);
+
+			$pl = ilElectronicCourseReservePlugin::getInstance()->getPlugin(
+				'Cron', 'crnhk', 'ilCronElectronicCourseReservePlugin'
+			);
+
+			$this->ctrl->setParameterByClass('ilCronManagerGUI', 'ref_id', SYSTEM_FOLDER_ID);
+			$this->ctrl->setParameterByClass('ilCronManagerGUI', 'admin_mode', 'settings');
+			$this->ctrl->setParameterByClass(
+				'ilCronManagerGUI', 'jid',
+				'pl__' .  $pl->getPluginName() . '__' . $pl->getCronJobInstances()[0]->getId()
+			);
+
+			$configUrl->setValue('<a target="_blank" href="' . $this->ctrl->getLinkTargetByClass([
+					'ilAdministrationGUI', 'ilObjSystemFolderGUI', 'ilCronManagerGUI'
+				], 'edit') . '">' . \ilElectronicCourseReservePlugin::getInstance()->txt('ecr_cron_configuration_page') . '</a>');
+			$form->addItem($configUrl);
+		}
 		$form->addItem($mail);
 		$form->addItem($importDirectory);
 
