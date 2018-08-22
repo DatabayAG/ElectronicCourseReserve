@@ -120,15 +120,15 @@ class LinkBuilder
 			}
 
 			foreach ($result as $key) {
-				$key_id = $key['keyid'];
+				$fingerprint = $key['fingerprint'];
 
 				if (strpos($key['uid'][0], '<' . $this->plugin->getSetting('sign_key_email') . '>') !== false) {
-					$sign_result = $this->gpg->sign($data_to_sign, $key_id, $passphrase, false, true);
-					$signed_data = $sign_result->data;
-					$sign_error = $sign_result->err;
+					$signResult = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true);
+					$signature = $signResult->data;
+					$signedError = $signResult->err;
 
-					if ($signed_data && !$sign_error) {
-						$signature = $this->gpg->sign($data_to_sign, $key_id, $passphrase, false, true)->data;
+					if ($signature && !$signedError) {
+						$signature = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true)->data;
 						$params['iltoken'] = base64_encode($signature);
 						break 2;
 					}
