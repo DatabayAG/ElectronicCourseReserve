@@ -265,7 +265,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 
 		if (
 			$this->getPluginObject()->getSetting('gpg_homedir') &&
-			$this->getPluginObject()->getSetting('sign_key_email') &&
+			$this->getPluginObject()->getSetting('sign_key_passphrase') &&
 			$this->getPluginObject()->getSetting('sign_key_passphrase') &&
 			$this->getPluginObject()->getSetting('url_search_system')
 		) {
