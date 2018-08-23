@@ -122,7 +122,7 @@ class LinkBuilder
 			foreach ($result as $key) {
 				$fingerprint = $key['fingerprint'];
 
-				if (strpos($key['uid'][0], '<' . $this->plugin->getSetting('sign_key_email') . '>') !== false) {
+				if ($fingerprint === $this->plugin->getSetting('sign_key_fingerprint')) {
 					$signResult = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true);
 					$signature = $signResult->data;
 					$signedError = $signResult->err;

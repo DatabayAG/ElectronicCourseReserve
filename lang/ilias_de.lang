@@ -4,8 +4,8 @@ ecr_title#:#Elektronischer Semesterapparat
 ecr_desc#:#Klicken Sie auf diesen Link, um zum Recherchesystem zu gelangen.
 ecr_gpg_homedir#:#Homedir
 ecr_gpg_homedir_info#:#Dieses Plugin setzt die Installation von <span style="font-weight:bold">GnuPG</span> (<a href="https://wiki.ubuntuusers.de/GnuPG/" target="_blank" rel="noopener noreferrer">https://wiki.ubuntuusers.de/GnuPG/</a>) voraus. Bitte tragen Sie hier den absoluten Serverpfad zum Homedir von <span style="font-weight:bold">GnuPG</span> ein. Aus diesem Verzeichnis wird der unten anzugebene Schlüssel ausgelesen, um die an das Recherche-System übergebenen Daten zu signieren. <span style="color:red;font-weight:bold">Wichtig: Das Verzeichnis muss für den Benutzer, in dessen Kontext PHP ausgeführt wird (z.B. wwwrun, www-data, etc.), schreibbar sein.</span>
-ecr_sign_key_email#:#E-Mail-Adresse (Schlüssel)
-ecr_sign_key_email_info#:#Bitte geben Sie hier den Schlüssel ein (im Format einer E-Mail-Adresse), mit dem der Fingerabdruck der zu sendenden Daten erzeugt werden soll.
+ecr_sign_key_fingerprint#:#Fingerprint (Schlüssel)
+ecr_sign_key_fingerprint_info#:#Bitte geben Sie hier den Fingerprint des Schlüssels ein, mit dem die Signatur der zu sendenden Daten erzeugt werden soll.
 ecr_sign_key_passphrase#:#Passphrase
 ecr_sign_key_passphrase_info#:#Bitte geben Sie hier die Passphrase für jenen Schlüssel ein, mit dem der Fingerabdruck der zu sendenden Daten erzeugt werden soll.
 ecr_url_search_system#:#Recherchesystem-URL
@@ -59,3 +59,5 @@ ecr_accepted_agreement#:#Die Nutzungsvereinbarungen wurden erfolgreich akzeptier
 error_with_import_item#:#es ist ein Problem beim Import eines Electronic Course Objektes aufgetreten
 error_mail_greeting#:#Hallo, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
+ecr_gpg_secret_keys#:#Mögliche Schlüssel
+ecr_gpg_secret_keys_info#:#Anbei sehen Sie eine Liste möglicher Schlüssel.

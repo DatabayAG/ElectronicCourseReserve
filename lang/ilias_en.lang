@@ -4,8 +4,8 @@ ecr_title#:#Electronic Course Reserve
 ecr_desc#:#Please click on this link to be redirected to the search system.
 ecr_gpg_homedir#:#Home Directory
 ecr_gpg_homedir_info#:#This plugins depends on <span style="font-weight:bold">GnuPG</span> (<a href="https://wiki.ubuntuusers.de/GnuPG/" target="_blank" rel="noopener noreferrer">https://wiki.ubuntuusers.de/GnuPG/</a>). Please insert the absolute server path to your <span style="font-weight:bold">GnuPG</span> home directory. The key used for signing the data to be transported to the search system is read from that directory. <span style="color:red;font-weight:bold">Important: The directory must be writeable by the user php is executed with (e.g. wwwrun, www-data, etc.).</span>
-ecr_sign_key_email#:#Email Address (Key)
-ecr_sign_key_email_info#:#Please enter the key (email address) used for signing the data.
+ecr_sign_key_fingerprint#:#Fingerprint (Key)
+ecr_sign_key_fingerprint_info#:#Please enter the fingerprint of the key used for signing the data.
 ecr_sign_key_passphrase#:#Passphrase
 ecr_sign_key_passphrase_info#:#Please insert the passphrase for the key entered above.
 ecr_url_search_system#:#Research System URL
@@ -59,3 +59,5 @@ ecr_accepted_agreement#:#The user agreement has been accepted.
 error_with_import_item#:#there was a problem while importing a Electronic Course Reserver item
 error_mail_greeting#:#Hello, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
+ecr_gpg_secret_keys#:#Possible Keys
+ecr_gpg_secret_keys_info#:#Here you can see a list of possible keys. 

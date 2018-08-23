@@ -123,10 +123,16 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 			};
 
 			$GLOBALS['DIC']['plugin.esa.crypt.gpg'] = function (\ILIAS\DI\Container $c) use ($that) {
-				require_once $that->getDirectory() . '/libs/php-gnupg/gpg.php';
-				$gpg = new \GnuPG($that->getSetting('gpg_homedir'));
-				
-				return $gpg;
+				return $c['plugin.esa.crypt.gpg.factory']($that->getSetting('gpg_homedir'));
+			};
+
+			$GLOBALS['DIC']['plugin.esa.crypt.gpg.factory'] = function (\ILIAS\DI\Container $c) use ($that) {
+				return function($homeDirectory) use ($that) {
+					require_once $that->getDirectory() . '/libs/php-gnupg/gpg.php';
+					$gpg = new \GnuPG($homeDirectory);
+
+					return $gpg;
+				};
 			};
 
 			$GLOBALS['DIC']['plugin.esa.locker'] = function (\ILIAS\DI\Container $c) {

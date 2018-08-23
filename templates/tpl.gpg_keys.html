@@ -1,0 +1,41 @@
+<div id="gpg-key-container">{HTML}</div>
+<script>
+    (function ($) {
+        var deferredCallbackFactory = (function () {
+            var namespaces = {};
+
+            return function (ns) {
+                if (!namespaces.hasOwnProperty(ns)) {
+                    namespaces[ns] = (function () {
+                        var timer = 0;
+
+                        return function (callback, ms) {
+                            clearTimeout(timer);
+                            timer = setTimeout(callback, ms);
+                        };
+                    })();
+                }
+
+                return namespaces[ns];
+            };
+        })();
+
+        $("#{OBSERVABLE_ELEMENT_ID}").on('keyup keydown blur', function () {
+            var observable = $(this);
+
+            deferredCallbackFactory('onHomeDirChanged')(function () {
+                $.ajax({
+                    method: "GET",
+                    dataType: "json",
+                    data: { path : observable.val() },
+                    url: "{URL}",
+                    beforeSend: function () {
+                        $("#gpg-key-container").html($('<img src="{LOADER_IMG_SRC}" >'));
+                    }
+                }).done(function (r) {
+                    $("#gpg-key-container").html(r.html);
+                });
+            }, 500);
+        });
+    })(jQuery);
+</script>

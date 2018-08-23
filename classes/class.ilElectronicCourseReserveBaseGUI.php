@@ -44,6 +44,12 @@ abstract class ilElectronicCourseReserveBaseGUI extends \ilPluginConfigGUI
 	/** @var \Zend\Crypt\BlockCipher $symmetric */
 	protected $plugin_object;
 
+	/** @var \ILIAS\UI\Factory */
+	protected $uiFactory;
+
+	/** @var \ILIAS\UI\Renderer */
+	protected $uiRenderer;
+
 	/**
 	 * ilCourseBookingDecisionMakerGUI constructor.
 	 * @param \ilElectronicCourseReservePlugin $plugin
@@ -67,6 +73,8 @@ abstract class ilElectronicCourseReserveBaseGUI extends \ilPluginConfigGUI
 		$this->rbacreview = $DIC->rbac()->review();
 		$this->tpl = $DIC->ui()->mainTemplate();
 		$this->settings = $DIC['ilSetting'];
+		$this->uiFactory = $DIC->ui()->factory();
+		$this->uiRenderer = $DIC->ui()->renderer();
 		$this->lock = $DIC['plugin.esa.locker'];
 		$this->encrypter = $DIC['plugin.esa.crypt.blockcipher'];
 		$this->objectCache = $DIC['ilObjDataCache'];

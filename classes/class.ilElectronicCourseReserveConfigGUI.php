@@ -1,12 +1,14 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\Plugin\ElectronicCourseReserve\Form\GpgHomeDirInputGUI;
+
 require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
  * Class ilElectronicCourseReserveConfigGUI
- * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilFileSystemGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilFileSystemGUI, ilGpgFingerPrintInputGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI, ilElectronicCourseReserveContentConfigGUI
  */
 class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseGUI
@@ -26,6 +28,16 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 	{
 		$nextClass = $this->ctrl->getNextClass();
 		switch (strtolower($nextClass)) {
+			case strtolower('ilGpgFingerPrintInputGUI'):
+				$this->getPluginObject()->includeClass('class.ilGpgHomeDirInputGUI.php');
+				$this->getPluginObject()->includeClass('class.ilGpgFingerPrintInputGUI.php');
+				$gpgHomeDir = new ilGpgFingerPrintInputGUI(
+					$this->getPluginObject(), new ilGpgHomeDirInputGUI($this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir'),
+					$this->ctrl, $this->uiFactory, $this->uiRenderer,
+					$this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir'
+				);
+				$this->ctrl->forwardCommand($gpgHomeDir);
+				break;
 			case 'ilfilesystemgui':
 				$this->tpl->setTitle($this->lng->txt('cmps_plugin'). ': ' . $_GET["pname"]);
 				$this->tpl->setDescription("");
@@ -182,7 +194,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 	{
 		$form->setValuesByArray([
 			'gpg_homedir' => $this->getPluginObject()->getSetting('gpg_homedir'),
-			'sign_key_email' => $this->getPluginObject()->getSetting('sign_key_email'),
+			'sign_key_fingerprint' => $this->getPluginObject()->getSetting('sign_key_fingerprint'),
 			'limit_to_groles' => $this->getPluginObject()->getSetting('limit_to_groles'),
 			'global_roles' => explode(',', $this->getPluginObject()->getSetting('global_roles')),
 			'url_search_system' => $this->getPluginObject()->getSetting('url_search_system'),
@@ -209,33 +221,37 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		$form->setFormAction($this->ctrl->getFormAction($this, 'saveSettings'));
 		$form->setTitle($this->lng->txt('settings'));
 
-		$form_gpg_homedir = new \ilTextInputGUI($this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir');
-		$form_gpg_homedir->setDisabled($disabled);
-		$form_gpg_homedir->setRequired(true);
-		$form_gpg_homedir->setInfo($this->getPluginObject()->txt('ecr_gpg_homedir_info'));
+		$this->getPluginObject()->includeClass('class.ilGpgHomeDirInputGUI.php');
+		$gpgHomeDir = new ilGpgHomeDirInputGUI($this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir');
+		$gpgHomeDir->setDisabled($disabled);
+		$gpgHomeDir->setRequired(true);
+		$gpgHomeDir->setInfo($this->getPluginObject()->txt('ecr_gpg_homedir_info'));
 
-		$form_key_email = new \ilTextInputGUI($this->getPluginObject()->txt('ecr_sign_key_email'), 'sign_key_email');
-		$form_key_email->setDisabled($disabled);
-		$form_key_email->setRequired(true);
-		$form_key_email->setInfo($this->getPluginObject()->txt('ecr_sign_key_email_info'));
+		$this->getPluginObject()->includeClass('class.ilGpgFingerPrintInputGUI.php');
+		$keyFingerprint = new ilGpgFingerPrintInputGUI(
+			$this->getPluginObject(), $gpgHomeDir, $this->ctrl, $this->uiFactory, $this->uiRenderer,
+			$this->getPluginObject()->txt('ecr_sign_key_fingerprint'), 'sign_key_fingerprint'
+		);
+		$keyFingerprint->setDisabled($disabled);
+		$keyFingerprint->setRequired(true);
+		$keyFingerprint->setInfo($this->getPluginObject()->txt('ecr_sign_key_fingerprint_info'));
 
-		$form_key_passphrase = new \ilPasswordInputGUI($this->getPluginObject()->txt('ecr_sign_key_passphrase'), 'sign_key_passphrase');
-		$form_key_passphrase->setDisabled($disabled);
-		$form_key_passphrase->setRetypeValue(true);
-		$form_key_passphrase->setSkipSyntaxCheck(true);
-		$form_key_passphrase->setInfo($this->getPluginObject()->txt('ecr_sign_key_passphrase_info'));
+		$keyPassPhrase = new \ilPasswordInputGUI($this->getPluginObject()->txt('ecr_sign_key_passphrase'), 'sign_key_passphrase');
+		$keyPassPhrase->setDisabled($disabled);
+		$keyPassPhrase->setRetypeValue(true);
+		$keyPassPhrase->setSkipSyntaxCheck(true);
+		$keyPassPhrase->setInfo($this->getPluginObject()->txt('ecr_sign_key_passphrase_info'));
 
-		$form_search_system_url = new \ilTextInputGUI($this->getPluginObject()->txt('ecr_url_search_system'), 'url_search_system');
-		$form_search_system_url->setDisabled($disabled);
-		$form_search_system_url->setRequired(true);
-		$form_search_system_url->setValidationRegexp('/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/');
-		$form_search_system_url->setValidationFailureMessage($this->getPluginObject()->txt('ecr_url_search_system_invalid'));
-		$form_search_system_url->setInfo($this->getPluginObject()->txt('ecr_url_search_system_info'));
-
+		$searchSystemUrl = new \ilTextInputGUI($this->getPluginObject()->txt('ecr_url_search_system'), 'url_search_system');
+		$searchSystemUrl->setDisabled($disabled);
+		$searchSystemUrl->setRequired(true);
+		$searchSystemUrl->setValidationRegexp('/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/');
+		$searchSystemUrl->setValidationFailureMessage($this->getPluginObject()->txt('ecr_url_search_system_invalid'));
+		$searchSystemUrl->setInfo($this->getPluginObject()->txt('ecr_url_search_system_info'));
 
 		$form->setValuesByArray([
 			'gpg_homedir' => $this->getPluginObject()->getSetting('gpg_homedir'),
-			'sign_key_email' => $this->getPluginObject()->getSetting('sign_key_email'),
+			'sign_key_fingerprint' => $this->getPluginObject()->getSetting('sign_key_fingerprint'),
 			'limit_to_groles' => $this->getPluginObject()->getSetting('limit_to_groles'),
 			'global_roles' => explode(',', $this->getPluginObject()->getSetting('global_roles')),
 			'url_search_system' => $this->getPluginObject()->getSetting('url_search_system'),
@@ -268,11 +284,11 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 				$exampleLink = new \ilNonEditableValueGUI($this->getPluginObject()->txt('ecr_example_url'), '', true);
 				$exampleLink->setInfo($this->getPluginObject()->txt('ecr_example_url_info'));
 				$exampleLink->setValue($exampleUrlTpl->get());
-				$form_search_system_url->addSubItem($exampleLink);
+				$searchSystemUrl->addSubItem($exampleLink);
 			} catch (\Throwable $e) {
-				$form_search_system_url->setAlert($e->getMessage());
+				$searchSystemUrl->setAlert($e->getMessage());
 			} catch (\Exception $e) {
-				$form_search_system_url->setAlert($e->getMessage());
+				$searchSystemUrl->setAlert($e->getMessage());
 			}
 		}
 
@@ -343,10 +359,10 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		$importDirectory->setMaxLength(512);
 		$importDirectory->setDisabled($disabled);
 
-		$form->addItem($form_gpg_homedir);
-		$form->addItem($form_key_email);
-		$form->addItem($form_key_passphrase);
-		$form->addItem($form_search_system_url);
+		$form->addItem($gpgHomeDir);
+		$form->addItem($keyFingerprint);
+		$form->addItem($keyPassPhrase);
+		$form->addItem($searchSystemUrl);
 		$form->addItem($tokenAppendCrsTitle);
 		$form->addItem($tokenAppendToBibItems);
 		$form->addItem($accessFormSection);
@@ -403,7 +419,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 			$this->getPluginObject()->setSetting('limit_to_groles', (int)$form->getInput('limit_to_groles'));
 			$this->getPluginObject()->setSetting('global_roles', implode(',', (array)$form->getInput('global_roles')));
 			$this->getPluginObject()->setSetting('gpg_homedir', $form->getInput('gpg_homedir'));
-			$this->getPluginObject()->setSetting('sign_key_email', $form->getInput('sign_key_email'));
+			$this->getPluginObject()->setSetting('sign_key_fingerprint', $form->getInput('sign_key_fingerprint'));
 			$this->getPluginObject()->setSetting('is_mail_enabled', $form->getInput('is_mail_enabled'));
 			$this->getPluginObject()->setSetting('mail_recipients', implode(',', $recipients));
 			$import_path = $form->getInput('import_directory');
