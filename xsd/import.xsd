@@ -21,7 +21,7 @@
         <xs:sequence>
             <xs:element type="labelType" name="label"/>
             <xs:element type="timestampType" name="timestamp"/>
-            <xs:element type="itemType" name="item"/>
+            <xs:element type="importItemType" name="item"/>
         </xs:sequence>
         <xs:attribute type="xs:int" name="iliasID" use="required"/>
     </xs:complexType>
@@ -50,7 +50,7 @@
         </xs:simpleContent>
     </xs:complexType>
 
-    <xs:complexType name="itemType">
+    <xs:complexType name="importItemType">
         <xs:sequence>
             <xs:element type="xs:string" name="icon"/>
 
@@ -81,6 +81,7 @@
             <xs:element type="xs:string" name="description" minOccurs="0"/>
             <xs:element type="metadataType" name="metadata" minOccurs="0"/>
         </xs:sequence>
+
         <xs:attribute name="type" use="required">
             <xs:simpleType>
                 <xs:list itemType="ImportType"/>
@@ -115,6 +116,7 @@
             </xs:choice>
 
         </xs:sequence>
+
         <xs:attribute name="type" use="required">
             <xs:simpleType>
                 <xs:list itemType="MetaDataType"/>
