@@ -60,4 +60,6 @@ error_with_import_item#:#there was a problem while importing a Electronic Course
 error_mail_greeting#:#Hello, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
 ecr_gpg_secret_keys#:#Possible Keys
-ecr_gpg_secret_keys_info#:#Here you can see a list of possible keys. 
+ecr_gpg_secret_keys_info#:#Here you can see a list of possible keys.
+err_invalid_login_p#:#The following input does not match any ILIAS user account: %s
+err_invalid_login_s#:#The following input does not match any ILIAS user account: %s

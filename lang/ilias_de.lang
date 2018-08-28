@@ -61,3 +61,5 @@ error_mail_greeting#:#Hallo, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
 ecr_gpg_secret_keys#:#Mögliche Schlüssel
 ecr_gpg_secret_keys_info#:#Anbei sehen Sie eine Liste möglicher Schlüssel.
+err_invalid_login_p#:#Die folgenden Eingaben entsprechen keinem gültigen ILIAS-Benutzerkonto: %s
+err_invalid_login_s#:#Die folgende Eingabe entspricht keinem gültigen ILIAS-Benutzerkonto: %s

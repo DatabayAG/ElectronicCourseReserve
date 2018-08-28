@@ -416,6 +416,26 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		if ($form->checkInput()) {
 			$recipients = (array)$form->getInput('recipients');
 
+			$validRecipients = array_filter($recipients, function($rcp) {
+				$usrId = \ilObjUser::_lookupId($rcp);
+
+				return is_numeric($usrId) && $usrId > 0;
+			});
+
+			if (count($validRecipients) !== count($recipients)) {
+				$invalidRecipients = array_diff($recipients, $validRecipients);
+
+				$form->setValuesByPost();
+				$form->getItemByPostVar('recipients')->setAlert(sprintf(
+					$this->getPluginObject()->txt('err_invalid_login' . (1 === count($invalidRecipients) ? '_s' : '_p')),
+					implode(', ', $invalidRecipients)
+				));
+
+				\ilUtil::sendFailure($this->lng->txt('form_input_not_valid'));
+				$this->tpl->setContent($form->getHTML());
+				return;
+			}
+
 			$this->getPluginObject()->setSetting('limit_to_groles', (int)$form->getInput('limit_to_groles'));
 			$this->getPluginObject()->setSetting('global_roles', implode(',', (array)$form->getInput('global_roles')));
 			$this->getPluginObject()->setSetting('gpg_homedir', $form->getInput('gpg_homedir'));
