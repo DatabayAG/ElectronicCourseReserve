@@ -655,6 +655,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		{
 			$this->logger->info(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.', $crs_ref_id, $ilObjDataCache->lookupType($crs_obj_id)));
 		}
+		else if ($crs_obj_id == 0)
+		{
+			$this->logger->info(sprintf('No course found with ref_id %s, skipping.', $crs_ref_id));
+		}
 		return 0;
 	}
 
