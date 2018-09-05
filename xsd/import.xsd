@@ -34,14 +34,6 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="MetaDataType">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="book"/>
-            <xs:enumeration value="article"/>
-            <xs:enumeration value="chapter"/>
-        </xs:restriction>
-    </xs:simpleType>
-
     <xs:complexType name="timestampType">
         <xs:simpleContent>
             <xs:extension base="xs:string">
@@ -54,77 +46,39 @@
     <xs:complexType name="importItemType">
         <xs:sequence>
             <xs:element type="xs:string" name="icon"/>
-
+            <xs:element name="label">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="255"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
             <xs:choice>
                 <xs:sequence>
                     <xs:element type="xs:string" name="url"/>
-                    <xs:element name="label">
-                        <xs:simpleType>
-                            <xs:restriction base="xs:string">
-                                <xs:maxLength value="255"/>
-                            </xs:restriction>
-                        </xs:simpleType>
-                    </xs:element>
                 </xs:sequence>
                 <xs:sequence>
-                    <xs:element name="label">
-                        <xs:simpleType>
-                            <xs:restriction base="xs:string">
-                                <xs:maxLength value="255"/>
-                            </xs:restriction>
-                        </xs:simpleType>
-                    </xs:element>
                     <xs:element type="xs:string" name="file"/>
                     <xs:element type="xs:string" name="filename"/>
                 </xs:sequence>
             </xs:choice>
-
             <xs:element type="xs:string" name="description" minOccurs="0"/>
-            <xs:element type="metadataType" name="metadata" minOccurs="0"/>
+            <xs:choice>
+                <xs:element name="metadata">
+                    <xs:complexType>
+                        <xs:choice>
+                            <xs:element name="book" type="bookType"/>
+                            <xs:element name="journal" type="journalType"/>
+                            <xs:element name="article" type="articleType"/>
+                            <xs:element name="chapter" type="chapterType"/>
+                        </xs:choice>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
         </xs:sequence>
-
         <xs:attribute name="type" use="required">
             <xs:simpleType>
                 <xs:list itemType="ImportType"/>
-            </xs:simpleType>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="metadataType">
-        <xs:sequence>
-            <xs:choice>
-                <xs:sequence>
-                    <!-- Book -->
-                    <xs:element type="xs:string" name="record"  minOccurs="0"/>
-                    <xs:element type="xs:string" name="title"  minOccurs="0"/>
-                    <xs:element type="xs:string" name="author" minOccurs="0"/>
-                    <xs:element type="xs:string" name="place" minOccurs="0"/>
-                    <xs:element type="xs:string" name="publisher" minOccurs="0"/>
-                    <xs:element type="xs:integer" name="year" minOccurs="0"/>
-                    <xs:element type="xs:string" name="isbn" minOccurs="0"/>
-                </xs:sequence>
-                <xs:sequence>
-                    <!-- Article -->
-                    <xs:element type="xs:string" name="title"  minOccurs="0"/>
-                    <xs:element type="xs:string" name="author" minOccurs="0"/>
-                    <xs:element type="journalType" name="journal" minOccurs="0"/>
-                    <xs:element type="articleLocationType" name="location" minOccurs="0"/>
-                </xs:sequence>
-                <xs:sequence>
-                    <!-- Chapter -->
-                    <xs:element type="xs:string" name="title"  minOccurs="0"/>
-                    <xs:element type="xs:string" name="author" minOccurs="0"/>
-                    <xs:element type="xs:string" name="comment" minOccurs="0"/>
-                    <xs:element type="bookType" name="book" minOccurs="0"/>
-                    <xs:element type="chapterLocationType" name="location" minOccurs="0"/>
-                </xs:sequence>
-            </xs:choice>
-
-        </xs:sequence>
-
-        <xs:attribute name="type" use="required">
-            <xs:simpleType>
-                <xs:list itemType="MetaDataType"/>
             </xs:simpleType>
         </xs:attribute>
     </xs:complexType>
@@ -141,6 +95,25 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="articleType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="title" minOccurs="0"/>
+            <xs:element type="xs:string" name="author" minOccurs="0"/>
+            <xs:element type="journalType" name="journal" minOccurs="0"/>
+            <xs:element type="locationArticleType" name="location" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="chapterType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="title" minOccurs="0"/>
+            <xs:element type="xs:string" name="author" minOccurs="0"/>
+            <xs:element type="xs:string" name="comment" minOccurs="0"/>
+            <xs:element type="bookType" name="book" minOccurs="0"/>
+            <xs:element type="locationChapterType" name="location" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="journalType">
         <xs:sequence>
             <xs:element type="xs:string" name="record" minOccurs="0"/>
@@ -152,7 +125,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="articleLocationType">
+    <xs:complexType name="locationArticleType">
         <xs:sequence>
             <xs:element type="xs:string" name="volume" minOccurs="0"/>
             <xs:element type="xs:string" name="issue" minOccurs="0"/>
@@ -160,11 +133,10 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="chapterLocationType">
+    <xs:complexType name="locationChapterType">
         <xs:sequence>
             <xs:element type="xs:string" name="pages" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
-    
 
 </xs:schema>
