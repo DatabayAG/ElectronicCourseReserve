@@ -13,6 +13,7 @@
         <xs:simpleContent>
             <xs:extension base="labelBaseType">
                 <xs:attribute type="xs:string" name="id" use="required"/>
+                <xs:attribute type="xs:string" name="overwrite"/>
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
@@ -91,27 +92,31 @@
 
     <xs:complexType name="metadataType">
         <xs:sequence>
-            <xs:element type="xs:string" name="title"  minOccurs="0"/>
-            <xs:element type="xs:string" name="author" minOccurs="0"/>
-
             <xs:choice>
                 <xs:sequence>
                     <!-- Book -->
+                    <xs:element type="xs:string" name="record"  minOccurs="0"/>
+                    <xs:element type="xs:string" name="title"  minOccurs="0"/>
+                    <xs:element type="xs:string" name="author" minOccurs="0"/>
                     <xs:element type="xs:string" name="place" minOccurs="0"/>
                     <xs:element type="xs:string" name="publisher" minOccurs="0"/>
-                    <xs:element type="xs:string" name="year" minOccurs="0"/>
+                    <xs:element type="xs:integer" name="year" minOccurs="0"/>
                     <xs:element type="xs:string" name="isbn" minOccurs="0"/>
-                    <xs:element type="signatureType" name="signature" minOccurs="0"/>
                 </xs:sequence>
                 <xs:sequence>
                     <!-- Article -->
+                    <xs:element type="xs:string" name="title"  minOccurs="0"/>
+                    <xs:element type="xs:string" name="author" minOccurs="0"/>
                     <xs:element type="journalType" name="journal" minOccurs="0"/>
+                    <xs:element type="articleLocationType" name="location" minOccurs="0"/>
                 </xs:sequence>
                 <xs:sequence>
                     <!-- Chapter -->
+                    <xs:element type="xs:string" name="title"  minOccurs="0"/>
+                    <xs:element type="xs:string" name="author" minOccurs="0"/>
                     <xs:element type="xs:string" name="comment" minOccurs="0"/>
                     <xs:element type="bookType" name="book" minOccurs="0"/>
-                    <xs:element type="locationType" name="location" minOccurs="0"/>
+                    <xs:element type="chapterLocationType" name="location" minOccurs="0"/>
                 </xs:sequence>
             </xs:choice>
 
@@ -124,59 +129,42 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="pagesType">
-        <xs:simpleContent>
-            <xs:extension base="xs:string">
-                <xs:attribute type="xs:string" name="from"/>
-                <xs:attribute type="xs:string" name="to"/>
-            </xs:extension>
-        </xs:simpleContent>
-    </xs:complexType>
-
-    <xs:complexType name="signatureType">
-        <xs:simpleContent>
-            <xs:extension base="xs:string">
-                <xs:attribute type="xs:string" name="bookingId"/>
-            </xs:extension>
-        </xs:simpleContent>
-    </xs:complexType>
-
-    <xs:complexType name="locationType">
-        <xs:sequence>
-            <xs:element type="pagesType" name="pages" minOccurs="0"/>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="bookType">
         <xs:sequence>
+            <xs:element type="xs:string" name="record" minOccurs="0"/>
             <xs:element type="xs:string" name="title" minOccurs="0"/>
             <xs:element type="xs:string" name="author" minOccurs="0"/>
             <xs:element type="xs:string" name="place" minOccurs="0"/>
             <xs:element type="xs:string" name="publisher" minOccurs="0"/>
-            <xs:element type="xs:string" name="year" minOccurs="0"/>
+            <xs:element type="xs:integer" name="year" minOccurs="0"/>
             <xs:element type="xs:string" name="isbn" minOccurs="0"/>
-            <xs:element type="signatureType" name="signature" minOccurs="0"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="journalLocationType">
-        <xs:sequence>
-            <xs:element type="xs:string" name="volume" minOccurs="0"/>
-            <xs:element type="xs:string" name="issue" minOccurs="0"/>
-            <xs:element type="pagesType" name="pages" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="journalType">
         <xs:sequence>
+            <xs:element type="xs:string" name="record" minOccurs="0"/>
             <xs:element type="xs:string" name="title" minOccurs="0"/>
-            <xs:element type="xs:string" name="author" minOccurs="0"/>
             <xs:element type="xs:string" name="place" minOccurs="0"/>
             <xs:element type="xs:string" name="publisher" minOccurs="0"/>
+            <xs:element type="xs:integer" name="year" minOccurs="0"/>
             <xs:element type="xs:string" name="issn" minOccurs="0"/>
-            <xs:element type="signatureType" name="signature" minOccurs="0"/>
-            <xs:element type="journalLocationType" name="location" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
+
+    <xs:complexType name="articleLocationType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="volume" minOccurs="0"/>
+            <xs:element type="xs:string" name="issue" minOccurs="0"/>
+            <xs:element type="xs:string" name="pages" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="chapterLocationType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="pages" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
 
 </xs:schema>
