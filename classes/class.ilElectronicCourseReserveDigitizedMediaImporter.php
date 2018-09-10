@@ -344,10 +344,13 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected function createFileItem($parsed_item, $raw_xml)
 	{
 		$folder_ref_id = (int) $this->ensureCorrectCourseAndFolderStructure($parsed_item);
-		if(file_exists($parsed_item->getItem()->getFile()) &&
-			$folder_ref_id != 0
-		)
+		if( $folder_ref_id != 0 )
 		{
+			$file_path = file_exists($parsed_item->getItem()->getFile());
+			if( ! file_exists($file_path) && file_exists($this->getImportDir() . DIRECTORY_SEPARATOR . $file_path))
+			{
+				$file_path = $this->getImportDir() . DIRECTORY_SEPARATOR . $file_path;
+			}
 			$filename = basename($parsed_item->getItem()->getFile());
 			$new_file = new ilObjFile();
 			$new_file->setTitle($filename);
@@ -366,11 +369,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 				ilUtil::makeDirParents($dir);
 			}
 
-			if(file_exists($parsed_item->getItem()->getFile())) {
-				copy($parsed_item->getItem()->getFile(), $dir . '/' . $filename);
+			if(file_exists($file_path)) {
+				copy($file_path, $dir . '/' . $filename);
 				if(file_exists($dir . '/' . $filename)) {
 					if(self::DELETE_FILES) {
-						unlink($parsed_item->getItem()->getFile());
+						unlink($file_path);
 					}
 				}
 			}
@@ -482,27 +485,38 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
 		}else{
 			$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $parsed_item->getItem()->getIcon();
-			$extension = pathinfo($file, PATHINFO_EXTENSION);
-			if(in_array(strtolower($extension), $valid_icon_types)){
-				if(file_exists($file)){
-					$dir = $this->getImageFolder($new_obj_ref_id);
-					$filename = basename($parsed_item->getItem()->getIcon());
-					$target = $dir . DIRECTORY_SEPARATOR . $filename;
-					if(file_exists($file)) {
-						copy($file, $target);
-					}
-					if(file_exists($target)){
-						$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
-						if(self::DELETE_FILES) {
-							unlink($filename);
+			if(! file_exists($file) && file_exists($parsed_item->getItem()->getIcon()))
+			{
+				$file = $parsed_item->getItem()->getIcon();
+			}
+
+			if(file_exists($file)) {
+				$extension = pathinfo($file, PATHINFO_EXTENSION);
+				if(in_array(strtolower($extension), $valid_icon_types)){
+					if(file_exists($file)){
+						$dir = $this->getImageFolder($new_obj_ref_id);
+						$filename = basename($parsed_item->getItem()->getIcon());
+						$target = $dir . DIRECTORY_SEPARATOR . $filename;
+						if(file_exists($file)) {
+							copy($file, $target);
 						}
-						return array('icon' => $file_path, 'icon_type' => $icon_type);
+						if(file_exists($target)){
+							$file_path = './' . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR . $filename;
+							if(self::DELETE_FILES) {
+								unlink($file);
+							}
+							return array('icon' => $file_path, 'icon_type' => $icon_type);
+						}
 					}
+				}
+				else {
+					$this->logger->warning(sprintf('File of type %s, is not a valid icon type, skipping icon for course ref id %s and folder import id %s.', $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
 				}
 			}
 			else {
-				$this->logger->warning(sprintf('File of type %s, is not a valid icon type, skipping icon for course ref id %s and folder import id %s.', $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+				$this->logger->warning(sprintf('No file found either under the absolute or relative path for file %s in course %s and folder %s.', $parsed_item->getItem()->getIcon(), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
 			}
+
 		}
 		return array('icon' => '', 'icon_type' => '');
 	}
