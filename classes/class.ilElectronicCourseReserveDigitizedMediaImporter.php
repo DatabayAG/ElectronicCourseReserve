@@ -309,7 +309,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected function createFolder($parsed_item, $folder_import_id, $crs_ref_id)
 	{
 		$fold = new ilObjFolder();
-		$fold->setTitle($parsed_item->getItem()->getLabel());
+		$fold->setTitle($parsed_item->getLabel());
 		$fold->setImportId($folder_import_id);
 		$fold->create();
 		$fold->createReference();
