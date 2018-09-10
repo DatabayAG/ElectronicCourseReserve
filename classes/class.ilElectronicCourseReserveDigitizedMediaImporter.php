@@ -346,11 +346,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$folder_ref_id = (int) $this->ensureCorrectCourseAndFolderStructure($parsed_item);
 		if( $folder_ref_id != 0 )
 		{
-			$file_path = file_exists($parsed_item->getItem()->getFile());
-			if( ! file_exists($file_path) && file_exists($this->getImportDir() . DIRECTORY_SEPARATOR . $file_path))
-			{
-				$file_path = $this->getImportDir() . DIRECTORY_SEPARATOR . $file_path;
-			}
+			$file_path = $this->checkIfRelativeOrAbsoluteFilePathIsGiven($parsed_item->getItem()->getFile());
+
 			$filename = basename($parsed_item->getItem()->getFile());
 			$new_file = new ilObjFile();
 			$new_file->setTitle($filename);
@@ -484,11 +481,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		if($icon_type === $pl::ICON_URL){
 			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
 		}else{
-			$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $parsed_item->getItem()->getIcon();
-			if(! file_exists($file) && file_exists($parsed_item->getItem()->getIcon()))
-			{
-				$file = $parsed_item->getItem()->getIcon();
-			}
+			$file = $this->checkIfRelativeOrAbsoluteFilePathIsGiven($parsed_item->getItem()->getIcon());
 
 			if(file_exists($file)) {
 				$extension = pathinfo($file, PATHINFO_EXTENSION);
@@ -510,15 +503,28 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					}
 				}
 				else {
-					$this->logger->warning(sprintf('File of type %s, is not a valid icon type, skipping icon for course ref id %s and folder import id %s.', $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+					$this->logger->warn(sprintf('File of type %s, is not a valid icon type, skipping icon for course ref id %s and folder import id %s.', $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
 				}
 			}
 			else {
-				$this->logger->warning(sprintf('No file found either under the absolute or relative path for file %s in course %s and folder %s.', $parsed_item->getItem()->getIcon(), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+				$this->logger->warn(sprintf('No file found either under the absolute or relative path for file %s in course %s and folder %s.', $parsed_item->getItem()->getIcon(), $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
 			}
 
 		}
 		return array('icon' => '', 'icon_type' => '');
+	}
+
+	/**
+	 * @param string $file_path
+	 * @return string
+	 */
+	protected function checkIfRelativeOrAbsoluteFilePathIsGiven($file_path)
+	{
+		$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $file_path;
+		if (!file_exists($file) && file_exists($file_path)) {
+			$file = $file_path;
+		}
+		return $file;
 	}
 
 	/**
