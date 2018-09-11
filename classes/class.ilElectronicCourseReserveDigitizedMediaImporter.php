@@ -326,12 +326,17 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function updateFolderTitle($parsed_item, $ref_id)
 	{
-		$fold = new ilObjFolder($ref_id);
-		if($parsed_item->getItem()->getLabel() != $fold->getTitle())
-		{
-			$this->logger->info(sprintf('Title for folder (ref_id: %s), get updated from "%s" to "%s".', $ref_id, $fold->getTitle(), $parsed_item->getItem()->getLabel()));
-			$fold->setTitle($parsed_item->getItem()->getLabel());
-			$fold->update();
+		if($parsed_item->getOverwrite() == 1) {
+			$fold = new ilObjFolder($ref_id);
+			if($parsed_item->getItem()->getLabel() != $fold->getTitle())
+			{
+				$this->logger->info(sprintf('Title for folder (ref_id: %s), get updated from "%s" to "%s".', $ref_id, $fold->getTitle(), $parsed_item->getItem()->getLabel()));
+				$fold->setTitle($parsed_item->getItem()->getLabel());
+				$fold->update();
+			}
+		}
+		else {
+			$this->logger->info(sprintf('Title for folder (ref_id: %s),is not updated overwrite is disabled in xml.', $ref_id));
 		}
 	}
 
