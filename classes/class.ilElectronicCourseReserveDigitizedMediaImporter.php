@@ -1,6 +1,7 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Purger;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
 
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
@@ -209,6 +210,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					$this->sendMailOnError($valid, $pathname);
 				}
 			}
+			$this->cleanUpFileSystem();
 		}
 		catch(ilException $e)
 		{
@@ -260,6 +262,17 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$this->logger->info('Finished XML validation');
 
 		return true;
+	}
+
+	/**
+	 * 
+	 */
+	protected function cleanUpFileSystem()
+	{
+		$purger = new Purger(
+			$this->logger, \ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::BACKUP_DIR
+		);
+		$purger->purge();
 	}
 
 	/**
@@ -358,6 +371,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			$new_file->setTitle($filename);
 			$new_file->setFileType(pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION));
 			$new_file->setFileName($filename);
+			$new_file->setVersion(1);
 			$new_file->create();
 			$new_file->setFilename($new_file->getFileName());
 			$new_file->addNewsNotification("file_updated");
