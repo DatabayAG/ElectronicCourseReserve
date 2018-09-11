@@ -336,7 +336,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 		}
 		else {
-			$this->logger->info(sprintf('Title for folder (ref_id: %s),is not updated overwrite is disabled in xml.', $ref_id));
+			$this->logger->info(sprintf('Title for folder (ref_id: %s), is not updated overwrite is disabled in xml.', $ref_id));
 		}
 	}
 
