@@ -351,7 +351,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$folder_ref_id = (int) $this->ensureCorrectCourseAndFolderStructure($parsed_item);
 		if( $folder_ref_id != 0 )
 		{
-			$file_path = $this->checkIfRelativeOrAbsoluteFilePathIsGiven($parsed_item->getItem()->getFile());
+			$file_path = $this->getResolvedFilePath($parsed_item->getItem()->getFile());
 
 			$filename = basename($parsed_item->getItem()->getFile());
 			$new_file = new ilObjFile();
@@ -486,7 +486,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		if($icon_type === $pl::ICON_URL){
 			return array('icon' => $parsed_item->getItem()->getIcon(), 'icon_type' => $icon_type);
 		}else{
-			$file = $this->checkIfRelativeOrAbsoluteFilePathIsGiven($parsed_item->getItem()->getIcon());
+			$file = $this->getResolvedFilePath($parsed_item->getItem()->getIcon());
 
 			if(file_exists($file)) {
 				$extension = pathinfo($file, PATHINFO_EXTENSION);
@@ -520,16 +520,16 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	}
 
 	/**
-	 * @param string $file_path
+	 * @param string $given_file_path
 	 * @return string
 	 */
-	protected function checkIfRelativeOrAbsoluteFilePathIsGiven($file_path)
+	protected function getResolvedFilePath($given_file_path)
 	{
-		$file = $this->getImportDir() . DIRECTORY_SEPARATOR . $file_path;
-		if (!file_exists($file) && file_exists($file_path)) {
-			$file = $file_path;
+		$resolved_file_path = $this->getImportDir() . DIRECTORY_SEPARATOR . $given_file_path;
+		if (!file_exists($resolved_file_path) && file_exists($given_file_path)) {
+			$resolved_file_path = $given_file_path;
 		}
-		return $file;
+		return $resolved_file_path;
 	}
 
 	/**
