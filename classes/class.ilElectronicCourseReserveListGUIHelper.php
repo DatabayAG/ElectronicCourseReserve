@@ -6,7 +6,7 @@ class ilElectronicCourseReserveListGUIHelper
 	/**
 	 * @var array
 	 */
-	public $actions_to_remove = array('delete', 'cut', 'initTargetSelection', 'link');
+	public $actions_to_remove = array('cut', 'initTargetSelection', 'link');
 
 	/**
 	 * @param DomXPath    $xpath
