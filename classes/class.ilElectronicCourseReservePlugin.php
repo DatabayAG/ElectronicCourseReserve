@@ -300,7 +300,14 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 	{
 		$this->includeClass('class.ilElectronicCourseReserveLangData.php');
 		$ecr_lang_data = new ilElectronicCourseReserveLangData();
-		return $ecr_lang_data->txt($identifier);
+
+		$translation = $ecr_lang_data->txt($identifier);
+
+		if (0 === strlen($translation)) {
+			$translation = $this->txt($identifier);
+		}
+
+		return $translation;
 	}
 
 
