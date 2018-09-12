@@ -328,7 +328,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		if($parsed_item->getOverwrite() == 1) {
 			$fold = new ilObjFolder($ref_id);
-			if($parsed_item->getItem()->getLabel() != $fold->getTitle())
+			if($parsed_item->getLabel() != $fold->getTitle())
 			{
 				$this->logger->info(sprintf('Title for folder (ref_id: %s), get updated from "%s" to "%s".', $ref_id, $fold->getTitle(), $parsed_item->getItem()->getLabel()));
 				$fold->setTitle($parsed_item->getItem()->getLabel());
