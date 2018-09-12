@@ -368,8 +368,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
 			$filename = basename($parsed_item->getItem()->getFilename());
 			$new_file = new ilObjFile();
-			$new_file->setTitle($parsed_item->getItem()->getLabel());
-			$new_file->setFileType(pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION));
+			$file_type = pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION);
+			$new_file->setTitle($parsed_item->getItem()->getLabel() . '.' . $file_type);
+			$new_file->setFileType($file_type);
 			$new_file->setFileName($filename);
 			$new_file->setVersion(1);
 			$new_file->create();
