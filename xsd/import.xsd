@@ -90,7 +90,7 @@
             <xs:element type="xs:string" name="author" minOccurs="0"/>
             <xs:element type="xs:string" name="place" minOccurs="0"/>
             <xs:element type="xs:string" name="publisher" minOccurs="0"/>
-            <xs:element type="xs:integer" name="year" minOccurs="0"/>
+            <xs:element type="xs:string" name="year" minOccurs="0"/>
             <xs:element type="xs:string" name="isbn" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
@@ -120,7 +120,7 @@
             <xs:element type="xs:string" name="title" minOccurs="0"/>
             <xs:element type="xs:string" name="place" minOccurs="0"/>
             <xs:element type="xs:string" name="publisher" minOccurs="0"/>
-            <xs:element type="xs:integer" name="year" minOccurs="0"/>
+            <xs:element type="xs:string" name="year" minOccurs="0"/>
             <xs:element type="xs:string" name="issn" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
