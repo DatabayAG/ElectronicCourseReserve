@@ -329,3 +329,21 @@ if(!$ilDB->tableColumnExists('ecr_description', 'show_image'))
 				'notnull' => false));
 	}
 ?>
+<#18>
+<?php
+/**
+ * @var $ilDB ilDB
+ */
+if($ilDB->tableExists('ecr_description'))
+{
+	if(!$ilDB->tableColumnExists('ecr_description', 'metadata'))
+	{
+		$ilDB->addTableColumn('ecr_description', 'metadata',
+			array(
+				"type"    => "clob",
+				"notnull" => false,
+				"default" => null
+			));
+	}
+}
+?>

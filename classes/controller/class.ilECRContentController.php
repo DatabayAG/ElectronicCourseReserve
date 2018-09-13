@@ -291,12 +291,15 @@ class ilECRContentController extends ilECRBaseController
 		{
 			$show_image->setChecked(true);
 		}
+		$form->addItem($show_image);
 
 		$hidden = new ilHiddenInputGUI('ref_id');
 		$hidden->setValue($ref_id);
 		$form->addItem($hidden);
 
-		$form->addItem($show_image);
+		$non_edit = new ilNonEditableValueGUI($this->plugin_object->txt('metadata'));
+		$non_edit->setValue($item['metadata']);
+		$form->addItem($non_edit);
 
 		return $form->getHTML();
 	}

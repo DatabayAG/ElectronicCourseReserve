@@ -467,6 +467,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$row = $DIC->database()->fetchAssoc($res);
 		$purifier = new ilElectronicCourseReservePostPurifier();
 		$description = $purifier->purify($parsed_item->getItem()->getDescription());
+		$medatata = $purifier->purify($parsed_item->getItem()->getMetadata());
 
 		if(is_array($row) && array_key_exists('version', $row))
 		{
@@ -481,6 +482,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			'icon'          => array('text', $icon['icon']),
 			'icon_type'     => array('text', $icon['icon_type']),
 			'description'   => array('text', $description),
+			'metadata'      => array('text', $medatata),
 			'raw_xml'       => array('text', $raw_xml),
 			'folder_ref_id' => array('integer', $folder_ref_id)
 		));
