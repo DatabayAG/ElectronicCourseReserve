@@ -297,9 +297,13 @@ class ilECRContentController extends ilECRBaseController
 		$hidden->setValue($ref_id);
 		$form->addItem($hidden);
 
-		$non_edit = new ilNonEditableValueGUI($this->plugin_object->txt('metadata'));
-		$non_edit->setValue($item['metadata']);
-		$form->addItem($non_edit);
+		if (strlen($item['raw_xml']) > 0) {
+			$xml = simplexml_load_string($item['raw_xml']);
+
+			$non_edit = new ilNonEditableValueGUI($this->plugin_object->txt('metadata'), '', true);
+			$non_edit->setValue('<pre> ' . htmlspecialchars($xml->item->metadata->asXML()) . '</pre>');
+			$form->addItem($non_edit);
+		}
 
 		return $form->getHTML();
 	}
