@@ -481,9 +481,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			'timestamp'     => array('integer', strtotime($parsed_item->getTimestamp())),
 			'icon'          => array('text', $icon['icon']),
 			'icon_type'     => array('text', $icon['icon_type']),
-			'description'   => array('text', $description),
-			'metadata'      => array('text', $medatata),
-			'raw_xml'       => array('text', $raw_xml),
+			'description'   => array('clob', $description),
+			'metadata'      => array('clob', $medatata),
+			'raw_xml'       => array('clob', $raw_xml),
 			'folder_ref_id' => array('integer', $folder_ref_id)
 		));
 	}
