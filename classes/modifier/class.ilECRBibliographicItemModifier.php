@@ -71,6 +71,16 @@ class ilECRBibliographicItemModifier implements \ilECRBaseModifier
 			return ['mode' => \ilUIHookPluginGUI::KEEP, 'html' => ''];
 		}
 
+		require_once 'Modules/Bibliographic/classes/Admin/class.ilBibliographicSetting.php';
+		$libs = \ilBibliographicSetting::getAll();
+		$libsShownInList = array_filter($libs, function(\ilBibliographicSetting $libs) {
+			return $libs->getShowInList();
+		});
+
+		if (0 === count($libsShownInList)) {
+			return ['mode' => \ilUIHookPluginGUI::KEEP, 'html' => ''];
+		}
+
 		$dom = new \DOMDocument("1.0", "utf-8");
 		$dom->preserveWhiteSpace = true;
 		$dom->formatOutput = true;
