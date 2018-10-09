@@ -49,7 +49,6 @@ class ilECRContentController extends ilECRBaseController
 	 */
 	public function executeCommand()
 	{
-//		$this->checkPermission('write');
 		$cmd = $this->ctrl->getCmd();
 		if(method_exists($this, $cmd))
 		{
@@ -67,6 +66,19 @@ class ilECRContentController extends ilECRBaseController
 			return $this->checkUserAcceptance();
 		} else {
 			return true;
+		}
+	}
+
+	private function printUserAgreementAcceptance()
+	{
+		$is_use_agreement_enabled = $this->plugin_object->getSetting('enable_use_agreement');
+		if ($is_use_agreement_enabled) {
+			$ref_id = (int)$_GET['ref_id'];
+			$obj = \ilObjectFactory::getInstanceByRefId($ref_id, false);
+			$ilUserAcceptance = new \ilElectronicCourseReserveAcceptance($obj->getRefId());
+			if ($ilUserAcceptance->hasUserAcceptedAgreement()) {
+				\ilUtil::sendInfo(sprintf($this->plugin_object->txt('agr_accepted_on'), \ilDatePresentation::formatDate(new \ilDateTime($ilUserAcceptance->getAcceptanceTimestamp(), \IL_CAL_UNIX))));
+			}
 		}
 	}
 
@@ -172,19 +184,21 @@ class ilECRContentController extends ilECRBaseController
 		$obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
 		if (!$this->checkUseAgreementCondition()) {
-			return;
+			return '';
 		}
+
+		$this->printUserAgreementAcceptance();
 
 		$this->tpl->setTitle($obj->getTitle());
 		$this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
 
 		$this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
-		$this->tabs->setBackTarget($this->lng->txt('back'), $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
+		$this->tabs->setBackTarget($this->lng->txt('back'),
+			$this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
 
 		$ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($this->user->getLanguage());
 		$html = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
-		if(strlen($html))
-		{
+		if (strlen($html)) {
 
 			$html = $this->replacePlaceholder($html);
 			return $html;
@@ -192,13 +206,14 @@ class ilECRContentController extends ilECRBaseController
 
 		$ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($this->lng->getDefaultLanguage());
 		$html = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
-		if(strlen($html))
-		{
+		if (strlen($html)) {
 			$html = $this->replacePlaceholder($html);
+
 			return $html;
 		}
 
 		$html = $this->getDefaultECRContent();
+
 		return $html;
 	}
 

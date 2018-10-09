@@ -43,6 +43,21 @@ class ilElectronicCourseReserveAcceptance
 		}
 		return false; 
 	}
+
+	/**
+	 * @return int
+	 */
+	public function getAcceptanceTimestamp()
+	{
+		$res = $this->db->queryF(
+			'SELECT time_accepted FROM ecr_user_acceptance WHERE ref_id = %s AND user_id = %s',
+			array('integer', 'integer'),
+			array($this->ref_id, $this->user_id)
+		);
+
+		$row = $this->db->fetchAssoc($res);
+		return (int)$row['time_accepted'];
+	}
 	
 	public function saveUserAcceptance()
 	{
