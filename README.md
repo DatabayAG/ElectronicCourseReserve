@@ -64,10 +64,10 @@ In the following examples, */srv/www/esa.invorbereitung.de/data/esainvorbe/.esa*
 
 The public key file *esa_pub_key.asc* has to be shared with the library.
 
-In the ILIAS configuration screen you'll have to enter the following values:
+In the ILIAS configuration screen you'll have to enter the following values in regards of the key:
 
-* Absolute Server Path/HomeDirectory: /srv/www/esa.invorbereitung.de/data/esainvorbe/.esa
-* Email Address: esa@databay.de
+* Absolute Server Path/HomeDirectory: /srv/www/esa.invorbereitung.de/data/esainvorbe/.esa 
+* Fingerprint (Key): Enter the unique fingerprint of the relevant private key. A list of possible keys will be provided on the configuration screen if ILIAS is able to read/analyze the GnuPG files. 
 * Passphrase: *****
 
 ## License
