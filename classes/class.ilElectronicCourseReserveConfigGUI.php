@@ -337,12 +337,14 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 		$importFormSection->setTitle($this->getPluginObject()->txt('form_header_import'));
 
 		$mail = new \ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail'), 'is_mail_enabled');
+		$mail->setValue(1);
 		$mail->setInfo($this->getPluginObject()->txt('notification_mail_info'));
 		$mail->setDisabled($disabled);
 
 		$dsDataLink = $this->ctrl->getLinkTarget($this, 'doUserAutoComplete', '', true);
 		$recipients = new \ilTextInputGUI($this->getPluginObject()->txt('recipients'), 'recipients');
 		$recipients->setRequired(true);
+
 		$recipients->setValue([]);
 		$recipients->setDataSource($dsDataLink);
 		$recipients->setMaxLength(null);
@@ -414,7 +416,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 
 		$form = $this->getGeneralSettingsForm();
 		if ($form->checkInput()) {
-			$recipients = (array)$form->getInput('recipients');
+			$recipients = array_filter((array)$form->getInput('recipients'));
 
 			$validRecipients = array_filter($recipients, function($rcp) {
 				$usrId = \ilObjUser::_lookupId($rcp);
