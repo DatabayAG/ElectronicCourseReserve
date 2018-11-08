@@ -101,11 +101,19 @@ class ilGpgFingerPrintInputGUI extends \ilTextInputGUI
 						continue;
 					}
 					foreach ($result as $key) {
-						$items[$key['fingerprint']] = $this->uiRenderer->render([
-							new Legacy('Key Id: ' . $key['keyid']),
-							new Legacy(' | '),
-							new Legacy('UID: ' . implode('/', array_map('htmlspecialchars', (array)$key['uid'])))
-						]);
+						if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.0', '>=')) {
+							$items[$key['fingerprint']] = $this->uiRenderer->render([
+								new Legacy('Key Id: ' . $key['keyid']),
+								new Legacy(' | '),
+								new Legacy('UID: ' . implode('/', array_map('htmlspecialchars', (array)$key['uid'])))
+							]);
+						} else {
+							$items[$key['fingerprint']] = implode('', [
+								'Key Id: ' . $key['keyid'],
+								' | ',
+								'UID: ' . implode('/', array_map('htmlspecialchars', (array)$key['uid'])),
+							]);
+						}
 					}
 				}
 
