@@ -48,6 +48,7 @@ class ilGpgFingerPrintInputGUI extends \ilTextInputGUI
 		$this->uiFactory = $uiFactory;
 		$this->uiRenderer = $uiRenderer;
 		$this->homeDirInputGUI = $homeDirInputGUI;
+		$this->ctrl = $ctrl;
 	}
 
 	/**
