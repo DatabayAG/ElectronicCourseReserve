@@ -115,7 +115,7 @@ class ilElectronicCourseReservePlugin extends \ilUserInterfaceHookPlugin
 					$that,
 					$c['plugin.esa.crypt.gpg'],
 					$c->user(),
-					$c->settings(),
+					$c['ilSetting'],
 					$c['plugin.esa.crypt.blockcipher']
 				);
 
