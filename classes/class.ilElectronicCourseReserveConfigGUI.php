@@ -5,6 +5,7 @@ use ILIAS\Plugin\ElectronicCourseReserve\Form\GpgHomeDirInputGUI;
 
 require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
+require_once 'Modules/Course/classes/class.ilObjCourse.php';
 
 /**
  * Class ilElectronicCourseReserveConfigGUI
