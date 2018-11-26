@@ -20,6 +20,9 @@ class ilGpgFingerPrintInputGUI extends \ilTextInputGUI
 	/** @var \ilCtrl */
 	protected $ctrl;
 
+	/** @var \ilLogger */
+	protected $log;
+
 	/** @var \ilGpgHomeDirInputGUI */
 	protected $homeDirInputGUI;
 
@@ -28,6 +31,7 @@ class ilGpgFingerPrintInputGUI extends \ilTextInputGUI
 	 * @param \ilElectronicCourseReservePlugin $plugin
 	 * @param ilGpgHomeDirInputGUI $homeDirInputGUI
 	 * @param \ilCtrl $ctrl
+	 * @param ilLogger $log
 	 * @param \ILIAS\UI\Factory $uiFactory
 	 * @param \ILIAS\UI\Renderer $uiRenderer
 	 * @param string $a_title
@@ -37,6 +41,7 @@ class ilGpgFingerPrintInputGUI extends \ilTextInputGUI
 		\ilElectronicCourseReservePlugin $plugin,
 		\ilGpgHomeDirInputGUI $homeDirInputGUI,
 		\ilCtrl $ctrl,
+		\ilLogger $log,
 		\ILIAS\UI\Factory $uiFactory,
 		\ILIAS\UI\Renderer $uiRenderer,
 		$a_title = '',
@@ -49,6 +54,7 @@ class ilGpgFingerPrintInputGUI extends \ilTextInputGUI
 		$this->uiRenderer = $uiRenderer;
 		$this->homeDirInputGUI = $homeDirInputGUI;
 		$this->ctrl = $ctrl;
+		$this->log = $log;
 	}
 
 	/**
@@ -104,12 +110,18 @@ class ilGpgFingerPrintInputGUI extends \ilTextInputGUI
 				}
 
 				if (count($items) > 0) {
+					$this->log->info(count($items). ' keys found');
+
 					$list = $this->uiFactory->listing()->descriptive($items);
 					$keyList->setValue($this->uiRenderer->render($list));
 					return $keyList->render();
+				} else {
+					$this->log->info('No keys found');
 				}
 			} catch (\Throwable $e) {
+				$this->log->error($e->getMessage());
 			} catch (\Exception $e) {
+				$this->log->error($e->getMessage());
 			}
 		}
 	}

@@ -49,6 +49,9 @@ abstract class ilElectronicCourseReserveBaseGUI extends \ilPluginConfigGUI
 
 	/** @var \ILIAS\UI\Renderer */
 	protected $uiRenderer;
+	
+	/** @var \ilLogger */
+	protected $log;
 
 	/**
 	 * ilCourseBookingDecisionMakerGUI constructor.
@@ -67,6 +70,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends \ilPluginConfigGUI
 
 		$this->tabs = $DIC->tabs();
 		$this->ctrl = $DIC->ctrl();
+		$this->log = $DIC->logger()->root();
 		$this->lng = $DIC->language();
 		$this->toolbar = $DIC->toolbar();
 		$this->user = $DIC->user();

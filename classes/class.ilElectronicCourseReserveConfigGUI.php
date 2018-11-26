@@ -34,7 +34,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 				$this->getPluginObject()->includeClass('class.ilGpgFingerPrintInputGUI.php');
 				$gpgHomeDir = new ilGpgFingerPrintInputGUI(
 					$this->getPluginObject(), new ilGpgHomeDirInputGUI($this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir'),
-					$this->ctrl, $this->uiFactory, $this->uiRenderer,
+					$this->ctrl, $this->log, $this->uiFactory, $this->uiRenderer,
 					$this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir'
 				);
 				$this->ctrl->forwardCommand($gpgHomeDir);
@@ -230,7 +230,7 @@ class ilElectronicCourseReserveConfigGUI extends \ilElectronicCourseReserveBaseG
 
 		$this->getPluginObject()->includeClass('class.ilGpgFingerPrintInputGUI.php');
 		$keyFingerprint = new ilGpgFingerPrintInputGUI(
-			$this->getPluginObject(), $gpgHomeDir, $this->ctrl, $this->uiFactory, $this->uiRenderer,
+			$this->getPluginObject(), $gpgHomeDir, $this->ctrl, $this->log, $this->uiFactory, $this->uiRenderer,
 			$this->getPluginObject()->txt('ecr_sign_key_fingerprint'), 'sign_key_fingerprint'
 		);
 		$keyFingerprint->setDisabled($disabled);
