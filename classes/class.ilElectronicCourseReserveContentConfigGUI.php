@@ -77,7 +77,7 @@ class ilElectronicCourseReserveContentConfigGUI extends \ilElectronicCourseReser
 		$content = \ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
 
 		$form->setValuesByArray(array(
-			'ecr_content' => $content,
+			'ecr_content' => (strlen($content) > 0 ? $content : '###URL_ESA###'),
 			'ecr_lang' => $lang_key
 		));
 
