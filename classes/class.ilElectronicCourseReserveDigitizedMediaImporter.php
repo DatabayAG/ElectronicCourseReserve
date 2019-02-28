@@ -654,7 +654,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		$crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
 		if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && ! ilObject::_isInTrash($crs_ref_id))
 		{
-			$this->logger->info(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
+			$this->logger->info(sprintf('Found course for ref_id %s, looking for folder.', $crs_ref_id));
 			$folder_obj_id = (int) ilObject::_lookupObjIdByImportId($folder_import_id);
 			if($folder_obj_id === 0)
 			{
