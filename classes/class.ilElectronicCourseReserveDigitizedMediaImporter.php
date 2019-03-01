@@ -60,6 +60,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	const DELETE_FILES = true;
 
 	/**
+	 * @var string
+	 */
+	const ESA_FOLDER_IMPORT_PREFIX = 'esa_';
+
+	/**
 	 * @var $logger Log
 	 */
 	protected $logger;
@@ -638,10 +643,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	{
 		$crs_ref_id = (int) $parsed_item->getCrsRefId();
 		$folder_import_id = (int) $parsed_item->getFolderImportId();
+		$folder_import_id_prefix = self::ESA_FOLDER_IMPORT_PREFIX . $folder_import_id;
 
-		if($crs_ref_id === 0 || $folder_import_id === 0)
+		if($crs_ref_id === null || $crs_ref_id === 0 || $folder_import_id === null || $folder_import_id === 0)
 		{
-			$this->logger->info(sprintf('Import id (%s) or Course Ref id (%s) was not set, skipping this one.', $folder_import_id, $crs_ref_id));
+			$this->logger->info(sprintf('Import id (%s) or Course Ref id (%s) was not set, skipping this one.', $folder_import_id_prefix, $crs_ref_id));
 			return 0;
 		}
 
@@ -655,15 +661,15 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 		if($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && ! ilObject::_isInTrash($crs_ref_id))
 		{
 			$this->logger->info(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
-			$folder_obj_id = (int) ilObject::_lookupObjIdByImportId($folder_import_id);
+			$folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id_prefix);
 			if($folder_obj_id === 0)
 			{
-				$this->logger->info(sprintf('Folder with Import id (%s) not found creating new folder.', $folder_import_id));
-				return $this->createFolder($parsed_item, $folder_import_id, $crs_ref_id);
+				$this->logger->info(sprintf('Folder with Import id (%s) not found creating new folder.', $folder_import_id_prefix));
+				return $this->createFolder($parsed_item, $folder_import_id_prefix, $crs_ref_id);
 			}
 			else if($ilObjDataCache->lookupType($folder_obj_id) === 'fold')
 			{
-				$this->logger->info(sprintf('Found folder with Import id (%s).', $folder_import_id));
+				$this->logger->info(sprintf('Found folder with Import id (%s).', $folder_import_id_prefix));
 				$ref_ids = ilObject::_getAllReferences($folder_obj_id);
 				$ref_id  = current($ref_ids);
 				$this->updateFolderTitle($parsed_item, $ref_id);
@@ -676,7 +682,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 					}
 					else
 					{
-						$this->logger->info(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id, $crs_ref_id));
+						$this->logger->info(sprintf('Folder with Import id (%s) not at the correct course %s.', $folder_import_id_prefix, $crs_ref_id));
 					}
 				}
 				else if( $ref_id > 0 && ilObject::_isInTrash($ref_id))
@@ -686,7 +692,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 			}
 			else
 			{
-				$this->logger->info(sprintf('Object with Import id (%s) is not of type folder (%s).', $folder_import_id, $ilObjDataCache->lookupType($folder_obj_id)));
+				$this->logger->info(sprintf('Object with Import id (%s) is not of type folder (%s).', $folder_import_id_prefix, $ilObjDataCache->lookupType($folder_obj_id)));
 			}
 		}
 		else if($crs_obj_id > 0 && ilObject::_isInTrash($crs_ref_id))

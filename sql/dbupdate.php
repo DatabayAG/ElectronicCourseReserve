@@ -347,3 +347,44 @@ if($ilDB->tableExists('ecr_description'))
 	}
 }
 ?>
+<#19>
+<?php
+if($ilDB->tableColumnExists('ecr_folder', 'import_id'))
+{
+	$ilDB->modifyTableColumn('ecr_folder', 'import_id', array(
+		"type" => "text",
+		'length'  => '200',
+		"notnull" => true,
+		"default" => 0));
+}
+
+?>
+<#20>
+<?php
+require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReserveDigitizedMediaImporter.php';
+/**
+ * @var $ilDB ilDB
+ */
+$query = 'SELECT objr.ref_id, od.obj_id, od.import_id
+			FROM object_data od
+			INNER JOIN object_reference objr ON objr.obj_id = od.obj_id
+			INNER JOIN ecr_folder ON ecr_folder.ref_id = objr.ref_id
+			WHERE od.type = "fold" AND (od.import_id IS NOT NULL AND od.import_id != "");';
+$res   = $ilDB->query($query);
+
+while($row = $ilDB->fetchAssoc($res))
+{
+
+	$ilDB->manipulateF(
+		'UPDATE object_data SET import_id = %s WHERE obj_id = %s',
+		array('text', 'integer'),
+		array(ilElectronicCourseReserveDigitizedMediaImporter::ESA_FOLDER_IMPORT_PREFIX . $row['import_id'],$row['obj_id'])
+	);
+
+	$ilDB->manipulateF(
+		'UPDATE ecr_folder SET import_id = %s WHERE ref_id = %s',
+		array('text', 'integer'),
+		array(ilElectronicCourseReserveDigitizedMediaImporter::ESA_FOLDER_IMPORT_PREFIX . $row['import_id'], $row['ref_id'])
+	);
+}
+?>
