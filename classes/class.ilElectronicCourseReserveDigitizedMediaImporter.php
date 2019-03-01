@@ -543,10 +543,15 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	 */
 	protected function getResolvedFilePath($given_file_path)
 	{
-		$resolved_file_path = $this->getImportDir() . DIRECTORY_SEPARATOR . $given_file_path;
+		$resolved_file_path = realpath(implode(DIRECTORY_SEPARATOR, [
+			rtrim($this->getImportDir(), DIRECTORY_SEPARATOR),
+			ltrim($given_file_path, DIRECTORY_SEPARATOR),
+		]));
+
 		if (!file_exists($resolved_file_path) && file_exists($given_file_path)) {
 			$resolved_file_path = $given_file_path;
 		}
+
 		return $resolved_file_path;
 	}
 
