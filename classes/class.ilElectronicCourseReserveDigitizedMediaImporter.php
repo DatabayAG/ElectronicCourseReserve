@@ -362,9 +362,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 	protected function createFileItem($parsed_item, $raw_xml)
 	{
 		$folder_ref_id = (int) $this->ensureCorrectCourseAndFolderStructure($parsed_item);
-		if( $folder_ref_id != 0 )
+		$file_path = $this->getResolvedFilePath($parsed_item->getItem()->getFile());
+
+		if( $folder_ref_id != 0 && file_exists($file_path))
 		{
-			$file_path = $this->getResolvedFilePath($parsed_item->getItem()->getFile());
 
 			$filename = basename($parsed_item->getItem()->getFilename());
 			$new_file = new ilObjFile();
