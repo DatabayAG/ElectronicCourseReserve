@@ -19,9 +19,17 @@
                 return namespaces[ns];
             };
         })();
+        
+        var lastValue = $("#{OBSERVABLE_ELEMENT_ID}").val(); 
 
         $("#{OBSERVABLE_ELEMENT_ID}").on('keyup keydown blur', function () {
             var observable = $(this);
+            
+            if (lastValue === observable.val()) {
+            	return;
+            }
+
+            lastValue = observable.val();
 
             deferredCallbackFactory('onHomeDirChanged')(function () {
                 $.ajax({
