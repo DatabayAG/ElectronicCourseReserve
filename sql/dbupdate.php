@@ -369,7 +369,7 @@ $query = 'SELECT objr.ref_id, od.obj_id, od.import_id
 			FROM object_data od
 			INNER JOIN object_reference objr ON objr.obj_id = od.obj_id
 			INNER JOIN ecr_folder ON ecr_folder.ref_id = objr.ref_id
-			WHERE od.type = ' . $ilDB->quote("fold", "text") . '' AND (od.import_id IS NOT NULL AND od.import_id != "" AND NOT ' . $ilDB->like("od.import_id", "text", "esa_%" . ')');
+			WHERE od.type = ' . $ilDB->quote("fold", "text") . ' AND (od.import_id IS NOT NULL AND od.import_id != "" AND NOT ' . $ilDB->like("od.import_id", "text", "esa_%" . ')');
 $res   = $ilDB->query($query);
 
 while($row = $ilDB->fetchAssoc($res))
