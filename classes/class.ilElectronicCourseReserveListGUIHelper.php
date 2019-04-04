@@ -48,16 +48,18 @@ class ilElectronicCourseReserveListGUIHelper
 	{
 		$ref_id_node_list = $xpath->query("//a[@class='il_ContainerItemTitle']");
 		$ref_id_node      = $ref_id_node_list->item(0);
-		$url_with_ref_id  = $ref_id_node->getAttribute('href');
-		$re               = '/ref_id=(\d+)/m';
-		preg_match($re, $url_with_ref_id, $matches);
-		if (count($matches) > 1 && $matches[1] > 0) {
-			return (int)$matches[1];
-		} else {
-			$re = '/target=file_(\d+)/m';
+		if($ref_id_node !== null) {
+			$url_with_ref_id  = $ref_id_node->getAttribute('href');
+			$re               = '/ref_id=(\d+)/m';
 			preg_match($re, $url_with_ref_id, $matches);
 			if (count($matches) > 1 && $matches[1] > 0) {
 				return (int)$matches[1];
+			} else {
+				$re = '/target=file_(\d+)/m';
+				preg_match($re, $url_with_ref_id, $matches);
+				if (count($matches) > 1 && $matches[1] > 0) {
+					return (int)$matches[1];
+				}
 			}
 		}
 		return 0;
