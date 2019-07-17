@@ -35,7 +35,8 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 
 	public function shouldModifyHtml($a_comp, $a_part, $a_par)
 	{
-		if ($a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html') {
+		if ($a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html' &&
+            $a_par['tpl_id'] != 'Services/UIComponent/AdvancedSelectionList/tpl.adv_selection_list.html') {
 			return false;
 		}
 
@@ -45,7 +46,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		}
 
 		$obj_id = $this->data_cache->lookupObjId($refId);
-		$type = $this->data_cache ->lookupType($obj_id);
+		$type = $this->data_cache->lookupType($obj_id);
 
 		if ($type !== 'fold') {
 			return false;
@@ -74,41 +75,47 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 		$xpath       = new DomXPath($dom);
 		$item_data   = $plugin->getItemData();
 		$item_ref_id = $this->list_gui_helper->getRefIdFromItemUrl($xpath);
-		if (array_key_exists($item_ref_id, $item_data)) {
-			$text_string      = $item_data[$item_ref_id]['description'];
-			$image            = $item_data[$item_ref_id]['icon'];
-			$show_image       = (int)$item_data[$item_ref_id]['show_image'];
-			$show_description = (int)$item_data[$item_ref_id]['show_description'];
+        if($a_par['tpl_id'] == 'Services/UIComponent/AdvancedSelectionList/tpl.adv_selection_list.html'){
+            foreach ($this->list_gui_helper->actions_to_remove as $key => $action) {
+                $node_list = $xpath->query("//li/a[contains(@href,'cmd=" . $action . "')]");
+                $this->list_gui_helper->removeAction($node_list);
+            }
+            $processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+        }
+        else {
+            if (array_key_exists($item_ref_id, $item_data)) {
+                $text_string      = $item_data[$item_ref_id]['description'];
+                $image            = $item_data[$item_ref_id]['icon'];
+                $show_image       = (int)$item_data[$item_ref_id]['show_image'];
+                $show_description = (int)$item_data[$item_ref_id]['show_description'];
 
-			if ($show_description == 1 && strlen($text_string) > 0) {
-				$text_node_list = $xpath->query("//div[@class='il_ContainerListItem']");
-				$text_node      = $text_node_list->item(0);
-				$field_html     = $dom->createDocumentFragment();
-				$field_html->appendXML($text_string);
-				$field_div = $dom->createElement('div');
-				$field_div->appendChild($field_html);
-				$text_node->appendChild($field_div);
-			}
-			if ($show_image == 1 && strlen($image) > 0) {
-				$image_node_list = $xpath->query("//img[@class='ilListItemIcon']");
-				$image_node      = $image_node_list->item(0);
-				/** @var ilElectronicCourseReservePlugin $plugin */
-				$plugin = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+                if ($show_description == 1 && strlen($text_string) > 0) {
+                    $text_node_list = $xpath->query("//div[@class='il_ContainerListItem']");
+                    $text_node      = $text_node_list->item(0);
+                    $field_html     = $dom->createDocumentFragment();
+                    $field_html->appendXML($text_string);
+                    $field_div = $dom->createElement('div');
+                    $field_div->appendChild($field_html);
+                    $text_node->appendChild($field_div);
+                }
+                if ($show_image == 1 && strlen($image) > 0) {
+                    $image_node_list = $xpath->query("//img[@class='ilListItemIcon']");
+                    $image_node      = $image_node_list->item(0);
+                    /** @var ilElectronicCourseReservePlugin $plugin */
+                    $plugin = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 
-				if ($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_URL) {
-					$image_node->setAttribute('src', $image);
-				} elseif ($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_FILE) {
-					$path_to_image = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $image;
+                    if ($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_URL) {
+                        $image_node->setAttribute('src', $image);
+                    } elseif ($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_FILE) {
+                        $path_to_image = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $image;
 
-					if (file_exists($path_to_image)) {
-						$image_node->setAttribute('src', $path_to_image);
-					}
-				}
-			}
-			foreach ($this->list_gui_helper->actions_to_remove as $key => $action) {
-				$node_list = $xpath->query("//li/a[contains(@href,'cmd=" . $action . "')]");
-				$this->list_gui_helper->removeAction($node_list);
-			}
+                        if (file_exists($path_to_image)) {
+                            $image_node->setAttribute('src', $path_to_image);
+                        }
+                    }
+                }
+        }
+		
 
 			$this->list_gui_helper->replaceCheckbox($xpath, $item_ref_id, $dom);
 
