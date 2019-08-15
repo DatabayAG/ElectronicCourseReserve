@@ -158,7 +158,7 @@ class ilECRContentController extends ilECRBaseController
 		if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.x', '>=')) {
 			$this->ctrl->redirectToURL($url);
 		} else {
-		    \ilUtil::redirect($url);
+			ilUtil::redirect($url);
 		}
 	}
 
@@ -177,7 +177,7 @@ class ilECRContentController extends ilECRBaseController
 		if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.x', '>=')) {
 			$this->ctrl->redirectToURL($url);
 		} else {
-		    \ilUtil::redirect($url);
+			ilUtil::redirect($url);
 		}
 	}
 
