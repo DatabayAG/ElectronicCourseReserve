@@ -155,7 +155,11 @@ class ilECRContentController extends ilECRBaseController
 		$this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $ref_id);
 		$url = $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view', '', false, false);
 
-		$this->ctrl->redirectToURL($url);
+		if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.x', '>=')) {
+			$this->ctrl->redirectToURL($url);
+		} else {
+		    \ilUtil::redirect($url);
+		}
 	}
 
 	public function saveAcceptedUserAgreement()
@@ -170,7 +174,11 @@ class ilECRContentController extends ilECRBaseController
 		$url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'), 'ilECRContentController.showECRContent', '', false, false);
 
 		\ilUtil::sendSuccess($this->plugin_object->txt('ecr_accepted_agreement'), true);
-		$this->ctrl->redirectToURL($url);
+		if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.x', '>=')) {
+			$this->ctrl->redirectToURL($url);
+		} else {
+		    \ilUtil::redirect($url);
+		}
 	}
 
 	/**
