@@ -108,11 +108,18 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      */
     protected function manipulateListView(ilObjCourse $crs, array $a_par) : array
     {
-        require_once 'Modules/Bibliographic/classes/Admin/class.ilBibliographicSetting.php';
-        $libs = ilBibliographicSetting::getAll();
-        $libsShownInList = array_filter($libs, function (ilBibliographicSetting $libs) {
-            return $libs->getShowInList();
-        });
+        if (version_compare(ILIAS_VERSION_NUMERIC, '5.4.0', '>=')) {
+            $libs = ilBiblLibrary::get();
+            $libsShownInList = array_filter($libs, function (ilBiblLibrary $lib) {
+                return $lib->getShowInList();
+            });
+        } else {
+            require_once 'Modules/Bibliographic/classes/Admin/class.ilBibliographicSetting.php';
+            $libs = ilBibliographicSetting::getAll();
+            $libsShownInList = array_filter($libs, function (ilBibliographicSetting $lib) {
+                return $lib->getShowInList();
+            });
+        }
 
         if (0 === count($libsShownInList)) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
