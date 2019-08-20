@@ -13,91 +13,91 @@ require_once 'Services/Calendar/classes/class.ilDateTime.php';
  */
 class ILIAS extends Base
 {
-	/** @var \ilLogger */
-	protected $aggregated_logger;
+    /** @var \ilLogger */
+    protected $aggregated_logger;
 
-	/** @var string */
-	private $logLevel;
+    /** @var string */
+    private $logLevel;
 
-	/** @var Logging\TraceProcessor */
-	protected $processor;
+    /** @var Logging\TraceProcessor */
+    protected $processor;
 
-	/**
-	 * @var bool
-	 */
-	protected $shutdown_handled = false;
+    /**
+     * @var bool
+     */
+    protected $shutdown_handled = false;
 
-	public function __construct(\ilLogger $log, $logLevel)
-	{
-		$this->aggregated_logger = $log;
-		$this->logLevel = $logLevel;
+    public function __construct(\ilLogger $log, $logLevel)
+    {
+        $this->aggregated_logger = $log;
+        $this->logLevel = $logLevel;
 
-		$this->processor = new Logging\TraceProcessor(\ilLogLevel::DEBUG);
-	}
+        $this->processor = new Logging\TraceProcessor(\ilLogLevel::DEBUG);
+    }
 
-	/**
-	 * @param array $message
-	 * @return void
-	 */
-	protected function doWrite(array $message)
-	{
-		$line = $message['message'];
+    /**
+     * @param array $message
+     * @return void
+     */
+    protected function doWrite(array $message)
+    {
+        $line = $message['message'];
 
-		switch ($message['priority']) {
-			case Logging\Logger::EMERG:
-				$method = 'emergency';
-				break;
+        switch ($message['priority']) {
+            case Logging\Logger::EMERG:
+                $method = 'emergency';
+                break;
 
-			case Logging\Logger::ALERT:
-				$method = 'alert';
-				break;
+            case Logging\Logger::ALERT:
+                $method = 'alert';
+                break;
 
-			case Logging\Logger::CRIT:
-				$method = 'critical';
-				break;
+            case Logging\Logger::CRIT:
+                $method = 'critical';
+                break;
 
-			case Logging\Logger::ERR:
-				$method = 'error';
-				break;
+            case Logging\Logger::ERR:
+                $method = 'error';
+                break;
 
-			case Logging\Logger::WARN:
-				$method = 'warning';
-				break;
+            case Logging\Logger::WARN:
+                $method = 'warning';
+                break;
 
-			case Logging\Logger::INFO:
-				$method = 'info';
-				break;
+            case Logging\Logger::INFO:
+                $method = 'info';
+                break;
 
-			case Logging\Logger::NOTICE:
-				$method = 'notice';
-				break;
+            case Logging\Logger::NOTICE:
+                $method = 'notice';
+                break;
 
-			case Logging\Logger::DEBUG:
-			default:
-				$method = 'debug';
-				break;
-		}
+            case Logging\Logger::DEBUG:
+            default:
+                $method = 'debug';
+                break;
+        }
 
-		$poppedProcessors = [];
-		while ($this->aggregated_logger->getLogger()->getProcessors() !== array()) {
-			$processor = $this->aggregated_logger->getLogger()->popProcessor();
-			$poppedProcessors[] = $processor;
-		}
-		$this->aggregated_logger->getLogger()->pushProcessor($this->processor);
-		$this->aggregated_logger->{$method}($line);
-		$this->aggregated_logger->getLogger()->popProcessor();
-		foreach (array_reverse($poppedProcessors) as $processor) {
-			$this->aggregated_logger->getLogger()->pushProcessor($processor);
-		}
-	}
+        $poppedProcessors = [];
+        while ($this->aggregated_logger->getLogger()->getProcessors() !== array()) {
+            $processor = $this->aggregated_logger->getLogger()->popProcessor();
+            $poppedProcessors[] = $processor;
+        }
+        $this->aggregated_logger->getLogger()->pushProcessor($this->processor);
+        $this->aggregated_logger->{$method}($line);
+        $this->aggregated_logger->getLogger()->popProcessor();
+        foreach (array_reverse($poppedProcessors) as $processor) {
+            $this->aggregated_logger->getLogger()->pushProcessor($processor);
+        }
+    }
 
-	/**
-	 * @return void
-	 */
-	public function shutdown()
-	{
-		unset($this->aggregated_logger);
+    /**
+     * @return void
+     */
+    public function shutdown()
+    {
+        unset($this->aggregated_logger);
 
-		$this->shutdown_handled = true;
-	}
+        $this->shutdown_handled = true;
+    }
 }

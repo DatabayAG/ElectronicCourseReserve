@@ -1,159 +1,166 @@
 <?php
 
+use ILIAS\DI\LoggingServices;
+
 /**
  * Class ilElectronicCourseReserveAgreement
  * @author Nadia Matuschek <nmatuschek@databay.de>
  */
 class ilElectronicCourseReserveAgreement
 {
-	/**
-	 * @var ilDB
-	 */
-	public $db;
-	/**
-	 * @var \ILIAS\DI\LoggingServices
-	 */
-	public $log;
-	/**
-	 * @var ilObjUser
-	 */
-	public $user;
-	
-	protected $agreement_id;
+    /**
+     * @var ilDB|ilDBInterface
+     */
+    public $db;
+    /**
+     * @var LoggingServices
+     */
+    public $log;
+    /**
+     * @var ilObjUser
+     */
+    public $user;
 
-	protected $agreement;
-	
-	protected $lang;
+    protected $agreement_id;
 
-	protected $time_created;
+    protected $agreement;
 
-	protected $is_active;
+    protected $lang;
 
-	public function __construct()
-	{
-		global $DIC;
+    protected $time_created;
 
-		$this->db   = $DIC->database();
-		$this->log  = $DIC->logger()->root();
-		$this->user = $DIC->user();
-	}
+    protected $is_active;
 
-	/**
-	 * @param $lang
-	 */
-	public function loadByLang($lang)
-	{
-		$this->db->setLimit(1);
-		$res = $this->db->queryF(
-			'SELECT * FROM ecr_lang_agreements WHERE lang = %s AND is_active = %s ORDER BY time_created DESC',
-			array('text', 'integer'), array($lang, 1)
-		);
+    public function __construct()
+    {
+        global $DIC;
 
-		if ($row = $this->db->fetchAssoc($res)) {
-			$this->agreement_id = $row['agreement_id'];
-			$this->lang         = $row['lang'];
-			$this->agreement    = $row['agreement'];
-			$this->time_created = $row['time_created'];
-			$this->is_active    = $row['is_active'];
-		}
-	}
+        $this->db = $DIC->database();
+        $this->log = $DIC->logger()->root();
+        $this->user = $DIC->user();
+    }
 
-	public function saveAgreement()
-	{
-		$this->deactivateAgreements();
+    /**
+     * @param $lang
+     */
+    public function loadByLang($lang)
+    {
+        $this->db->setLimit(1);
+        $res = $this->db->queryF(
+            'SELECT * FROM ecr_lang_agreements WHERE lang = %s AND is_active = %s ORDER BY time_created DESC',
+            ['text', 'integer'],
+            [$lang, 1]
+        );
 
-		$next_id = $this->db->nextId('ecr_lang_agreements');
-		$this->db->insert('ecr_lang_agreements',
-			array(
-				'agreement_id' => array('integer', $next_id),
-				'lang'         => array('text', $this->getLang()),
-				'agreement'    => array('clob', $this->getAgreement()),
-				'time_created' => array('integer', time()),
-				'is_active'    => array('integer', 1)
-			));
+        if ($row = $this->db->fetchAssoc($res)) {
+            $this->agreement_id = $row['agreement_id'];
+            $this->lang = $row['lang'];
+            $this->agreement = $row['agreement'];
+            $this->time_created = $row['time_created'];
+            $this->is_active = $row['is_active'];
+        }
+    }
 
-		$this->log->info('ecr_lang_agreements: User-id (' . $this->user->getId() . ') created agreement_id (' . $this->getAgreementId() . ')');
-	}
+    public function saveAgreement()
+    {
+        $this->deactivateAgreements();
 
-	private function deactivateAgreements()
-	{
-		$this->db->update('ecr_lang_agreements',
-			array('is_active' => array('integer', 0)),
-			array(
-				'lang'      => array('text', $this->getLang()),
-				'is_active' => array('integer', 1)
-			));
-	}
+        $next_id = $this->db->nextId('ecr_lang_agreements');
+        $this->db->insert(
+            'ecr_lang_agreements',
+            [
+                'agreement_id' => ['integer', $next_id],
+                'lang' => ['text', $this->getLang()],
+                'agreement' => ['clob', $this->getAgreement()],
+                'time_created' => ['integer', time()],
+                'is_active' => ['integer', 1]
+            ]
+        );
 
-	/**
-	 * @return mixed
-	 */
-	public function getAgreementId()
-	{
-		return $this->agreement_id;
-	}
+        $this->log->info('ecr_lang_agreements: User-id (' . $this->user->getId() . ') created agreement_id (' . $this->getAgreementId() . ')');
+    }
 
-	/**
-	 * @param int $agreement_id
-	 */
-	public function setAgreementId($agreement_id)
-	{
-		$this->agreement_id = $agreement_id;
-	}
+    private function deactivateAgreements()
+    {
+        $this->db->update(
+            'ecr_lang_agreements',
+            ['is_active' => ['integer', 0]],
+            [
+                'lang' => ['text', $this->getLang()],
+                'is_active' => ['integer', 1]
+            ]
+        );
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public function getLang()
-	{
-		return $this->lang;
-	}
+    /**
+     * @return mixed
+     */
+    public function getAgreementId()
+    {
+        return $this->agreement_id;
+    }
 
-	/**
-	 * @param string $lang ISO 639-1 two-letter code
-	 */
-	public function setLang($lang)
-	{
-		$this->lang = $lang;
-	}
+    /**
+     * @param int $agreement_id
+     */
+    public function setAgreementId($agreement_id)
+    {
+        $this->agreement_id = $agreement_id;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getAgreement()
-	{
-		return $this->agreement;
-	}
+    /**
+     * @return mixed
+     */
+    public function getLang()
+    {
+        return $this->lang;
+    }
 
-	/**
-	 * @param string $agreement
-	 */
-	public function setAgreement($agreement)
-	{
-		$this->agreement = $agreement;
-	}
+    /**
+     * @param string $lang ISO 639-1 two-letter code
+     */
+    public function setLang($lang)
+    {
+        $this->lang = $lang;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getTimeCreated()
-	{
-		return $this->time_created;
-	}
+    /**
+     * @return string
+     */
+    public function getAgreement()
+    {
+        return $this->agreement;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function isActive()
-	{
-		return $this->is_active;
-	}
+    /**
+     * @param string $agreement
+     */
+    public function setAgreement($agreement)
+    {
+        $this->agreement = $agreement;
+    }
 
-	/**
-	 * @param int $is_active
-	 */
-	public function setIsActive($is_active)
-	{
-		$this->is_active = $is_active;
-	}
+    /**
+     * @return int
+     */
+    public function getTimeCreated()
+    {
+        return $this->time_created;
+    }
+
+    /**
+     * @return int
+     */
+    public function isActive()
+    {
+        return $this->is_active;
+    }
+
+    /**
+     * @param int $is_active
+     */
+    public function setIsActive($is_active)
+    {
+        $this->is_active = $is_active;
+    }
 }

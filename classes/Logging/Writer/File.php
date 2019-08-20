@@ -13,81 +13,81 @@ require_once 'Services/Calendar/classes/class.ilDateTime.php';
  */
 class File extends Base
 {
-	/**
-	 * @var \ilLogger
-	 */
-	protected $aggregated_logger;
+    /**
+     * @var \ilLogger
+     */
+    protected $aggregated_logger;
 
-	/**
-	 * @var bool
-	 */
-	protected $shutdown_handled = false;
+    /**
+     * @var bool
+     */
+    protected $shutdown_handled = false;
 
-	/**
-	 * File constructor.
-	 * @param Logging\Settings $settings
-	 */
-	public function __construct(Logging\Settings $settings)
-	{
-		$factory                 = \ilLoggerFactory::newInstance($settings);
-		$this->aggregated_logger = $factory->getComponentLogger('GfoUsrOuImport');
-		$this->aggregated_logger->getLogger()->popProcessor();
-		$this->aggregated_logger->getLogger()->pushProcessor(new Logging\TraceProcessor(\ilLogLevel::DEBUG));
-	}
+    /**
+     * File constructor.
+     * @param Logging\Settings $settings
+     */
+    public function __construct(Logging\Settings $settings)
+    {
+        $factory = \ilLoggerFactory::newInstance($settings);
+        $this->aggregated_logger = $factory->getComponentLogger('GfoUsrOuImport');
+        $this->aggregated_logger->getLogger()->popProcessor();
+        $this->aggregated_logger->getLogger()->pushProcessor(new Logging\TraceProcessor(\ilLogLevel::DEBUG));
+    }
 
-	/**
-	 * @param array $message
-	 * @return void
-	 */
-	protected function doWrite(array $message)
-	{
-		$line = $message['message'];
+    /**
+     * @param array $message
+     * @return void
+     */
+    protected function doWrite(array $message)
+    {
+        $line = $message['message'];
 
-		switch ($message['priority']) {
-			case Logging\Logger::EMERG:
-				$method = 'emergency';
-				break;
+        switch ($message['priority']) {
+            case Logging\Logger::EMERG:
+                $method = 'emergency';
+                break;
 
-			case Logging\Logger::ALERT:
-				$method = 'alert';
-				break;
+            case Logging\Logger::ALERT:
+                $method = 'alert';
+                break;
 
-			case Logging\Logger::CRIT:
-				$method = 'critical';
-				break;
+            case Logging\Logger::CRIT:
+                $method = 'critical';
+                break;
 
-			case Logging\Logger::ERR:
-				$method = 'error';
-				break;
+            case Logging\Logger::ERR:
+                $method = 'error';
+                break;
 
-			case Logging\Logger::WARN:
-				$method = 'warning';
-				break;
+            case Logging\Logger::WARN:
+                $method = 'warning';
+                break;
 
-			case Logging\Logger::INFO:
-				$method = 'info';
-				break;
+            case Logging\Logger::INFO:
+                $method = 'info';
+                break;
 
-			case Logging\Logger::NOTICE:
-				$method = 'notice';
-				break;
+            case Logging\Logger::NOTICE:
+                $method = 'notice';
+                break;
 
-			case Logging\Logger::DEBUG:
-			default:
-				$method = 'debug';
-				break;
-		}
+            case Logging\Logger::DEBUG:
+            default:
+                $method = 'debug';
+                break;
+        }
 
-		$this->aggregated_logger->{$method}($line);
-	}
+        $this->aggregated_logger->{$method}($line);
+    }
 
-	/**
-	 * @return void
-	 */
-	public function shutdown()
-	{
-		unset($this->aggregated_logger);
+    /**
+     * @return void
+     */
+    public function shutdown()
+    {
+        unset($this->aggregated_logger);
 
-		$this->shutdown_handled = true;
-	}
+        $this->shutdown_handled = true;
+    }
 }

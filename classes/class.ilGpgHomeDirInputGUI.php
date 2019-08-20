@@ -4,6 +4,6 @@
 /**
  * Class ilGpgHomeDirInputGUI
  */
-class ilGpgHomeDirInputGUI extends \ilTextInputGUI
+class ilGpgHomeDirInputGUI extends ilTextInputGUI
 {
 }

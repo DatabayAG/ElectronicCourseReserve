@@ -11,52 +11,52 @@ require_once 'Services/Logging/classes/extensions/class.ilTraceProcessor.php';
  */
 class TraceProcessor extends \ilTraceProcessor
 {
-	/**
-	 * @var int
-	 */
-	private $level = 0;
+    /**
+     * @var int
+     */
+    private $level = 0;
 
-	/**
-	 * ilElectronicCourseReserveLogTraceProcessor constructor.
-	 * @param int @a_level
-	 */
-	public function __construct($a_level)
-	{
-		$this->level = $a_level;
-	}
+    /**
+     * ilElectronicCourseReserveLogTraceProcessor constructor.
+     * @param int @a_level
+     */
+    public function __construct($a_level)
+    {
+        $this->level = $a_level;
+    }
 
-	/**
-	 * @param array $record
-	 * @return array
-	 */
-	public function __invoke(array $record)
-	{
-		if ($record['level'] < $this->level) {
-			return $record;
-		}
+    /**
+     * @param array $record
+     * @return array
+     */
+    public function __invoke(array $record)
+    {
+        if ($record['level'] < $this->level) {
+            return $record;
+        }
 
-		$trace = \debug_backtrace();
+        $trace = debug_backtrace();
 
-		// shift current method
-		\array_shift($trace);
+        // shift current method
+        array_shift($trace);
 
-		// shift plugin logger
-		\array_shift($trace);
-		\array_shift($trace);
-		\array_shift($trace);
+        // shift plugin logger
+        array_shift($trace);
+        array_shift($trace);
+        array_shift($trace);
 
-		// shift internal Monolog calls
-		\array_shift($trace);
-		\array_shift($trace);
-		\array_shift($trace);
-		\array_shift($trace);
+        // shift internal Monolog calls
+        array_shift($trace);
+        array_shift($trace);
+        array_shift($trace);
+        array_shift($trace);
 
-		$trace_info = $trace[1]['class'] . '::' . $trace[1]['function'] . ':' . $trace[0]['line'];
+        $trace_info = $trace[1]['class'] . '::' . $trace[1]['function'] . ':' . $trace[0]['line'];
 
-		if (isset($record['extra']) && is_array($record['extra'])) {
-			$record['extra']['trace'] = $trace_info;
-		}
+        if (isset($record['extra']) && is_array($record['extra'])) {
+            $record['extra']['trace'] = $trace_info;
+        }
 
-		return $record;
-	}
+        return $record;
+    }
 }
