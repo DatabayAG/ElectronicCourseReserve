@@ -170,6 +170,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         $this->plugin_object->includeClass("modifier/class.ilECRCourseListGuiModifier.php");
         $this->plugin_object->includeClass("modifier/class.ilECRFolderListGuiModifier.php");
         $this->plugin_object->includeClass("modifier/class.ilECRilCopyObjectGuiModifier.php");
+        $this->plugin_object->includeClass("modifier/class.ilECRCourseFolderTileGuiModifier.php");
 
         self::$modifier = [
             new ilECRCourseListGuiModifier(),
@@ -177,7 +178,8 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             new ilECRInfoScreenModifier(),
             new ilECRFolderListGuiModifier(),
             new ilECRilCopyObjectGuiModifier(),
-            new ilECRBibliographicItemModifier()
+            new ilECRBibliographicItemModifier(),
+            new ilECRCourseFolderTileGuiModifier(),
         ];
 
     }
