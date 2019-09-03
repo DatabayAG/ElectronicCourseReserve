@@ -1,7 +1,10 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper;
+
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
+
 /**
  * Class ilECRInfoScreenModifier
  * @author Nadia Matuschek <nmatuschek@databay.de>
@@ -9,87 +12,86 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
 class ilECRInfoScreenModifier implements ilECRBaseModifier
 {
 
-	/**
-	 * @var ilObjDataCache
-	 */
-	protected $data_cache;
+    /**
+     * @var ilObjDataCache
+     */
+    protected $data_cache;
 
-	/**
-	 * @var ilAccessHandler
-	 */
-	protected $access;
+    /**
+     * @var ilAccessHandler
+     */
+    protected $access;
 
-	public function __construct()
-	{
-		global $DIC;
-		$this->access = $DIC->access();
-		$this->data_cache = $DIC['ilObjDataCache'];
-	}
-	
-	/**
-	 * @inheritdoc
-	 */
-	public function shouldModifyHtml($a_comp, $a_part, $a_par)
-	{
-		if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
-			return false;
-		}
+    public function __construct()
+    {
+        global $DIC;
+        $this->access = $DIC->access();
+        $this->data_cache = $DIC['ilObjDataCache'];
+    }
 
-		if (!in_array(strtolower($_GET['cmdClass']), ['ilinfoscreengui', 'ilnotegui',])) {
-			return false;
-		}
+    /**
+     * @inheritdoc
+     */
+    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    {
+        if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
+            return false;
+        }
 
-		$refId = (int)$_GET['ref_id'];
-		if (!$refId) {
-			return false;
-		}
+        if (!in_array(strtolower($_GET['cmdClass']), ['ilinfoscreengui', 'ilnotegui',])) {
+            return false;
+        }
 
-		$obj_id = $this->data_cache->lookupObjId($refId);
-		$type = $this->data_cache->lookupType($obj_id);
+        $refId = (int) $_GET['ref_id'];
+        if (!$refId) {
+            return false;
+        }
 
-		if($type !== 'crs') {
-			return false;
-		}
+        $obj_id = $this->data_cache->lookupObjId($refId);
+        $type = $this->data_cache->lookupType($obj_id);
 
-		return true;
-	}
+        if ($type !== 'crs') {
+            return false;
+        }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function modifyHtml($a_comp, $a_part, $a_par)
-	{
-		/** @var \ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper $objectHelper */
-		$objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];
+        return true;
+    }
 
-		$instance = $objectHelper->getInstanceByRefId((int)$_GET['ref_id']);
+    /**
+     * @inheritdoc
+     */
+    public function modifyHtml($a_comp, $a_part, $a_par)
+    {
+        /** @var Helper $objectHelper */
+        $objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];
 
-		$dom = new \DOMDocument("1.0", "utf-8");
-		if(!@$dom->loadHTML('<?xml encoding="utf-8" ?><html><body>' . $a_par['html'] . '</body></html>'))
-		{
-			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
-		}
+        $instance = $objectHelper->getInstanceByRefId((int) $_GET['ref_id']);
 
-		$firstInfoScreenSection = $dom->getElementById('infoscreen_section_1');
+        $dom = new DOMDocument("1.0", "utf-8");
+        if (!@$dom->loadHTML('<?xml encoding="utf-8" ?><html><body>' . $a_par['html'] . '</body></html>')) {
+            return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
+        }
 
-		$row = $dom->createElement('div');
-		$row->setAttribute('class', 'form-group');
-		$plugin = ilElectronicCourseReservePlugin::getInstance();
-		$label = $dom->createElement('div', $plugin->txt('crs_ref_id'));
-		$label->setAttribute('class', 'il_InfoScreenProperty control-label col-xs-3');
-		$value = $dom->createElement('div');
-		$value->setAttribute('class', 'il_InfoScreenPropertyValue col-xs-9');
-		$value->nodeValue = (int)$instance->getRefId();
-		$row->appendChild($label);
-		$row->appendChild($value);
+        $firstInfoScreenSection = $dom->getElementById('infoscreen_section_1');
 
-		$firstInfoScreenSection->appendChild($row);
+        $row = $dom->createElement('div');
+        $row->setAttribute('class', 'form-group');
+        $plugin = ilElectronicCourseReservePlugin::getInstance();
+        $label = $dom->createElement('div', $plugin->txt('crs_ref_id'));
+        $label->setAttribute('class', 'il_InfoScreenProperty control-label col-xs-3');
+        $value = $dom->createElement('div');
+        $value->setAttribute('class', 'il_InfoScreenPropertyValue col-xs-9');
+        $value->nodeValue = (int) $instance->getRefId();
+        $row->appendChild($label);
+        $row->appendChild($value);
 
-		$processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
-		if (!$processedHtml) {
-			return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
-		}
+        $firstInfoScreenSection->appendChild($row);
 
-		return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processedHtml];
-	}
+        $processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+        if (!$processedHtml) {
+            return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
+        }
+
+        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processedHtml];
+    }
 }

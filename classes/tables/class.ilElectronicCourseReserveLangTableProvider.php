@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: nmatuschek
@@ -7,36 +8,33 @@
  */
 class ilElectronicCourseReserveLangTableProvider
 {
-	protected $db;
+    protected $db;
 
-	public function __construct()
-	{
-		global $DIC;
+    public function __construct()
+    {
+        global $DIC;
 
-		$this->db = $DIC->database();
-	}
+        $this->db = $DIC->database();
+    }
 
-	public function getTableData()
-	{
-		$data = array();
-		$installed_langs = ilLanguage::_getInstalledLanguages();
-		foreach($installed_langs as $lang)
-		{
-			$data[$lang]['lang_key']	= $lang;
-			$data[$lang]['identifier'] = 'ecr_tab_title';
-		}
+    public function getTableData()
+    {
+        $data = array();
+        $installed_langs = ilLanguage::_getInstalledLanguages();
+        foreach ($installed_langs as $lang) {
+            $data[$lang]['lang_key'] = $lang;
+            $data[$lang]['identifier'] = 'ecr_tab_title';
+        }
 
-		$query = 'SELECT * FROM ecr_lang_data ';
-		$res   = $this->db->query($query);
+        $query = 'SELECT * FROM ecr_lang_data ';
+        $res = $this->db->query($query);
 
-		while($row = $this->db->fetchAssoc($res))
-		{
-			if(isset($data[$row['lang_key']]))
-			{
-				$data[$row['lang_key']] = $row;
-			}
-		}
+        while ($row = $this->db->fetchAssoc($res)) {
+            if (isset($data[$row['lang_key']])) {
+                $data[$row['lang_key']] = $row;
+            }
+        }
 
-		return $data;
-	}
+        return $data;
+    }
 }

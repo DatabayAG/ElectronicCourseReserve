@@ -8,88 +8,88 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 {
-	/**
-	 * @var array 
-	 */
-	protected $object_types = array('file', 'webr');
-	
-	/**
-	 * @var ilObjDataCache
-	 */
-	protected $data_cache;
+    /**
+     * @var array
+     */
+    protected $object_types = array('file', 'webr');
 
-	/**
-	 * @var ilAccessHandler
-	 */
-	protected $access;
+    /**
+     * @var ilObjDataCache
+     */
+    protected $data_cache;
 
-	/**
-	 * @var bool 
-	 */
-	protected $modified = false;
+    /**
+     * @var ilAccessHandler
+     */
+    protected $access;
 
-	public function __construct()
-	{
-		global $DIC;
-		$this->access = $DIC->access();
-		$this->data_cache = $DIC['ilObjDataCache'];
-	}
+    /**
+     * @var bool
+     */
+    protected $modified = false;
 
-	/**
-	 * @param $a_comp
-	 * @param $a_part
-	 * @param $a_par
-	 * @return bool
-	 */
-	public function shouldModifyHtml($a_comp, $a_part, $a_par)
-	{
-		if($this->modified){
-			return false;
-		}
+    public function __construct()
+    {
+        global $DIC;
+        $this->access = $DIC->access();
+        $this->data_cache = $DIC['ilObjDataCache'];
+    }
 
-		$refId = (int)$_GET['ref_id'];
-		if (!$refId) {
-			return false;
-		}
+    /**
+     * @param $a_comp
+     * @param $a_part
+     * @param $a_par
+     * @return bool
+     */
+    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    {
+        if ($this->modified) {
+            return false;
+        }
 
-		$obj_id = $this->data_cache->lookupObjId($refId);
-		$type = $this->data_cache->lookupType($obj_id);
+        $refId = (int) $_GET['ref_id'];
+        if (!$refId) {
+            return false;
+        }
 
-		if(in_array($type, $this->object_types)) {
-			$this->modified = true;
-			return true;
-		}
-		return false;
-	}
+        $obj_id = $this->data_cache->lookupObjId($refId);
+        $type = $this->data_cache->lookupType($obj_id);
 
-	/**
-	 * @param $a_comp
-	 * @param $a_part
-	 * @param $a_par
-	 * @return string|void
-	 */
-	public function modifyHtml($a_comp, $a_part, $a_par)
-	{
-		global $DIC;
-		$plugin      = ilElectronicCourseReservePlugin::getInstance();
-		$refId       = (int)$_GET['ref_id'];
-		$item_data   = $plugin->queryItemData($refId);
-		if(is_array($item_data)
-			&& array_key_exists('icon', $item_data)
-			&& strlen($item_data['icon']) > 0
-			&& array_key_exists('show_image', $item_data)
-			&& $item_data['show_image'] == 1) {
+        if (in_array($type, $this->object_types)) {
+            $this->modified = true;
+            return true;
+        }
+        return false;
+    }
 
-			$replace = '#headerimage';
-			if(array_key_exists('icon_type', $item_data) && $item_data['icon_type'] === ilElectronicCourseReservePlugin::ICON_URL){
-				$with = $item_data['icon'];
-			}
-			else {
-				$with = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item_data['icon'];
-			}
+    /**
+     * @param $a_comp
+     * @param $a_part
+     * @param $a_par
+     * @return string|void
+     */
+    public function modifyHtml($a_comp, $a_part, $a_par)
+    {
+        global $DIC;
+        $plugin = ilElectronicCourseReservePlugin::getInstance();
+        $refId = (int) $_GET['ref_id'];
+        $item_data = $plugin->queryItemData($refId);
+        if (is_array($item_data)
+            && array_key_exists('icon', $item_data)
+            && strlen($item_data['icon']) > 0
+            && array_key_exists('show_image', $item_data)
+            && $item_data['show_image'] == 1) {
 
-			$DIC->ui()->mainTemplate()->addJavaScript('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/js/ElectronicCourseReserveObjectIcon.js');
-			$DIC->ui()->mainTemplate()->addOnLoadCode('il.ElectronicCourseReserveObjectIcon.setConfig("'.$replace.'", "'.$with.'");');
-		}
-	}
+            $replace = '#headerimage';
+            if (array_key_exists('icon_type',
+                    $item_data) && $item_data['icon_type'] === ilElectronicCourseReservePlugin::ICON_URL) {
+                $with = $item_data['icon'];
+            } else {
+                $with = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item_data['icon'];
+            }
+
+            $DIC->ui()->mainTemplate()->addJavaScript('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/js/ElectronicCourseReserveObjectIcon.js');
+            $DIC->ui()->mainTemplate()->addOnLoadCode('il.ElectronicCourseReserveObjectIcon.setConfig("' . $replace . '", "' . $with . '");');
+        }
+    }
 }

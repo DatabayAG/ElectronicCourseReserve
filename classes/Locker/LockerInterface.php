@@ -9,19 +9,19 @@ namespace ILIAS\Plugin\ElectronicCourseReserve\Locker;
  */
 interface LockerInterface
 {
-	/**
-	 * @return bool
-	 */
+    /**
+     * @return bool
+     */
 
-	public function acquireLock();
+    public function acquireLock();
 
-	/**
-	 * @return bool
-	 */
-	public function isLocked();
+    /**
+     * @return bool
+     */
+    public function isLocked();
 
-	/**
-	 * @return void
-	 */
-	public function releaseLock();
+    /**
+     * @return void
+     */
+    public function releaseLock();
 }

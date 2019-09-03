@@ -11,131 +11,131 @@ use Zend\Crypt\BlockCipher;
  */
 class LinkBuilder
 {
-	/**
-	 * @var \ilElectronicCourseReservePlugin
-	 */
-	protected $plugin;
+    /**
+     * @var \ilElectronicCourseReservePlugin
+     */
+    protected $plugin;
 
-	/**
-	 * @var \ilObjUser 
-	 */
-	protected $user;
+    /**
+     * @var \ilObjUser
+     */
+    protected $user;
 
-	/**
-	 * @var \ilSetting 
-	 */
-	protected $settings;
+    /**
+     * @var \ilSetting
+     */
+    protected $settings;
 
-	/**
-	 * @var BlockCipher 
-	 */
-	protected $blockCipher;
-	
-	/**
-	 * @var \GnuPG 
-	 */
-	protected $gpg;
+    /**
+     * @var BlockCipher
+     */
+    protected $blockCipher;
 
-	/**
-	 * LinkBuilder constructor.
-	 * @param \ilElectronicCourseReservePlugin $plugin
-	 * @param \ilObjUser $user
-	 * @param \ilSetting $settings
-	 * @param BlockCipher $blockCipher
-	 */
-	public function __construct(
-		\ilElectronicCourseReservePlugin $plugin,
-		\GnuPG $gpg,
-		\ilObjUser $user,
-		\ilSetting $settings,
-		BlockCipher $blockCipher
-	) {
-		$this->plugin = $plugin;
-		$this->gpg = $gpg;
-		$this->user = $user;
-		$this->settings = $settings;
-		$this->blockCipher = $blockCipher;
-	}
+    /**
+     * @var \GnuPG
+     */
+    protected $gpg;
 
-	/**
-	 * @param \ilObjCourse $container
-	 * @return string
-	 */
-	public function getLibraryOrderLink(\ilObjCourse $container)
-	{
-		$params = $this->getLibraryUrlParameters($container);
+    /**
+     * LinkBuilder constructor.
+     * @param \ilElectronicCourseReservePlugin $plugin
+     * @param \ilObjUser $user
+     * @param \ilSetting $settings
+     * @param BlockCipher $blockCipher
+     */
+    public function __construct(
+        \ilElectronicCourseReservePlugin $plugin,
+        \GnuPG $gpg,
+        \ilObjUser $user,
+        \ilSetting $settings,
+        BlockCipher $blockCipher
+    ) {
+        $this->plugin = $plugin;
+        $this->gpg = $gpg;
+        $this->user = $user;
+        $this->settings = $settings;
+        $this->blockCipher = $blockCipher;
+    }
 
-		$url = $this->plugin->getSetting('url_search_system');
-		if (strpos($url, '?') === false) {
-			$separator = '?';
-		} else {
-			$separator = '&';
-		}
+    /**
+     * @param \ilObjCourse $container
+     * @return string
+     */
+    public function getLibraryOrderLink(\ilObjCourse $container)
+    {
+        $params = $this->getLibraryUrlParameters($container);
 
-		return $url . $separator . http_build_query($params);
-	}
+        $url = $this->plugin->getSetting('url_search_system');
+        if (strpos($url, '?') === false) {
+            $separator = '?';
+        } else {
+            $separator = '&';
+        }
 
-	/**
-	 * @param \ilObjCourse $container
-	 * @return array
-	 */
-	public function getLibraryUrlParameters(\ilObjCourse $container)
-	{
-		$default_auth = $this->settings->get('auth_mode') ? $this->settings->get('auth_mode') : AUTH_LOCAL;
-		$usr_id = $this->user->getLogin();
+        return $url . $separator . http_build_query($params);
+    }
 
-		if (
-			strlen(trim($this->user->getExternalAccount())) &&
-			!(
-				(
-					$this->user->getAuthMode() == 'default' &&
-					$default_auth == AUTH_LOCAL
-				) ||
-				$this->user->getAuthMode(true) == AUTH_LOCAL
-			)
-		) {
-			$usr_id = $this->user->getExternalAccount();
-		}
+    /**
+     * @param \ilObjCourse $container
+     * @return array
+     */
+    public function getLibraryUrlParameters(\ilObjCourse $container)
+    {
+        $default_auth = $this->settings->get('auth_mode') ? $this->settings->get('auth_mode') : AUTH_LOCAL;
+        $usr_id = $this->user->getLogin();
 
-		$params = array(
-			'ref_id' => $container->getRefId(),
-			'usr_id' => $usr_id,
-			'ts' => time(),
-			'email' => $this->user->getEmail()
-		);
+        if (
+            strlen(trim($this->user->getExternalAccount())) &&
+            !(
+                (
+                    $this->user->getAuthMode() == 'default' &&
+                    $default_auth == AUTH_LOCAL
+                ) ||
+                $this->user->getAuthMode(true) == AUTH_LOCAL
+            )
+        ) {
+            $usr_id = $this->user->getExternalAccount();
+        }
 
-		if ($this->plugin->getSetting('token_append_obj_title')) {
-			$params['iltitle'] = $container->getTitle();
-		}
+        $params = array(
+            'ref_id' => $container->getRefId(),
+            'usr_id' => $usr_id,
+            'ts' => time(),
+            'email' => $this->user->getEmail()
+        );
 
-		$data_to_sign = implode('', $params);
+        if ($this->plugin->getSetting('token_append_obj_title')) {
+            $params['iltitle'] = $container->getTitle();
+        }
 
-		$passphrase = strlen($this->plugin->getSetting('sign_key_passphrase')) ? $this->blockCipher->decrypt($this->plugin->getSetting('sign_key_passphrase')) : '';
+        $data_to_sign = implode('', $params);
 
-		$keys = $this->gpg->listKeys(true);
+        $passphrase = strlen($this->plugin->getSetting('sign_key_passphrase')) ? $this->blockCipher->decrypt($this->plugin->getSetting('sign_key_passphrase')) : '';
 
-		foreach ($keys as $result) {
-			if (!is_array($result)) {
-				continue;
-			}
+        $keys = $this->gpg->listKeys(true);
 
-			foreach ($result as $key) {
-				$fingerprint = $key['fingerprint'];
+        foreach ($keys as $result) {
+            if (!is_array($result)) {
+                continue;
+            }
 
-				if ($fingerprint === $this->plugin->getSetting('sign_key_fingerprint')) {
-					$signResult = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true);
-					$signature = $signResult->data;
-					$signedError = $signResult->err;
+            foreach ($result as $key) {
+                $fingerprint = $key['fingerprint'];
 
-					if ($signature && !$signedError) {
-						$signature = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true)->data;
-						$params['iltoken'] = base64_encode($signature);
-						break 2;
-					}
-				}
-			}
-		}
+                if ($fingerprint === $this->plugin->getSetting('sign_key_fingerprint')) {
+                    $signResult = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true);
+                    $signature = $signResult->data;
+                    $signedError = $signResult->err;
 
-		return $params;
-	}
+                    if ($signature && !$signedError) {
+                        $signature = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true)->data;
+                        $params['iltoken'] = base64_encode($signature);
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        return $params;
+    }
 }

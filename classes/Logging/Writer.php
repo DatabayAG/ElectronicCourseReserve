@@ -9,14 +9,14 @@ namespace ILIAS\Plugin\ElectronicCourseReserve\Logging;
  */
 interface Writer
 {
-	/**
-	 * @param array $message
-	 * @return void
-	 */
-	public function write(array $message);
+    /**
+     * @param array $message
+     * @return void
+     */
+    public function write(array $message);
 
-	/**
-	 * @return void
-	 */
-	public function shutdown();
+    /**
+     * @return void
+     */
+    public function shutdown();
 }
