@@ -130,6 +130,8 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
             }
         }
 
+        $processed = false;
+
         foreach ($elements as $element) {
             $nodeList = $xpath->query("//ul[@class='dropdown-menu']", $element);
             if ($nodeList->length > 0) {
@@ -140,17 +142,21 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                             $node
                         );
                         $this->list_gui_helper->removeAction($nodesToDelete);
+                        $processed = true;
                     }
                 }
             }
         }
 
-        $processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
-
-        if (strlen($processed_html) === 0) {
+        if (!$processed) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
 
-        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processed_html];
+        $processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+        if (strlen($processedHtml) === 0) {
+            return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
+        }
+
+        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processedHtml];
     }
 }
