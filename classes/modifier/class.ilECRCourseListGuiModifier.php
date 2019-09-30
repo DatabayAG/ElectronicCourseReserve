@@ -81,7 +81,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
             $elements = [];
             $refIds   = [];
 
-            $linksWithRefIds = $xpath->query("//li/a[@href]");
+            $linksWithRefIds = $xpath->query("//li/a[contains(@href, 'ref_id')]");
             if ($linksWithRefIds->length > 0) {
                 foreach ($linksWithRefIds as $linksWithRefId) {
                     $action  = $linksWithRefId->getAttribute('href');
