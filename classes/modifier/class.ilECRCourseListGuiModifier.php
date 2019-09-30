@@ -48,11 +48,11 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
         $obj_id = $this->data_cache->lookupObjId($refId);
         $type = $this->data_cache->lookupType($obj_id);
 
-        if ($type == 'crs') {
-            return true;
+        if ($type !== 'crs') {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public function modifyHtml($a_comp, $a_part, $a_par)
