@@ -124,7 +124,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
                     $processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
                 }
             }
-        } else {
+        } elseif (count($itemData) > 0) {
             $itemRefId = $this->list_gui_helper->getRefIdFromItemUrl($xpath);
             if (array_key_exists($itemRefId, $itemData)) {
                 $text_string = $itemData[$itemRefId]['description'];
