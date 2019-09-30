@@ -33,7 +33,10 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
 
     public function shouldModifyHtml($a_comp, $a_part, $a_par)
     {
-        if ($a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html') {
+        if (
+            $a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html' &&
+            $a_par['tpl_id'] != 'Services/UIComponent/AdvancedSelectionList/tpl.adv_selection_list.html'
+        ) {
             return false;
         }
 
@@ -48,14 +51,16 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
         if ($type == 'crs') {
             return true;
         }
+
         return false;
     }
 
     public function modifyHtml($a_comp, $a_part, $a_par)
     {
-        $processed_html = '';
-        $ref_id = (int) $_GET['ref_id'];
-        $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
+        $processedHtml = '';
+        $contextRefId = (int) $_GET['ref_id'];
+
+        $obj = ilObjectFactory::getInstanceByRefId($contextRefId, false);
         if (!($obj instanceof ilObjCourse) || !$this->access->checkAccess('read', '', $obj->getRefId())) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
@@ -70,20 +75,64 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
 
         $plugin = ilElectronicCourseReservePlugin::getInstance();
         $xpath = new DomXPath($dom);
-        $item_data = $plugin->getRelevantCourseAndFolderData($ref_id);
-        $item_ref_id = $this->list_gui_helper->getRefIdFromItemUrl($xpath);
-        if (count($item_data) > 0 && array_key_exists($item_ref_id, $item_data)) {
-            foreach ($this->list_gui_helper->actions_to_remove as $key => $action) {
-                $node_list = $xpath->query("//li/a[contains(@href,'cmd=" . $action . "')]");
-                $this->list_gui_helper->removeAction($node_list);
+        $itemData = $plugin->getRelevantCourseAndFolderData($obj->getRefId());
+
+        if (count($itemData) > 0) {
+            $elements = [];
+            $refIds   = [];
+
+            $linksWithRefIds = $xpath->query("//li/a[@href]");
+            if ($linksWithRefIds->length > 0) {
+                foreach ($linksWithRefIds as $linksWithRefId) {
+                    $action  = $linksWithRefId->getAttribute('href');
+                    $matches = null;
+
+                    if (preg_match('/item_ref_id=(\d+)/', $action, $matches)) {
+                        if (!array_key_exists($matches[1], $itemData)) {
+                            continue;
+                        }
+
+                        $refIds[$matches[1]] = $matches[1];
+                        $elements[]          = $linksWithRefId;
+                        continue;
+                    }
+
+                    if (preg_match('/ref_id=(\d+)/', $action, $matches)) {
+                        if (!array_key_exists($matches[1], $itemData)) {
+                            continue;
+                        }
+                        $refIds[$matches[1]] = $matches[1];
+                        $elements[]          = $linksWithRefId;
+                    }
+                }
+            }
+            
+            $processed = false;
+
+            foreach ($elements as $element) {
+                $action = $element->getAttribute('href');
+                foreach ($this->list_gui_helper->actions_to_remove as $key => $cmd) {
+                    if (strpos($action, 'cmd=' . $cmd) !== false) {
+                        $element->parentNode->removeChild($element);
+                        $processed = true;
+                    }
+                }
             }
 
-            $this->list_gui_helper->replaceCheckbox($xpath, $item_ref_id, $dom);
-            $processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+            foreach ($refIds as $refId) {
+                $this->list_gui_helper->replaceCheckbox($xpath, $refId, $dom);
+                $processed = true;
+            }
+
+            if ($processed) {
+                $processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+            }
         }
-        if (strlen($processed_html) === 0) {
+
+        if (strlen($processedHtml) === 0) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
-        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processed_html];
+
+        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processedHtml];
     }
 }
