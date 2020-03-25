@@ -13,6 +13,9 @@ in this document are to be interpreted as described in
   * [GnuPG](#gnupg)
     * [Key Pair Generation](#key-pair-generation)
     * [Public Key Export](#public-key-export)
+* [Interfaces](#interfaces)
+    * [](#signature-creationverification)
+    * [](#delivery-of-digitized-media-an-links-to-ilias)
 * [License](#license)
 
 ## Install
@@ -69,6 +72,38 @@ In the ILIAS configuration screen you'll have to enter the following values in r
 * Absolute Server Path/HomeDirectory: /srv/www/esa.invorbereitung.de/data/esainvorbe/.esa 
 * Fingerprint (Key): Enter the unique fingerprint of the relevant private key. A list of possible keys will be provided on the configuration screen if ILIAS is able to read/analyze the GnuPG files. 
 * Passphrase: *****
+
+## Interfaces
+
+### Signature Creation/Verification
+
+When redirecting the actor (mostly a course admin or tutor) to the research system of the
+library (to order digitized media), ILIAS appends some query parameters to the base URL configured in the global 
+plugin administration.
+
+1. ref_id: The ILIAS ref_id of the current course
+2. usr_id: The current login/username of the actor
+3. ts: A unix timestamp base on the current point in time
+4. email: The current email address of the actor
+5. iltitle (optional): An optional title of the current course
+6. iltoken: A cryptographic signature of the data above
+
+Algorithm:
+1. Parameters 1 - 5 are joined with an empty string.
+    * Example: -1root1585137094mjansen\[at\]databay\[dot\]deExample 
+2. A (detached) [GnuPG](#gnupg) signature is created with this string (created in 1.) used as message.
+3. The built signature is base64 encoded.
+4. The encoded signature is appended to the research system URL as "iltoken". 
+
+The search system has to verify the signature accordingly.
+
+### Delivery of Digitized Media an Links to ILIAS
+
+The library has to push it's generated files to the folder configured in the global plugin administration.
+
+It is up to the concrete institutions and libraries how the files will be transferred (SCP, FTP, ...).
+
+There MUST be a XML file describing a delivery. The file MUST be based on the XML schema file [here](./xsd/import.xsd).
 
 ## License
 
