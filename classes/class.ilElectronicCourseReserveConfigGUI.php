@@ -165,7 +165,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             $id = current($ids);
             $ref_ids = ilObject::_getAllReferences($id);
             $ref_id = current($ref_ids);
-            $url = $this->ctrl->getLinkTarget(
+            $url = $this->getPluginObject()->getLinkTarget(
                 array(
                     'iladministrationgui',
                     'ilobjsystemfoldergui'
