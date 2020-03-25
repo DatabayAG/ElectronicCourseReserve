@@ -54,8 +54,9 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
 
     public function modifyHtml($a_comp, $a_part, $a_par)
     {
-        $ref_id = (int) $_GET['ref_id'];
-        $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
+        $contextRefId = (int) $_GET['ref_id'];
+
+        $obj = ilObjectFactory::getInstanceByRefId($contextRefId, false);
         if ((!($obj instanceof ilObjCourse) && !($obj instanceof ilObjFolder)) || !$this->access->checkAccess('read', '', $obj->getRefId())) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
@@ -75,9 +76,9 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
         $elements = [];
 
         if ($obj instanceof ilObjCourse) {
-            $item_data = $plugin->getRelevantCourseAndFolderData($ref_id);
+            $itemData = $plugin->getRelevantCourseAndFolderData($obj->getRefId());
 
-            if (count($item_data) > 0) {
+            if (count($itemData) > 0) {
                 $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']/a");
                 if ($linkedTitleNodeList->length > 0) {
                     foreach ($linkedTitleNodeList as $linkedTitleNode) {
@@ -85,8 +86,16 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                         if ($linkedTitleNode->hasAttribute('href')) {
                             $action = $linkedTitleNode->getAttribute('href');
                             $matches = null;
+
+                            if (preg_match('/item_ref_id=(\d+)/', $action, $matches)) {
+                                if (!array_key_exists($matches[1], $itemData)) {
+                                    continue;
+                                }
+                                $elements[] = $linkedTitleNode->parentNode->parentNode;
+                            }
+
                             if (preg_match('/ref_id=(\d+)/', $action, $matches)) {
-                                if (!array_key_exists($matches[1], $item_data)) {
+                                if (!array_key_exists($matches[1], $itemData)) {
                                     continue;
                                 }
                                 $elements[] = $linkedTitleNode->parentNode->parentNode;
@@ -96,9 +105,9 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                 }
             }
         } else {
-            $item_data = $plugin->getItemData();
+            $itemData = $plugin->getItemData();
 
-            if (count($item_data) > 0) {
+            if (count($itemData) > 0) {
                 $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']/a");
                 if ($linkedTitleNodeList->length > 0) {
                     foreach ($linkedTitleNodeList as $linkedTitleNode) {
@@ -108,8 +117,8 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                             $matches = null;
                             if (preg_match('/ref_id=(\d+)|_(\d+)/', $action, $matches)) {
                                 if (
-                                    !array_key_exists($matches[1], $item_data) &&
-                                    !array_key_exists($matches[2], $item_data)
+                                    !array_key_exists($matches[1], $itemData) &&
+                                    !array_key_exists($matches[2], $itemData)
                                 ) {
                                     continue;
                                 }
@@ -121,6 +130,8 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
             }
         }
 
+        $processed = false;
+
         foreach ($elements as $element) {
             $nodeList = $xpath->query("//ul[@class='dropdown-menu']", $element);
             if ($nodeList->length > 0) {
@@ -131,17 +142,21 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                             $node
                         );
                         $this->list_gui_helper->removeAction($nodesToDelete);
+                        $processed = true;
                     }
                 }
             }
         }
 
-        $processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
-
-        if (strlen($processed_html) === 0) {
+        if (!$processed) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
 
-        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processed_html];
+        $processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+        if (strlen($processedHtml) === 0) {
+            return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
+        }
+
+        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processedHtml];
     }
 }

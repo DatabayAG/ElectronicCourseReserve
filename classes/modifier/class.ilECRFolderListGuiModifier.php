@@ -35,8 +35,10 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 
     public function shouldModifyHtml($a_comp, $a_part, $a_par)
     {
-        if ($a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html' &&
-            $a_par['tpl_id'] != 'Services/UIComponent/AdvancedSelectionList/tpl.adv_selection_list.html') {
+        if (
+            $a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html' &&
+            $a_par['tpl_id'] != 'Services/UIComponent/AdvancedSelectionList/tpl.adv_selection_list.html'
+        ) {
             return false;
         }
 
@@ -51,19 +53,21 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
         if ($type !== 'fold') {
             return false;
         }
+
         return true;
     }
 
     public function modifyHtml($a_comp, $a_part, $a_par)
     {
-        $processed_html = '';
-        $ref_id = (int) $_GET['ref_id'];
-        $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
+        $contextRefId = (int) $_GET['ref_id'];
+
+        $obj = ilObjectFactory::getInstanceByRefId($contextRefId, false);
         if (!($obj instanceof ilObjFolder) || !$this->access->checkAccess('read', '', $obj->getRefId())) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
 
         $html = $a_par['html'];
+        $processedHtml = '';
 
         $dom = new DOMDocument("1.0", "utf-8");
         if (!@$dom->loadHTML('<?xml encoding="utf-8" ?><html><body>' . $html . '</body></html>')) {
@@ -73,20 +77,60 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
 
         $plugin = ilElectronicCourseReservePlugin::getInstance();
         $xpath = new DomXPath($dom);
-        $item_data = $plugin->getItemData();
-        $item_ref_id = $this->list_gui_helper->getRefIdFromItemUrl($xpath);
-        if ($a_par['tpl_id'] == 'Services/UIComponent/AdvancedSelectionList/tpl.adv_selection_list.html') {
-            foreach ($this->list_gui_helper->actions_to_remove as $key => $action) {
-                $node_list = $xpath->query("//li/a[contains(@href,'cmd=" . $action . "')]");
-                $this->list_gui_helper->removeAction($node_list);
+        $itemData = $plugin->getItemData();
+
+        if (
+            $a_par['tpl_id'] == 'Services/UIComponent/AdvancedSelectionList/tpl.adv_selection_list.html' &&
+            count($itemData) > 0
+        ) {
+            $linksWithRefIds = $xpath->query("//li/a[contains(@href, 'ref_id')]");
+            if ($linksWithRefIds->length > 0) {
+                $elements = [];
+
+                foreach ($linksWithRefIds as $linksWithRefId) {
+                    $action  = $linksWithRefId->getAttribute('href');
+                    $matches = null;
+
+                    if (preg_match('/item_ref_id=(\d+)/', $action, $matches)) {
+                        if (!array_key_exists($matches[1], $itemData)) {
+                            continue;
+                        }
+
+                        $elements[] = $linksWithRefId;
+                        continue;
+                    }
+
+                    if (preg_match('/ref_id=(\d+)/', $action, $matches)) {
+                        if (!array_key_exists($matches[1], $itemData)) {
+                            continue;
+                        }
+                        $elements[] = $linksWithRefId;
+                    }
+                }
+
+                $processed = false;
+
+                foreach ($elements as $element) {
+                    $action = $element->getAttribute('href');
+                    foreach ($this->list_gui_helper->actions_to_remove as $key => $cmd) {
+                        if (strpos($action, 'cmd=' . $cmd) !== false) {
+                            $element->parentNode->removeChild($element);
+                            $processed = true;
+                        }
+                    }
+                }
+
+                if ($processed) {
+                    $processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+                }
             }
-            $processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
-        } else {
-            if (array_key_exists($item_ref_id, $item_data)) {
-                $text_string = $item_data[$item_ref_id]['description'];
-                $image = $item_data[$item_ref_id]['icon'];
-                $show_image = (int) $item_data[$item_ref_id]['show_image'];
-                $show_description = (int) $item_data[$item_ref_id]['show_description'];
+        } elseif (count($itemData) > 0) {
+            $itemRefId = $this->list_gui_helper->getRefIdFromItemUrl($xpath);
+            if (array_key_exists($itemRefId, $itemData)) {
+                $text_string = $itemData[$itemRefId]['description'];
+                $image = $itemData[$itemRefId]['icon'];
+                $show_image = (int) $itemData[$itemRefId]['show_image'];
+                $show_description = (int) $itemData[$itemRefId]['show_description'];
 
                 if ($show_description == 1 && strlen($text_string) > 0) {
                     $text_node_list = $xpath->query("//div[@class='il_ContainerListItem']");
@@ -103,9 +147,9 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
                     /** @var ilElectronicCourseReservePlugin $plugin */
                     $plugin = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
 
-                    if ($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_URL) {
+                    if ($itemData[$itemRefId]['icon_type'] === $plugin::ICON_URL) {
                         $image_node->setAttribute('src', $image);
-                    } elseif ($item_data[$item_ref_id]['icon_type'] === $plugin::ICON_FILE) {
+                    } elseif ($itemData[$itemRefId]['icon_type'] === $plugin::ICON_FILE) {
                         $path_to_image = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $image;
 
                         if (file_exists($path_to_image)) {
@@ -115,15 +159,15 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
                 }
             }
 
+            $this->list_gui_helper->replaceCheckbox($xpath, $itemRefId, $dom);
 
-            $this->list_gui_helper->replaceCheckbox($xpath, $item_ref_id, $dom);
-
-            $processed_html = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
+            $processedHtml = $dom->saveHTML($dom->getElementsByTagName('body')->item(0));
         }
 
-        if (strlen($processed_html) === 0) {
+        if (strlen($processedHtml) === 0) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
-        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processed_html];
+
+        return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processedHtml];
     }
 }
