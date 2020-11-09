@@ -42,6 +42,7 @@ to be important to log.
 
 * CronElectronicCourseReserve Plugin (https://github.com/DatabayAG/CronElectronicCourseReserve)
 * GnuPG (https://wiki.ubuntuusers.de/GnuPG/)
+  * **Important:** For newer GnuPG versions, please follow the steps mentioned here: https://d.sb/2016/11/gpg-inappropriate-ioctl-for-device-errors
 
 ### GnuPG
 
