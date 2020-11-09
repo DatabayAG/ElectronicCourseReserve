@@ -1,4 +1,7 @@
 <?php
+
+use ILIAS\Plugin\ElectronicCourseReserve\Library\GpgWrapper;
+
 /**
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -584,9 +587,15 @@ class GpgSignResult extends GpgResult
 				'SIGEXPIRED' => false, 'KEYREVOKED' => false, 'SC_OP_SUCCESS' => false,
 				'USERID_HINT' => '_userid_hint',
 				'SIG_CREATED' => '_sig_created',
+                'KEY_CONSIDERED' => '_key_considered'
 			)
 		);
 	}
+
+    protected function _key_considered($code, $value)
+    {
+        return true;
+    }
 
 	protected function _userid_hint ($code, $value)
 	{
@@ -796,7 +805,7 @@ class GpgEncryptResult extends GpgVerifyResult
 /**
  * Encapsulate access to the gpg executable.
  */
-class GnuPG
+class GnuPG implements GpgWrapper
 {
 	/**
 	 * Full pathname for GPG binary.

@@ -37,8 +37,15 @@ class LinkBuilder
     protected $gpg;
 
     /**
+     * @var LatestVersionGpgWrapper
+     */
+    private $gpgLatest;
+
+    /**
      * LinkBuilder constructor.
      * @param \ilElectronicCourseReservePlugin $plugin
+     * @param \GnuPG $gpg
+     * @param LatestVersionGpgWrapper $gpgLatest
      * @param \ilObjUser $user
      * @param \ilSetting $settings
      * @param BlockCipher $blockCipher
@@ -46,6 +53,7 @@ class LinkBuilder
     public function __construct(
         \ilElectronicCourseReservePlugin $plugin,
         \GnuPG $gpg,
+        LatestVersionGpgWrapper $gpgLatest,
         \ilObjUser $user,
         \ilSetting $settings,
         BlockCipher $blockCipher
@@ -55,6 +63,7 @@ class LinkBuilder
         $this->user = $user;
         $this->settings = $settings;
         $this->blockCipher = $blockCipher;
+        $this->gpgLatest = $gpgLatest;
     }
 
     /**
@@ -123,12 +132,12 @@ class LinkBuilder
                 $fingerprint = $key['fingerprint'];
 
                 if ($fingerprint === $this->plugin->getSetting('sign_key_fingerprint')) {
-                    $signResult = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true);
+                    $signResult = $this->gpgLatest->sign($data_to_sign, $fingerprint, $passphrase, false, true);
                     $signature = $signResult->data;
                     $signedError = $signResult->err;
 
                     if ($signature && !$signedError) {
-                        $signature = $this->gpg->sign($data_to_sign, $fingerprint, $passphrase, false, true)->data;
+                        $signature = $signResult->data;
                         $params['iltoken'] = base64_encode($signature);
                         break 2;
                     }

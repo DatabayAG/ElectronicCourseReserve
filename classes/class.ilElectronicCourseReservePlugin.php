@@ -2,6 +2,7 @@
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\DI\Container;
+use ILIAS\Plugin\ElectronicCourseReserve\Library\LatestVersionGpgWrapper;
 use ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder;
 use ILIAS\Plugin\ElectronicCourseReserve\Locker\PidBased;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
@@ -120,6 +121,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
                 $linkBuilder = new LinkBuilder(
                     $that,
                     $c['plugin.esa.crypt.gpg'],
+                    $c['plugin.esa.crypt.gpg-latest'],
                     $c->user(),
                     $c['ilSetting'],
                     $c['plugin.esa.crypt.blockcipher']
@@ -130,6 +132,12 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
             $GLOBALS['DIC']['plugin.esa.crypt.gpg'] = function (Container $c) use ($that) {
                 return $c['plugin.esa.crypt.gpg.factory']($that->getSetting('gpg_homedir'));
+            };
+
+            $GLOBALS['DIC']['plugin.esa.crypt.gpg-latest'] = function (Container $c) use ($that) {
+                return new LatestVersionGpgWrapper(
+                    $c['plugin.esa.crypt.gpg']
+                );
             };
 
             $GLOBALS['DIC']['plugin.esa.crypt.gpg.factory'] = function (Container $c) use ($that) {
