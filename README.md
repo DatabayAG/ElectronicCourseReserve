@@ -74,6 +74,26 @@ In the ILIAS configuration screen you'll have to enter the following values in r
 * Fingerprint (Key): Enter the unique fingerprint of the relevant private key. A list of possible keys will be provided on the configuration screen if ILIAS is able to read/analyze the GnuPG files. 
 * Passphrase: *****
 
+#### Known Issues
+
+If you are using new `gpg` versions, e.g. v. 2.2.x in Ubuntu 18.04 or above, please ensure
+the following configuration files exists with the respective settings:
+
+```bash
+cat gpg-agent.conf
+
+allow-loopback-pinentry
+```
+
+```bash
+cat gpg.conf
+
+use-agent
+pinentry-mode loopback
+```
+
+**The configuration files MUST be located within the `gpg` directory configured in ILIAS.**
+
 ## Interfaces
 
 ### Signature Creation/Verification
