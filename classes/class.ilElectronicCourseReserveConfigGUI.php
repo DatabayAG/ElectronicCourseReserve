@@ -8,7 +8,9 @@ require_once 'Modules/Course/classes/class.ilObjCourse.php';
 /**
  * Class ilElectronicCourseReserveConfigGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilFileSystemGUI, ilGpgFingerPrintInputGUI
- * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI, ilElectronicCourseReserveContentConfigGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveContentConfigGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveDeletionProtocolGUI
  */
 class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
@@ -90,6 +92,11 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             case strtolower('ilElectronicCourseReserveAgreementConfigGUI'):
                 ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveAgreementConfigGUI.php');
                 $this->ctrl->forwardCommand(new ilElectronicCourseReserveAgreementConfigGUI(ilElectronicCourseReservePlugin::getInstance()));
+                break;
+
+            case strtolower('ilElectronicCourseReserveDeletionProtocolGUI'):
+                ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveDeletionProtocolGUI.php');
+                $this->ctrl->forwardCommand(new ilElectronicCourseReserveDeletionProtocolGUI(ilElectronicCourseReservePlugin::getInstance()));
                 break;
 
             case strtolower('ilElectronicCourseReserveContentConfigGUI'):
