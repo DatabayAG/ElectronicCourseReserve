@@ -382,3 +382,38 @@ while ($row = $ilDB->fetchAssoc($res)) {
     );
 }
 ?>
+<#21>
+<?php
+if (!$ilDB->tableExists('ecr_deletion_log')) {
+    $fields = [
+        'crs_ref_id' => [
+            'type' => 'integer',
+            'length' => 4,
+            'notnull' => true
+        ],
+        'folder_ref_id' => [
+            'type' => 'integer',
+            'length' => 4,
+            'notnull' => true
+        ],
+        'deletion_mode' => [
+            'type' => 'text',
+            'length' => 10, // imported/all
+            'notnull' => true
+        ],
+        'deletion_timestamp' => [
+            'type' => 'integer',
+            'length' => 8,
+            'notnull' => true
+        ],
+        'deletion_message' => [
+            'type' => 'clob',
+            'notnull' => false,
+            'default' => null
+        ]
+    ];
+
+    $ilDB->createTable('ecr_deletion_log', $fields);
+    $ilDB->addPrimaryKey('ecr_deletion_log', ['crs_ref_id', 'folder_ref_id']);
+}
+?>
