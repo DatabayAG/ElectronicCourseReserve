@@ -24,8 +24,6 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
      */
     public function __construct()
     {
-        parent::getPluginObject();
-
         if (null === self::$modifier) {
             $this->initModifier();
         }
