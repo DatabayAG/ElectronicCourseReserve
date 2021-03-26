@@ -32,8 +32,10 @@ token_append_obj_title#:#Kurstitel als Query-Parameter übergeben
 token_append_obj_title_info#:#Wenn aktiviert, wird der Titel des Kurses als Query-Parameter ('iltitle') im Link zum Recherchesystem angehängt. Dieser wird dann ebenfalls zur Token-Generierung herangezogen.
 token_append_to_bibl#:#OpenURL in Literaturliste
 token_append_to_bibl_info#:#Wenn aktiviert, werden die für das Recherchesystem relevanten Query-Parameter und das Token an die Links zur Bestandsabfrage von Werken in Literaturlisten angehängt, sofern diese unterhalb von Kursen liegen. Bitte beachten Sie, dass entsprechende Bibliotheken im Bereich <a href="%s" target="_blank" rel="noopener noreferrer"><span style="font-style: italic">Administration » Literaturliste</span></a> konfiguriert sein müssen.
-notification_mail#:#Benachrichtigungs Mail
-notification_mail_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn der Import einzelner XML-Importdateien fehlgeschlagen ist.
+notification_mail_imp#:#Benachrichtigungs Mail (Import)
+notification_mail_imp_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn der Import einzelner XML-Import-Manifest-Dateien fehlgeschlagen ist.
+notification_mail_del#:#Benachrichtigungs Mail (Löschung)
+notification_mail_del_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn das Löschen einzelner XML-Lösch-Manifest-Dateien fehlgeschlagen ist.
 recipients#:#Empfänger
 recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
 import_directory#:#Importverzeichnis

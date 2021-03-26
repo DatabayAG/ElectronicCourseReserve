@@ -32,8 +32,10 @@ token_append_obj_title#:#Append Course Title to Search System URL
 token_append_obj_title_info#:#If enabled, the course title will be appended (as 'iltitle') when building the URL to the search system. It will also be part of the token generation.
 token_append_to_bibl#:#OpenURL in Bibliography
 token_append_to_bibl_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects, if these are used as content in ILIAS courses. Please note that at least one library has to be added in <a href="%s" target="_blank" rel="noopener noreferrer"><span style="font-style: italic">Administration » Bibliography</span></a>.
-notification_mail#:#Notification Mail
-notification_mail_info#:#If activated, an email notification will be sent if an error occurs while importing XML files.
+notification_mail_imp#:#Notification Mail (Import)
+notification_mail_imp_info#:#If activated, an email notification will be sent if an error occurs while processing XML import manifest files.
+notification_mail_del#:#Notification Mail (Deletion)
+notification_mail_del_info#:#If activated, an email notification will be sent if an error occurs while processing XML deletion manifest files.
 recipients#:#Recipients
 recipients_info#:#Please insert the login names of the recipients.
 import_directory#:#Import Directory
