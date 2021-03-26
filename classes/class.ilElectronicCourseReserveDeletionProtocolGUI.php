@@ -18,6 +18,9 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
 
     protected function showProtocol() : void
     {
-        $this->tpl->setContent('Hello World');
+        $this->plugin_object->includeClass('tables/class.ilElectronicCourseReserveDeletionProtocolTableGUI.php');
+        $table = new ilElectronicCourseReserveDeletionProtocolTableGUI($this, 'showProtocol');
+
+        $this->tpl->setContent($table->getHTML());
     }
 }

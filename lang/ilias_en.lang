@@ -67,4 +67,4 @@ err_invalid_login_p#:#The following input does not match any ILIAS user account:
 err_invalid_login_s#:#The following input does not match any ILIAS user account: %s
 metadata#:#Metadata
 agr_accepted_on#:#You accepted the user agreement to use the Electronic Course Reserve on %s
-adm_ecr_tab_del_procotol#:#Löschprotokoll
+adm_ecr_tab_del_protocol#:#Deletion Protocol

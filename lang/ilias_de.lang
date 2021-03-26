@@ -67,4 +67,4 @@ err_invalid_login_p#:#Die folgenden Eingaben entsprechen keinem gültigen ILIAS-
 err_invalid_login_s#:#Die folgende Eingabe entspricht keinem gültigen ILIAS-Benutzerkonto: %s
 metadata#:#Metadata
 agr_accepted_on#:#Sie haben die Vereinbarung zur Nutzung des Elektronischen Semesterapparats zu folgendem Zeitpunkt akzepziert: %s
-adm_ecr_tab_del_procotol#:#Löschprotokoll
+adm_ecr_tab_del_protocol#:#Löschprotokoll

@@ -145,7 +145,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
             '', 'ilElectronicCourseReserveContentConfigGUI'
         );
         $this->tabs->addTarget(
-            'ui_uihk_ecr_adm_ecr_tab_del_procotol',
+            'ui_uihk_ecr_adm_ecr_tab_del_protocol',
             $this->ctrl->getLinkTargetByClass(ilElectronicCourseReserveDeletionProtocolGUI::class),
             '', ilElectronicCourseReserveDeletionProtocolGUI::class
         );
