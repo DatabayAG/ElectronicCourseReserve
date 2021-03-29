@@ -68,3 +68,10 @@ err_invalid_login_s#:#The following input does not match any ILIAS user account:
 metadata#:#Metadata
 agr_accepted_on#:#You accepted the user agreement to use the Electronic Course Reserve on %s
 adm_ecr_tab_del_protocol#:#Deletion Protocol
+adm_ecr_tab_del_column_crs#:#Course
+adm_ecr_tab_del_column_fold#:#Electroni Course Reserve Folder
+adm_ecr_tab_del_column_deletion_datetime#:#Deletetion Datetime
+adm_ecr_tab_del_column_deletion_mode#:#Mode
+adm_ecr_tab_del_column_deletion_mode_all#:All Content
+adm_ecr_tab_del_column_deletion_mode_imported#:#Imported Content Only
+adm_ecr_tab_del_column_deletion_message#:#Message

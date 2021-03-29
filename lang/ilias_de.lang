@@ -68,3 +68,10 @@ err_invalid_login_s#:#Die folgende Eingabe entspricht keinem gültigen ILIAS-Ben
 metadata#:#Metadata
 agr_accepted_on#:#Sie haben die Vereinbarung zur Nutzung des Elektronischen Semesterapparats zu folgendem Zeitpunkt akzepziert: %s
 adm_ecr_tab_del_protocol#:#Löschprotokoll
+adm_ecr_tab_del_column_crs#:#Kurs
+adm_ecr_tab_del_column_fold#:#Semesterapparats-Ordner
+adm_ecr_tab_del_column_deletion_datetime#:#Löschzeitpunkt
+adm_ecr_tab_del_column_deletion_mode#:#Modus
+adm_ecr_tab_del_column_deletion_mode_all#:Alle Inhalte
+adm_ecr_tab_del_column_deletion_mode_imported#:#Nur importierte Inhalte
+adm_ecr_tab_del_column_deletion_message#:#Nachricht
