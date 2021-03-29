@@ -55,6 +55,38 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
         $this->showProtocol();
     }
 
+    /**
+     * @return string
+     */
+    protected function fetchCourseTitleAutocompletionResults()
+    {
+        $this->plugin_object->includeClass('tables/provider/DeletionLogTableProvider.php');
+        $p = new DeletionLogTableProvider($GLOBALS['DIC']->database());
+        $crsTitles = $p->getListOfLoggedObjectTitles(
+            ilUtil::stripSlashes($_GET['term'] ?? ''),
+            'crs'
+        );
+
+        echo json_encode($crsTitles);
+        exit();
+    }
+
+    /**
+     * @return string
+     */
+    protected function fetchFolderTitleAutocompletionResults()
+    {
+        $this->plugin_object->includeClass('tables/provider/DeletionLogTableProvider.php');
+        $p = new DeletionLogTableProvider($GLOBALS['DIC']->database());
+        $crsTitles = $p->getListOfLoggedObjectTitles(
+            ilUtil::stripSlashes($_GET['term'] ?? ''),
+            'fold'
+        );
+
+        echo json_encode($crsTitles);
+        exit();
+    }
+
     protected function showProtocol()
     {
         $this->plugin_object->includeClass('tables/provider/DeletionLogTableProvider.php');

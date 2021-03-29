@@ -75,3 +75,6 @@ adm_ecr_tab_del_column_deletion_mode#:#Modus
 adm_ecr_tab_del_column_deletion_mode_all#:Alle Inhalte
 adm_ecr_tab_del_column_deletion_mode_imported#:#Nur importierte Inhalte
 adm_ecr_tab_del_column_deletion_message#:#Nachricht
+period#:#Zeitraum
+period_from#:#Von
+period_until#:#Bis

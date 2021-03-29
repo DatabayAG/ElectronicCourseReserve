@@ -54,6 +54,31 @@ class DeletionLogTableProvider extends DatabaseProvider
     {
         $where = [];
 
+        if (isset($filter['period']) && is_array($filter['period'])) {
+            $where[] = '(' . implode(' AND ', [
+                'del_log.deletion_timestamp >= ' . $this->db->quote($filter['period']['start'], 'integer'),
+                'del_log.deletion_timestamp <= ' . $this->db->quote($filter['period']['end'], 'integer')
+            ]) . ')';
+        }
+
+        $crsFilterSet = (
+            isset($filter['crs_title']) &&
+            is_string($filter['crs_title']) &&
+            strlen($filter['crs_title']) > 0
+        );
+        if ($crsFilterSet) {
+            $where[] = $this->db->like('crs_od.title', 'text', '%%' . $filter['crs_title'] . '%%');
+        }
+
+        $foldFilterSet = (
+            isset($filter['fold_title']) &&
+            is_string($filter['fold_title']) &&
+            strlen($filter['fold_title']) > 0
+        );
+        if ($foldFilterSet) {
+            $where[] = $this->db->like('fold_od.title', 'text', '%%' . $filter['fold_title'] . '%%');
+        }
+
         return implode(' AND ', $where);
     }
 
@@ -90,6 +115,12 @@ class DeletionLogTableProvider extends DatabaseProvider
                 $params['order_field'] = 'deletion_timestamp';
             }
 
+            if ('crs_title' === $params['order_field']) {
+                $params['order_field'] = 'crs_od.title';
+            } elseif ('fold_title' === $params['order_field']) {
+                $params['order_field'] = 'fold_od.title';
+            }
+
             if (!isset($params['order_direction'])) {
                 $params['order_direction'] = 'ASC';
             } else {
@@ -102,5 +133,42 @@ class DeletionLogTableProvider extends DatabaseProvider
         }
 
         return '';
+    }
+
+    /**
+     * @param string $term
+     * @param string $objectType
+     * @return string[]
+     */
+    public function getListOfLoggedObjectTitles(string $term, string $objectType) : array
+    {
+        $joinColumn = 'ecr_deletion_log.crs_ref_id ';
+        if ('fold' === $objectType) {
+            $joinColumn = 'ecr_deletion_log.folder_ref_id ';
+        }
+
+        $query = '
+			SELECT DISTINCT(od.title)
+			FROM ecr_deletion_log
+			INNER JOIN object_reference oref ON oref.ref_id = ' . $joinColumn . ' AND oref.deleted IS NULL
+			INNER JOIN object_data od ON od.obj_id = oref.obj_id AND od.type = %s
+			INNER JOIN tree ON tree.child = oref.ref_id AND tree = 1
+			WHERE 1 = 1 AND
+		';
+        $query .= $this->db->like('od.title', 'text', '%%' . $term . '%%');
+        $query .= ' ORDER BY od.title DESC';
+
+        $res = $this->db->queryF(
+            $query,
+            ['text'],
+            [$objectType]
+        );
+
+        $values = [];
+        while ($row = $this->db->fetchAssoc($res)) {
+            $values[] = $row['title'];
+        }
+
+        return $values;
     }
 }

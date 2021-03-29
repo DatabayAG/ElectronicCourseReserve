@@ -123,7 +123,43 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
      */
     public function initFilter()
     {
+        $crsTitle = new ilTextInputGUI($this->lng->txt('obj_crs'), 'crs_title');
+        $crsTitle->setDataSource($this->ctrl->getLinkTarget(
+            $this->getParentObject(),
+            'fetchCourseTitleAutocompletionResults',
+            '',
+            true
+        ));
+        $crsTitle->setSize(20);
+        $crsTitle->setSubmitFormOnEnter(true);
+        $this->addFilterItem($crsTitle);
+        $crsTitle->readFromSession();
+        $this->filter['crs_title'] = $crsTitle->getValue();
         
+        $foldTitle = new ilTextInputGUI($this->lng->txt('obj_fold'), 'fold_title');
+        $foldTitle->setDataSource($this->ctrl->getLinkTarget(
+            $this->getParentObject(),
+            'fetchFolderTitleAutocompletionResults',
+            '',
+            true
+        ));
+        $foldTitle->setSize(20);
+        $foldTitle->setSubmitFormOnEnter(true);
+        $this->addFilterItem($foldTitle);
+        $foldTitle->readFromSession();
+        $this->filter['fold_title'] = $foldTitle->getValue();
+
+        $this->tpl->addJavaScript("./Services/Form/js/Form.js");
+        $duration = new ilDateDurationInputGUI($this->parent_obj->getPluginObject()->txt('period'), 'period');
+        $duration->setRequired(true);
+        $duration->setStartText($this->parent_obj->getPluginObject()->txt('period_from'));
+        $duration->setEndText($this->parent_obj->getPluginObject()->txt('period_until'));
+        $duration->setStart(new ilDateTime(strtotime('-1 year', time()), IL_CAL_UNIX));
+        $duration->setEnd(new ilDateTime(time(), IL_CAL_UNIX));
+        $duration->setShowTime(true);
+        $this->addFilterItem($duration, true);
+        $duration->readFromSession();
+        $this->optional_filter['period'] = $duration->getValue();
     }
 
     /**
@@ -149,14 +185,18 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
                 $value = $this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_column_deletion_mode_all');
             }
         } elseif ('crs_title' === $column) {
-            if (!$row['is_crs_deleted']) {
+            if ($row['is_crs_deleted']) {
+                $value = $this->lng->txt('deleted');
+            } else {
                 $value = $this->uiRenderer->render($this->uiFactory->link()->standard(
                     $row[$column],
                     ilLink::_getLink($row['crs_ref_id'], 'crs')
                 ));
             }
         } elseif ('fold_title' === $column) {
-            if (!$row['is_fold_deleted']) {
+            if ($row['is_fold_deleted']) {
+                $value = $this->lng->txt('deleted');
+            } else {
                 $value = $this->uiRenderer->render($this->uiFactory->link()->standard(
                     $row[$column],
                     ilLink::_getLink($row['folder_ref_id'], 'fold')
