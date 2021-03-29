@@ -405,6 +405,39 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     }
 
     /**
+     * @param int $refId
+     * @return bool
+     */
+    public function hasFolderDeletionMessage(int $refId) : bool
+    {
+        global $DIC;
+
+        $query = "
+            SELECT folder_ref_id
+            FROM ecr_deletion_log
+            WHERE deletion_message IS NOT NULL AND TRIM(deletion_message) != ''
+            AND folder_ref_id = " . $DIC->database()->quote($refId, 'integer');
+        $res = $DIC->database()->query($query);
+
+        return $DIC->database()->numRows($res) > 0;
+    }
+
+    /**
+     * @param int $refId
+     * @return string
+     */
+    public function getFolderDeletionMessage(int $refId) : string
+    {
+        global $DIC;
+
+        $query = 'SELECT deletion_message FROM ecr_deletion_log WHERE folder_ref_id = ' . $DIC->database()->quote($refId, 'integer');
+        $res = $DIC->database()->query($query);
+        $row = $DIC->database()->fetchAssoc($res);
+
+        return $row['deletion_message'];
+    }
+
+    /**
      * @param $item_ref_id
      * @return mixed
      */
