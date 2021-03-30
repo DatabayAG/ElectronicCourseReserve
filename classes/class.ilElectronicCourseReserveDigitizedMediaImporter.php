@@ -47,7 +47,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @var string
      */
-    const PATH_TO_XSD = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/xsd/import.xsd';
+    const PATH_TO_IMPORT_XSD = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/xsd/import.xsd';
+
+    /**
+     * @var string
+     */
+    const PATH_TO_DELETE_XSD = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/xsd/deletion.xsd';
 
     /**
      * @var string
@@ -152,16 +157,56 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
             $dir = $this->getImportDir();
             ilUtil::makeDirParents($dir);
+
             $iter = new RegexIterator(
                 new DirectoryIterator($dir),
-                '/(.*).xml/'
+                '/(\d+)\-delete\-(.*?)\-manifest\.xml$/'
             );
             foreach ($iter as $file_info) {
                 ilCronManager::ping($job_id);
 
-                /**
-                 * @var $file_info SplFileInfo
-                 */
+                /** @var $file_info SplFileInfo */
+                if ($file_info->isDir()) {
+                    continue;
+                }
+
+                $pathname = $file_info->getPathname();
+                $filename = $file_info->getFileName();
+
+                $this->logger->info('Found deletion file: ' . $filename);
+                $this->logger->info('Pathname: ' . $pathname);
+
+                $content = @file_get_contents($pathname);
+
+                $valid = $this->validateXmlAgainstXsd($filename, $content, self::PATH_TO_DELETE_XSD);
+                if ($valid === true) {
+                    $this->logger->info('MD5 checksum: ' . md5($content));
+                    $this->logger->info('SHA1 checksum: ' . sha1($content));
+
+                    $this->logger->info('Starting item deletion...');
+
+                    $deletionDocument = new SimpleXMLElement($content);
+
+                    // TODO DELETE
+                    $this->logger->info('...item deletion done.');
+                    
+                    if (!$this->moveXmlToBackupFolder($pathname)) {
+                        $msg = sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
+                        $this->sendMailOnDeletionError($msg);
+                    }
+                } else {
+                    $this->sendMailOnDeletionError($valid, $pathname);
+                }
+            }
+
+            $iter = new RegexIterator(
+                new DirectoryIterator($dir),
+                '/(.*)\.xml$/'
+            );
+            foreach ($iter as $file_info) {
+                ilCronManager::ping($job_id);
+
+                /** @var $file_info SplFileInfo */
                 if ($file_info->isDir()) {
                     continue;
                 }
@@ -184,25 +229,31 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     $parsed_item = $parser->getElectronicCourseReserveContainer();
 
                     if (!in_array($parsed_item->getType(), $this->valid_items)) {
-                        $this->logger->info(sprintf('Type of item (%s) is unknown, skipping item.',
-                            $parsed_item->getType()));
+                        $this->logger->info(sprintf(
+                            'Type of item (%s) is unknown, skipping item.',
+                            $parsed_item->getType()
+                        ));
                         continue;
                     }
 
                     $this->logger->info('Starting item creation...');
                     if ($parsed_item->getType() === self::ITEM_TYPE_FILE) {
                         if (!$this->createFileItem($parsed_item, $content)) {
-                            $msg = sprintf($this->pluginObj->txt('error_create_file_mail'), $parsed_item->getCrsRefId(),
-                                $parsed_item->getFolderImportId());
+                            $msg = sprintf(
+                                $this->pluginObj->txt('error_create_file_mail'),
+                                $parsed_item->getCrsRefId(),
+                                $parsed_item->getFolderImportId()
+                            );
                             $this->sendMailOnError($msg);
                         }
-                    } else {
-                        if ($parsed_item->getType() === self::ITEM_TYPE_URL) {
-                            if (!$this->createWebResourceItem($parsed_item, $content)) {
-                                $msg = sprintf($this->pluginObj->txt('error_create_url_mail'),
-                                    $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
-                                $this->sendMailOnError($msg);
-                            }
+                    } elseif ($parsed_item->getType() === self::ITEM_TYPE_URL) {
+                        if (!$this->createWebResourceItem($parsed_item, $content)) {
+                            $msg = sprintf(
+                                $this->pluginObj->txt('error_create_url_mail'),
+                                $parsed_item->getCrsRefId(),
+                                $parsed_item->getFolderImportId()
+                            );
+                            $this->sendMailOnError($msg);
                         }
                     }
                     $this->logger->info('...item creation done.');
@@ -233,23 +284,34 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @param string $filename
      * @param string $xml_string
+     * @param string $path_to_schema
      * @return bool|string
      */
-    protected function validateXmlAgainstXsd($filename, $xml_string)
+    protected function validateXmlAgainstXsd($filename, $xml_string, $path_to_schema = '')
     {
         $this->logger->info('Started XML validation');
 
         libxml_use_internal_errors(true);
         $xml = new DOMDocument();
         $xml->loadXML($xml_string);
+        
+        if ('' === $path_to_schema) {
+            $path_to_schema = self::PATH_TO_IMPORT_XSD;
+        }
 
-        if (!$xml->schemaValidate(self::PATH_TO_XSD)) {
+        if (!$xml->schemaValidate($path_to_schema)) {
             $errors = libxml_get_errors();
             $error_msg = '';
             foreach ($errors as $error) {
-                $error_msg .= sprintf("\n" . 'XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
-                    $error->message, $error->level, $error->code, $error->file,
-                    $error->line, $error->column);
+                $error_msg .= sprintf(
+                    "\n" . 'XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
+                    $error->message,
+                    $error->level,
+                    $error->code,
+                    $error->file,
+                    $error->line,
+                    $error->column
+                );
             }
             $msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $filename, $error_msg);
             libxml_clear_errors();
@@ -259,6 +321,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
             return $msg;
         }
+
         libxml_clear_errors();
         libxml_use_internal_errors(false);
 
@@ -696,8 +759,33 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     }
 
     /**
-     * @param $msg
-     * @param $attachment
+     * @param string $msg
+     * @param string|null $attachment
+     */
+    protected function sendMailOnDeletionError($msg, $attachment = null)
+    {
+        if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
+            $mail = new ilMimeMail();
+            $mail->From($this->from);
+            $recipients = $this->pluginObj->getSetting('mail_del_recipients');
+            $mail->To($this->getEmailsForRecipients($recipients));
+            $mail->Subject($this->pluginObj->txt(sprintf('error_with_deletion_item')));
+            $mail_text = str_replace(
+                '[BR]',
+                "\n",
+                $this->pluginObj->txt('error_mail_greeting') . $msg . ilMail::_getInstallationSignature()
+            );
+            $mail->Body($mail_text);
+            if ($attachment !== null) {
+                $mail->Attach($attachment);
+            }
+            $mail->Send();
+        }
+    }
+
+    /**
+     * @param string $msg
+     * @param string|null $attachment
      */
     protected function sendMailOnError($msg, $attachment = null)
     {
@@ -706,9 +794,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $mail->From($this->from);
             $recipients = $this->pluginObj->getSetting('mail_recipients');
             $mail->To($this->getEmailsForRecipients($recipients));
-            $mail->Subject($this->pluginObj->txt(sprintf('error_with_import_item', '')));
-            $mail_text = str_replace('[BR]', "\n", $this->pluginObj->txt('error_mail_greeting')
-                . $msg . ilMail::_getInstallationSignature());
+            $mail->Subject($this->pluginObj->txt(sprintf('error_with_import_item')));
+            $mail_text = str_replace(
+                '[BR]',
+                "\n",
+                $this->pluginObj->txt('error_mail_greeting') . $msg . ilMail::_getInstallationSignature()
+            );
             $mail->Body($mail_text);
             if ($attachment !== null) {
                 $mail->Attach($attachment);

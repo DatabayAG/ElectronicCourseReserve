@@ -41,12 +41,12 @@ recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
 import_directory#:#Importverzeichnis
 import_directory_info#:#Bitte tragen Sie hier einen <span style="font-weight: bold">relativen</span> Serverpfad (ausgehend von Ihrem externen ILIAS-Datenverzeichnis) ein, in dem ILIAS die zu importierenden Dateien auslesen soll (z.B. 'esa_import'). Bitte bedenken Sie, dass der Benutzer, in dessen Kontext PHP ausgeführt wird, Leserechte und Schreibrechte auf dieses Verzeichnis benötigt. Die zu imporierenden XML- und Bild-Dateien <span style="font-weight: bold">müssen</span> in diesem Verzeichnis abgelegt werden. ILIAS wird versuchen dieses Verzeichnis beim Speichern zu erstellen, falls dieses noch nicht existiert.<br>Ihr konfigurierter Pfad lautet: <br/>%s
 import_directory_info_perms#:#Das definierte Import-Verzeichnis konnte nicht angelegt werden, oder ILIAS hat keine Lese- und Schreib-Berechtigung auf dieses Verzeichnis.
-error_move_mail#:#Es gab ein problem beim verschieben der Datei "%s" in den Backup Ordner.
+error_move_mail#:#Es gab ein problem beim Verschieben der Datei "%s" in den Backup-Ordner.
 error_create_file_mail#:#Es gab ein Problem beim erzeugen des Datei Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
 error_create_url_mail#:#Es gab ein Problem beim erzeugen des Weblink Objekts für den Kurs mit der Ref-Id %s und der Ordner Import Id id %s. 
 show_description#:#Zeige Beschreibung
 show_image#:#Zeige Icon
-error_with_xml_validation#:#Es gab Probleme beim import von %s. %s
+error_with_xml_validation#:#Es gab Probleme beim Verarbeiten des XML-Manifests von %s. %s
 process_locked#:#Aktuell befindet sich ein Importvorgang in Bearbeitung. Bitte entfernen Sie das Lock wenn Sie sich sicher sind, dass aktuell kein Import ausgeführt wird.
 release_lock#:#Lock Entfernen
 sure_release_lock#:#Sind Sie sicher, dass Sie das Lock entfernen möchten?
@@ -58,7 +58,8 @@ ecr_contents_adm_tbl_head#:#Hier können Sie global für die in ILIAS installier
 ecr_example_url#:#Beispiel-URL 
 ecr_example_url_info#:#Hier sehen Sie einen Beispiel-URL ausgehend von der aktuell vorgenommen Konfiguration. Bitte nutzen Sie diesen Link <span style="font-weight: bold">nicht</span> für verbindliche Bestellungen.
 ecr_accepted_agreement#:#Die Nutzungsvereinbarungen wurden erfolgreich akzeptiert
-error_with_import_item#:#es ist ein Problem beim Import eines Electronic Course Objektes aufgetreten
+error_with_import_item#:#Elektronischer Semesterapparat: Problem beim Verarbeiten eines Import-XML-Manifests
+error_with_deletion_item#:#Elektronischer Semesterapparat: Problem beim Verarbeiten eines Lösch-XML-Manifests
 error_mail_greeting#:#Hallo, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
 ecr_gpg_secret_keys#:#Mögliche Schlüssel

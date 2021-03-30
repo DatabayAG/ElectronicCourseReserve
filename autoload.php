@@ -5,6 +5,6 @@ spl_autoload_register(function ($class) {
     if (file_exists(ilElectronicCourseReservePlugin::getInstance()->getDirectory() . '/classes/' . $path)) {
         ilElectronicCourseReservePlugin::getInstance()->includeClass($path);
     }
-}, true, true);
+});
 
 require_once dirname(__FILE__) . '/libs/composer/vendor/autoload.php';
