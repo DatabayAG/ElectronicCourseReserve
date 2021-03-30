@@ -21,7 +21,7 @@
         <xs:sequence>
             <xs:element type="xs:string" name="message" minOccurs="0"/>
         </xs:sequence>
-        <xs:attribute type="deleteType" name="type" use="required"/>
+        <xs:attribute type="deletionType" name="type" use="required"/>
     </xs:complexType>
 
 </xs:schema>
