@@ -184,10 +184,18 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     $this->logger->info('SHA1 checksum: ' . sha1($content));
 
                     $this->logger->info('Starting item deletion...');
-
+ 
                     $deletionDocument = new SimpleXMLElement($content);
+                    $esaId = trim((string) $deletionDocument['iliasID']);
+                    $deletionMode = trim((string) $deletionDocument->delete['type']);
+                    $deletionMessage = trim((string) $deletionDocument->delete->message);
 
-                    // TODO DELETE
+                    /**
+                     * TODO
+                     * 1. Log to table: ecr_deletion_log
+                     * 2. Delete folder (all items or only imported items)
+                     */
+
                     $this->logger->info('...item deletion done.');
                     
                     if (!$this->moveXmlToBackupFolder($pathname)) {
