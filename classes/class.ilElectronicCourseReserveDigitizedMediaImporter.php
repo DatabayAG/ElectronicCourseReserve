@@ -3,6 +3,10 @@
 
 use ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Purger;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
+use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\PathResolver;
+use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\ErrorFormatter;
+use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\SchemaValidator;
+use ILIAS\Data\Factory as DataTypeFactory;
 
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
 require_once 'Modules/File/classes/class.ilObjFile.php';
@@ -47,12 +51,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @var string
      */
-    const PATH_TO_IMPORT_XSD = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/xsd/import.xsd';
+    const PATH_TO_IMPORT_XSD = 'import.xsd';
 
     /**
      * @var string
      */
-    const PATH_TO_DELETE_XSD = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/xsd/deletion.xsd';
+    const PATH_TO_DELETE_XSD = 'deletion.xsd';
 
     /**
      * @var string
@@ -297,43 +301,31 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      */
     protected function validateXmlAgainstXsd($filename, $xml_string, $path_to_schema = '')
     {
-        $this->logger->info('Started XML validation');
+        $this->logger->info(sprintf('Started XML validation of %s', $filename));
 
-        libxml_use_internal_errors(true);
-        $xml = new DOMDocument();
-        $xml->loadXML($xml_string);
-        
         if ('' === $path_to_schema) {
             $path_to_schema = self::PATH_TO_IMPORT_XSD;
         }
 
-        if (!$xml->schemaValidate($path_to_schema)) {
-            $errors = libxml_get_errors();
-            $error_msg = '';
-            foreach ($errors as $error) {
-                $error_msg .= sprintf(
-                    "\n" . 'XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
-                    $error->message,
-                    $error->level,
-                    $error->code,
-                    $error->file,
-                    $error->line,
-                    $error->column
-                );
-            }
-            $msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $filename, $error_msg);
-            libxml_clear_errors();
-            libxml_use_internal_errors(false);
+        require_once __DIR__ . '/Xml/Schema/Validation/SchemaValidator.php';
+        require_once __DIR__ . '/Xml/Schema/PathResolver.php';
+        require_once __DIR__ . '/Xml/Schema/Validation/ErrorFormatter.php';
+        $schemaValidator = new SchemaValidator(
+            new DataTypeFactory(),
+            new PathResolver(ilElectronicCourseReservePlugin::getInstance()),
+            new ErrorFormatter()
+        );
 
-            $this->logger->info('Finished XML validation');
-
-            return $msg;
-        }
-
-        libxml_clear_errors();
-        libxml_use_internal_errors(false);
+        $validation = $schemaValidator->validate(
+            $xml_string,
+            $path_to_schema
+        );
 
         $this->logger->info('Finished XML validation');
+
+        if (!$validation->result()->isOK()) {
+            return $validation->result()->error();
+        }
 
         return true;
     }
