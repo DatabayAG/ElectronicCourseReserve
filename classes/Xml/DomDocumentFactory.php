@@ -18,7 +18,7 @@ final class DomDocumentFactory
     /**
      * @param string $xml
      * @return DOMDocument
-     * @throws InvalidArgumentException|RuntimeException|DomDocumentFactory
+     * @throws InvalidArgumentException|RuntimeException|UnparseableXmlException
      */
     public function fromString(string $xml) : DOMDocument
     {

@@ -8,8 +8,10 @@ use Exception;
 use ILIAS\Data\Factory as DataTypeFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\DomDocumentFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\PathResolver as SchemaPathResolver;
+use ILIAS\Plugin\VistisSoapApi\Xml\Exceptions\UnparseableXmlException;
 use InvalidArgumentException;
 use LibXMLError;
+use RuntimeException;
 
 /**
  * Class SchemaValidator
@@ -192,6 +194,7 @@ final class SchemaValidator
      * @param string $fallbackNamespaceUri A fallback namespace URI to be used if validation failed
      *      because of a missing namespace in the XML file, e.g. 'http://www.ilias.de/Modules/StudyProgramme/prg/5_1'
      * @return ValidationResult
+     * @throws InvalidArgumentException
      */
     public function validate($xml, string $schemaFile, string $fallbackNamespaceUri = '') : ValidationResult
     {
