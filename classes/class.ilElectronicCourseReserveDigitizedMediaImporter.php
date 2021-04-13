@@ -1,12 +1,12 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\Data\Factory as DataTypeFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Purger;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\PathResolver;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\ErrorFormatter;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\SchemaValidator;
-use ILIAS\Data\Factory as DataTypeFactory;
 
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
 require_once 'Modules/File/classes/class.ilObjFile.php';
@@ -199,6 +199,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                      * 1. Log to table: ecr_deletion_log
                      * 2. Delete folder (all items or only imported items)
                      */
+
+                    // Delete the contents of the folder
+                    //$this->deleteFolder(103);
+                    // Delete only specific (imported) references of a folder
+                    /*$this->deleteFolder(
+                        119,
+                        [120, 121, 123]
+                    );*/
 
                     $this->logger->info('...item deletion done.');
                     
@@ -837,5 +845,64 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $dir = self::IMPORT_DIR;
         }
         return ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * @param int $refId
+     * @param int[]|null $childrenRefIds
+     */
+    public function deleteFolder(int $refId, ?array $childrenRefIds = null) : void
+    {
+        global $DIC;
+
+        $refIdsToDeleteByParent = [];
+
+        // TODO: Check if $refId exists, otherwise, log and handle the issue
+        
+        if (null === $childrenRefIds) {
+            $childrenRefIds = [];
+            foreach ($DIC->repositoryTree()->getChildIds($refId) as $childRefId) {
+                $childrenRefIds[] = $childRefId;
+                $refIdsToDeleteByParent[$refId][] = $childRefId;
+            }
+        } else {
+            foreach ($childrenRefIds as $childRefId) {
+                // TODO: Check if $refId exists, otherwise, log and handle the issue
+                $parents = $DIC->repositoryTree()->getPathId($childRefId, ROOT_FOLDER_ID);
+                $parents = array_filter(array_map('intval', $parents));
+                array_pop($parents); // Remove element itself
+                $is = array_intersect($parents, $childrenRefIds); // Check if parent is to be deleted as well
+                if (count($is) === 0) {
+                    $parentRefId = array_pop($parents);
+                    $refIdsToDeleteByParent[$parentRefId][] = $childRefId;
+                }
+            }
+        }
+
+        $DIC['ilObjDataCache']->preloadReferenceCache($childrenRefIds);
+        $DIC['ilObjDataCache']->preloadReferenceCache(array_keys($refIdsToDeleteByParent));
+
+        foreach ($refIdsToDeleteByParent as $parentRefId => $childRefIds) {
+            $DIC->logger()->root()->info(sprintf(
+                "Delegated deletion request in context of parent reference '%s' (ref_id: %s|obj_id: %s) " .
+                "for children '%s' to ILIAS core process...",
+                $DIC['ilObjDataCache']->lookupTitle($DIC['ilObjDataCache']->lookupObjId($parentRefId)),
+                $parentRefId,
+                $DIC['ilObjDataCache']->lookupObjId($parentRefId),
+                implode(', ', $childRefIds)
+            ));
+
+            try {
+                ilRepUtil::deleteObjects($parentRefId, $childRefIds);
+                if ($DIC->settings()->get('enable_trash')) {
+                    // If the trash is enabled, we have to remove the references afterwards
+                    ilRepUtil::removeObjectsFromSystem($childRefIds);
+                }
+            } catch (Exception $e) {
+                $DIC->logger()->root()->error('Error during object deletion');
+                $DIC->logger()->root()->error($e->getMessage());
+                $DIC->logger()->root()->error($e->getTraceAsString());
+            }
+        }
     }
 }
