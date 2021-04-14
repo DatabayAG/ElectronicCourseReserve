@@ -143,6 +143,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      */
     protected function perform($job_id)
     {
+        global $DIC;
+
         $this->logger->info('Digitized media import script started');
         try {
             $this->ensureUserRelatedPreconditions();
@@ -190,30 +192,74 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     $this->logger->info('Starting item deletion...');
  
                     $deletionDocument = new SimpleXMLElement($content);
-                    $esaId = trim((string) $deletionDocument['iliasID']);
+                    $esaCrsRefId = trim((string) $deletionDocument['iliasID']);
                     $deletionMode = trim((string) $deletionDocument->delete['type']);
                     $deletionMessage = trim((string) $deletionDocument->delete->message);
 
-                    /**
-                     * TODO
-                     * 1. Log to table: ecr_deletion_log
-                     * 2. Delete folder (all items or only imported items)
-                     */
+                    $this->logger->info('Searching folders for iliasID (course)' . $esaCrsRefId);
+                    $crsRefIdsByFolderRefId = $this->pluginObj->getRelevantCourseAndFolderData((int) $esaCrsRefId);
+                    $folderRefIds = array_unique(array_keys($crsRefIdsByFolderRefId));
 
-                    // Delete the contents of the folder
-                    //$this->deleteFolder(103);
-                    // Delete only specific (imported) references of a folder
-                    /*$this->deleteFolder(
-                        119,
-                        [120, 121, 123]
-                    );*/
+                    $unhandledErrors = [];
+
+                    foreach ($folderRefIds as $folderRefId) {
+                        try {
+                            $this->logger->info(sprintf(
+                                'Started deletion process of folder with ref_id %s with mode %s and message %s',
+                                $folderRefId,
+                                $deletionMode,
+                                $deletionMessage ?: '-'
+                            ));
+
+                            $referenceExists = ilObject::_exists($folderRefId, true);
+                            if (!$referenceExists) {
+                                $this->logger->info(sprintf('Folder is already deleted'));
+                                continue;
+                            }
+                            if ($DIC->repositoryTree()->isDeleted($folderRefId)) {
+                                $this->logger->info(sprintf('Folder is already deleted'));
+                                continue;
+                            }
+
+                            if ('all' === $deletionMode) {
+                                $this->deleteFolder($folderRefId);
+                            } else {
+                               $items = $this->pluginObj->getImportedFolderItems($folderRefId);
+                               $itemRefIds = array_map(static function (array $item) : int {
+                                   return (int) $item['ref_id'];
+                               }, $items);
+
+                               $this->deleteFolder($folderRefId, $itemRefIds);
+                            }
+
+                            $this->pluginObj->logDeletion(
+                                (int) $esaCrsRefId,
+                                (int) $folderRefId,
+                                $deletionMode,
+                                $deletionMessage
+                            );
+
+                            $this->pluginObj->deleteFolderItemImportRecords((int) $folderRefId);
+                            $this->pluginObj->deleteFolderImportRecord((int) $folderRefId);
+                        } catch (Exception $e) {
+                            $unhandledErrors[] = $e;
+                            $this->sendMailOnDeletionError($e->getMessage());
+                        } finally {
+                            $this->logger->info(sprintf(
+                                'Finished deletion process of folder with ref_id %s',
+                                $folderRefId
+                            ));
+                        }
+                    }
+
+                    if ($unhandledErrors === []) {
+                        if (!$this->moveXmlToBackupFolder($pathname)) {
+                            $msg = sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
+                            $this->sendMailOnDeletionError($msg);
+                        }
+                    }
 
                     $this->logger->info('...item deletion done.');
-                    
-                    if (!$this->moveXmlToBackupFolder($pathname)) {
-                        $msg = sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
-                        $this->sendMailOnDeletionError($msg);
-                    }
                 } else {
                     $this->sendMailOnDeletionError($valid, $pathname);
                 }
@@ -851,14 +897,13 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param int $refId
      * @param int[]|null $childrenRefIds
      */
-    public function deleteFolder(int $refId, ?array $childrenRefIds = null) : void
+    private function deleteFolder(int $refId, ?array $childrenRefIds = null) : void
     {
         global $DIC;
 
         $refIdsToDeleteByParent = [];
+        $refIdsToBeRemovedFromSystem = [];
 
-        // TODO: Check if $refId exists, otherwise, log and handle the issue
-        
         if (null === $childrenRefIds) {
             $childrenRefIds = [];
             foreach ($DIC->repositoryTree()->getChildIds($refId) as $childRefId) {
@@ -867,7 +912,15 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             }
         } else {
             foreach ($childrenRefIds as $childRefId) {
-                // TODO: Check if $refId exists, otherwise, log and handle the issue
+                $referenceExists = ilObject::_exists($childRefId, true);
+                if (!$referenceExists) {
+                    continue;
+                }
+                if ($DIC->repositoryTree()->isDeleted($childRefId)) {
+                    $refIdsToBeRemovedFromSystem[] = $childRefId;
+                    continue;
+                }
+
                 $parents = $DIC->repositoryTree()->getPathId($childRefId, ROOT_FOLDER_ID);
                 $parents = array_filter(array_map('intval', $parents));
                 array_pop($parents); // Remove element itself
@@ -898,6 +951,16 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     // If the trash is enabled, we have to remove the references afterwards
                     ilRepUtil::removeObjectsFromSystem($childRefIds);
                 }
+            } catch (Exception $e) {
+                $DIC->logger()->root()->error('Error during object deletion');
+                $DIC->logger()->root()->error($e->getMessage());
+                $DIC->logger()->root()->error($e->getTraceAsString());
+            }
+        }
+
+        if ($DIC->settings()->get('enable_trash')) {
+            try {
+                ilRepUtil::removeObjectsFromSystem($refIdsToBeRemovedFromSystem);
             } catch (Exception $e) {
                 $DIC->logger()->root()->error('Error during object deletion');
                 $DIC->logger()->root()->error($e->getMessage());

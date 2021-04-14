@@ -395,13 +395,64 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
                 array('integer'),
                 array($folder_ref_id)
             );
+            $items = [];
             while ($row = $DIC->database()->fetchAssoc($res)) {
                 if (is_array($row) && array_key_exists('ref_id', $row)) {
+                    $items[] = $row;
                     $this->item_data[$row['ref_id']] = $row;
                 }
             }
-            $this->already_queried_folders[$folder_ref_id];
+            $this->already_queried_folders[$folder_ref_id] = $items;
         }
+    }
+
+    public function getImportedFolderItems(int $folderRefId) : array
+    {
+        if (!array_key_exists($folderRefId, $this->already_queried_folders)) {
+            $this->queryFolderData($folderRefId);
+        }
+
+        return $this->already_queried_folders[$folderRefId];
+    }
+
+    public function deleteFolderImportRecord(int $folderRefId)
+    {
+        global $DIC;
+
+        $DIC->database()->manipulateF(
+            'DELETE FROM ecr_folder WHERE ref_id = %s',
+            ['integer'],
+            [$folderRefId]
+        );
+    }
+
+    public function deleteFolderItemImportRecords(int $folderRefId)
+    {
+        global $DIC;
+
+        $DIC->database()->manipulateF(
+            'DELETE FROM ecr_description WHERE folder_ref_id = %s',
+            ['integer'],
+            [$folderRefId]
+        );
+    }
+
+    public function logDeletion(int $crsRefId, int $folderRefId, string $mode, ?string $message)
+    {
+        global $DIC;
+
+        $DIC->database()->replace(
+            'ecr_deletion_log',
+            [
+                'crs_ref_id' => ['integer', $crsRefId],
+                'folder_ref_id' => ['integer', $folderRefId]
+            ],
+            [
+                'deletion_mode' => ['text', $mode],
+                'deletion_timestamp' => ['integer', time()],
+                'deletion_message' => ['clob', $message]
+            ]
+        );
     }
 
     /**
