@@ -60,6 +60,12 @@ class ilElectronicCourseReserveListGUIHelper
                 if (count($matches) > 1 && $matches[1] > 0) {
                     return (int) $matches[1];
                 }
+
+                $re = '/_file_(\d+)(.*?)\.html$/m';
+                preg_match($re, $url_with_ref_id, $matches);
+                if (count($matches) > 1 && $matches[1] > 0) {
+                    return (int) $matches[1];
+                }
             }
         }
         return 0;
