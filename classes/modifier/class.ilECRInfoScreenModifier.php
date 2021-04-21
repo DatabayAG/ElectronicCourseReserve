@@ -72,7 +72,17 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
 
-        $firstInfoScreenSection = $dom->getElementById('infoscreen_section_1');
+        $firstInfoScreenSection  = null;
+        for ($i = 0; $i < 10; $i++) {
+            $elm = $dom->getElementById('infoscreen_section_' . $i);
+            if ($elm) {
+                $firstInfoScreenSection = $elm;
+            }
+        }
+
+        if (!$firstInfoScreenSection) {
+            return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
+        }
 
         $row = $dom->createElement('div');
         $row->setAttribute('class', 'form-group');
