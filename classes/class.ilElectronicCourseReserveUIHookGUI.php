@@ -1,6 +1,8 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\DI\Container;
+
 require_once 'Services/UIComponent/classes/class.ilUIHookPluginGUI.php';
 require_once 'Services/Mail/classes/class.ilMailbox.php';
 
@@ -14,6 +16,8 @@ require_once 'Services/Mail/classes/class.ilMailbox.php';
  */
 class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 {
+    /** @var Container */
+    private $dic;
     /**
      * @var ilECRBaseModifier[]|null
      */
@@ -24,6 +28,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
      */
     public function __construct()
     {
+        global $DIC;
+
+        $this->dic = $DIC;
         parent::getPluginObject();
 
         if (null === self::$modifier) {
@@ -130,8 +137,10 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             $ref_id = (int) $_GET['ref_id'];
             $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
             if ($obj instanceof ilObjCourse &&
-                $ilAccess->checkAccess('read', '',
-                    $obj->getRefId()) && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())) {
+                $ilAccess->checkAccess('read', '', $obj->getRefId()) &&
+                $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()) &&
+                $this->shouldRenderCustomCourseTabs()
+            ) {
                 $ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
                 $DIC->tabs()->addTab(
                     'ecr_tab_title',
@@ -156,6 +165,77 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                 }
             }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function shouldRenderCustomCourseTabs() : bool
+    {
+        $isBlackListedCommandClass = (
+            (
+                $this->isCommandClass(ilObjectCustomUserFieldsGUI::class) &&
+                $this->isOneOfCommands(['editMember', 'saveMember', 'cancelEditMember',])
+            ) || (
+                $this->isCommandClass(ilCourseMembershipGUI::class) &&
+                $this->isOneOfCommands(['printMembers', 'printMembersOutput'])
+            ) ||
+            $this->isCommandClass(ilContainerStartObjectsGUI::class) ||
+            $this->isCommandClass(ilCalendarPresentationGUI::class) ||
+            $this->isCommandClass(ilCalendarCategoryGUI::class) ||
+            $this->isCommandClass(ilPublicUserProfileGUI::class) ||
+            $this->isCommandClass(ilMailMemberSearchGUI::class) || (
+                $this->isOneOfCommands(['create',]) &&
+                $this->isBaseClass(ilRepositoryGUI::class)
+            )
+        );
+
+        return !$isBlackListedCommandClass;
+    }
+
+    /**
+     * @return bool
+     */
+    final public function hasCommandClass() : bool
+    {
+        return isset($this->dic->http()->request()->getQueryParams()['cmdClass']);
+    }
+
+    /**
+     * @param string[] $commands
+     * @return bool
+     */
+    final public function isOneOfCommands(array $commands) : bool
+    {
+        return in_array(
+            strtolower((string) $this->dic->ctrl()->getCmd()),
+            array_map(
+                'strtolower',
+                $commands
+            )
+        );
+    }
+
+    /**
+     * @param string $class
+     * @return bool
+     */
+    final public function isBaseClass(string $class) : bool
+    {
+        $baseClass = (string) ($this->dic->http()->request()->getQueryParams()['baseClass'] ?? '');
+
+        return strtolower($class) === strtolower($baseClass);
+    }
+
+    /**
+     * @param string $class
+     * @return bool
+     */
+    final public function isCommandClass(string $class) : bool
+    {
+        $cmdClass = (string) ($this->dic->http()->request()->getQueryParams()['cmdClass'] ?? '');
+
+        return strtolower($class) === strtolower($cmdClass);
     }
 
     /**
