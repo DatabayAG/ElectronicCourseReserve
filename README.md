@@ -94,6 +94,13 @@ pinentry-mode loopback
 
 **The configuration files MUST be located within the `gpg` directory configured in ILIAS.**
 
+The PHP wrapper for `gpg` requires a running `gpg agent`, which provides interfaces
+via UNIX sockets. Please make sure your file system supports UNIX sockets. If you
+notice any issues, the following links might be useful:
+
+* https://askubuntu.com/questions/777900/how-to-configure-gnupgs-s-gpg-agent-socket-location
+* https://michaelheap.com/gpg-cant-connect-to-the-agent-ipc-connect-call-failed/
+
 ## Interfaces
 
 ### Signature Creation/Verification
