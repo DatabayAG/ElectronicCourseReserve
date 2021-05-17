@@ -44,7 +44,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
         $this->uiRenderer = $DIC->ui()->renderer();
 
         $this->setFormAction($this->ctrl->getFormAction($a_parent_obj, $a_parent_cmd));
-        $this->setTitle($this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_procotol'));
+        $this->setTitle($this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_protocol'));
 
         $this->setRowTemplate($a_parent_obj->getPluginObject()->getDirectory() . '/templates/tpl.row_deletion_protocol.html');
 
