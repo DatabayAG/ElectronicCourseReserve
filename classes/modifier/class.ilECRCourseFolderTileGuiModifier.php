@@ -128,17 +128,32 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                     }
                 }
             }
+
+            $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']//div[@class='card-title']//span[@data-list-item-id]");
+            if ($linkedTitleNodeList->length > 0) {
+                foreach ($linkedTitleNodeList as $linkedTitleNode) {
+                    /** @var $linkedTitleNode DOMElement */
+                    $action = $linkedTitleNode->getAttribute('data-list-item-id');
+                    $matches = null;
+                    if (preg_match('/lg_div_(\d+)_/', $action, $matches)) {
+                        if (!array_key_exists($matches[1], $itemData)) {
+                            continue;
+                        }
+                        $elements[] = $linkedTitleNode->parentNode->parentNode->parentNode;
+                    }
+                }
+            }
         }
 
         $processed = false;
 
         foreach ($elements as $element) {
-            $nodeList = $xpath->query("//ul[@class='dropdown-menu']", $element);
+            $nodeList = $xpath->query(".//ul[@class='dropdown-menu']", $element);
             if ($nodeList->length > 0) {
                 foreach ($nodeList as $node) {
                     foreach ($this->list_gui_helper->actions_to_remove as $key => $action) {
                         $nodesToDelete = $xpath->query(
-                            "//button[contains(@data-action,'cmd=" . $action . "')]",
+                            ".//button[contains(@data-action,'cmd=" . $action . "')]",
                             $node
                         );
                         $this->list_gui_helper->removeAction($nodesToDelete);
