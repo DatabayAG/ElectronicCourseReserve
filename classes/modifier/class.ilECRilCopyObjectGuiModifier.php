@@ -20,9 +20,9 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 
     public function shouldModifyHtml($a_comp, $a_part, $a_par)
     {
-        $cmd_class = ilUtil::stripSlashes($_GET['cmdClass']);
-        $cmd = ilUtil::stripSlashes($_GET['cmd']);
-        if ($cmd_class == 'ilobjectcopygui' && $cmd !== 'initTargetSelection') {
+        $cmd_class = ilUtil::stripSlashes((string) ($_GET['cmdClass'] ?? ''));
+        $cmd = ilUtil::stripSlashes((string) ($_GET['cmd'] ?? ''));
+        if (strtolower($cmd_class) === 'ilobjectcopygui' && $cmd !== 'initTargetSelection') {
             return true;
         }
         return false;
@@ -64,7 +64,7 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
         $node_list = $xpath->query("//li/input[contains(@value,'" . $item_ref_id . "')]");
         $placeholder_div = $dom->createElement('div');
         $placeholder_div->setAttribute('style', 'width:15px');
-        for ($i = 0; $i < count($node_list); $i++) {
+        for ($i = 0, $iMax = count($node_list); $i < $iMax; $i++) {
             $node = $node_list->item($i);
             if ($node !== null) {
                 $node->parentNode->replaceChild($placeholder_div, $node);
@@ -79,13 +79,28 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
      */
     public function removeRadioButton($xpath, $item_ref_id, $dom)
     {
-        $node_list = $xpath->query('//td/input[contains(@name,"cp_options[' . $item_ref_id . '][type]")]');
-        $placeholder_div = $dom->createElement('td');
-        for ($i = 0; $i < count($node_list); $i++) {
+        $node_list = $xpath->query('//input[contains(@name,"cp_options[' . $item_ref_id . '][type]")]');
+        for ($i = 0, $iMax = count($node_list); $i < $iMax; $i++) {
             $node = $node_list->item($i);
             if ($node !== null) {
                 $parent = $node->parentNode;
-                $parent->parentNode->replaceChild($placeholder_div, $parent);
+                $nodesToDelete = [];
+                foreach ($parent->childNodes as $childNode) {
+                    $nodesToDelete[] = $childNode;
+                }
+
+                foreach ($nodesToDelete as $childNode) {
+                    $parent->removeChild($childNode);
+                }
+            }
+        }
+
+        $node_list = $xpath->query('//input[contains(@id,"source_' . $item_ref_id . '")]');
+        for ($i = 0, $iMax = count($node_list); $i < $iMax; $i++) {
+            $node = $node_list->item($i);
+            if ($node !== null) {
+                $parent = $node->parentNode;
+                $parent->removeChild($node);
             }
         }
     }

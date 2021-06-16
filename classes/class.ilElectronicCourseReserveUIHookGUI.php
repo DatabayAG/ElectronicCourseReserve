@@ -45,7 +45,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         $tpl = $DIC->ui()->mainTemplate();
         $ilCtrl = $DIC->ctrl();
 
-        $tpl->getStandardTemplate();
+        $tpl->loadStandardTemplate();
 
         $ilCtrl->saveParameter($this, 'ref_id');
         $next_class = $ilCtrl->getNextClass();
@@ -56,7 +56,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                 $dispatcher = ilECRCommandDispatcher::getInstance($this);
                 $response = $dispatcher->dispatch($ilCtrl->getCmd());
                 $tpl->setContent($response);
-                $tpl->show();
+                $tpl->printToStdOut();
                 break;
         }
     }
@@ -184,6 +184,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             $this->isCommandClass(ilCalendarPresentationGUI::class) ||
             $this->isCommandClass(ilCalendarCategoryGUI::class) ||
             $this->isCommandClass(ilPublicUserProfileGUI::class) ||
+            $this->isCommandClass(self::class) ||
             $this->isCommandClass(ilMailMemberSearchGUI::class) || (
                 $this->isOneOfCommands(['create',]) &&
                 $this->isBaseClass(ilRepositoryGUI::class)

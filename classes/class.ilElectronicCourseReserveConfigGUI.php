@@ -249,7 +249,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             'url_search_system');
         $searchSystemUrl->setDisabled($disabled);
         $searchSystemUrl->setRequired(true);
-        $searchSystemUrl->setValidationRegexp('/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/');
+        $searchSystemUrl->setValidationRegexp('/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/');
         $searchSystemUrl->setValidationFailureMessage($this->getPluginObject()->txt('ecr_url_search_system_invalid'));
         $searchSystemUrl->setInfo($this->getPluginObject()->txt('ecr_url_search_system_info'));
 

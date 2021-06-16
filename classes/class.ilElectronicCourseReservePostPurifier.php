@@ -37,7 +37,7 @@ class ilElectronicCourseReservePostPurifier extends ilHtmlPurifierAbstractLibWra
      * @return    HTMLPurifier_Config Instance of HTMLPurifier_Config
      *
      */
-    protected function getPurifierConfigInstance()
+    protected function getPurifierConfigInstance() : HTMLPurifier_Config
     {
         include_once 'Services/AdvancedEditing/classes/class.ilObjAdvancedEditing.php';
 

@@ -19,9 +19,6 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
     /** @var Renderer */
     protected $uiRenderer;
 
-    /** @var ilCtrl */
-    protected $ctrl;
-
     /** @var ilLogger */
     protected $log;
 
