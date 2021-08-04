@@ -221,8 +221,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                                 continue;
                             }
 
+                            $itemRefIds = null;
                             if ('all' === $deletionMode) {
-                                $this->deleteFolder($folderRefId);
+                                $this->deleteFolder($folderRefId, null);
                             } else {
                                $items = $this->pluginObj->getImportedFolderItems($folderRefId);
                                $itemRefIds = array_map(static function (array $item) : int {
@@ -239,8 +240,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                                 $deletionMessage
                             );
 
-                            $this->pluginObj->deleteFolderItemImportRecords((int) $folderRefId);
-                            $this->pluginObj->deleteFolderImportRecord((int) $folderRefId);
+                            $this->pluginObj->deleteFolderItemImportRecords((int) $folderRefId, $itemRefIds);
                         } catch (Exception $e) {
                             $unhandledErrors[] = $e;
                             $this->sendMailOnDeletionError($e->getMessage());
@@ -279,6 +279,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
                 $pathname = $file_info->getPathname();
                 $filename = $file_info->getFileName();
+
+                if (preg_match('/(\d+)\-delete\-(.*?)\-manifest\.xml$/', $pathname)) {
+                    continue;
+                }
 
                 $this->logger->info('Found file to import: ' . $filename);
                 $this->logger->info('Pathname: ' . $pathname);
@@ -765,7 +769,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
         $crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
         if ($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && !ilObject::_isInTrash($crs_ref_id)) {
-            $this->logger->info(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
+            $this->logger->info(sprintf('Found course for ref_id %s, looking for folder.', $crs_ref_id));
             $folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id_prefix);
             if ($folder_obj_id === 0) {
                 $this->logger->info(sprintf('Folder with Import id (%s) not found creating new folder.',

@@ -417,3 +417,96 @@ if (!$ilDB->tableExists('ecr_deletion_log')) {
     $ilDB->addPrimaryKey('ecr_deletion_log', ['crs_ref_id', 'folder_ref_id']);
 }
 ?>
+<#22>
+<?php
+if ($ilDB->tableExists('ecr_deletion_log') && !$ilDB->tableColumnExists('ecr_deletion_log', 'log_id')) {
+    $ilDB->addTableColumn(
+        'ecr_deletion_log',
+        'log_id',
+        [
+            'type' => 'text',
+            'length' => 255,
+            'notnull' => false,
+            'default' => null
+        ]
+    );
+}
+?>
+<#23>
+<?php
+if ($ilDB->tableExists('ecr_deletion_log') && $ilDB->tableColumnExists('ecr_deletion_log', 'log_id')) {
+    $uuid = static function() {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            // 32 bits for "time_low"
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            // 16 bits for "time_mid"
+            mt_rand(0, 0xffff),
+            // 16 bits for "time_high_and_version",
+            // four most significant bits holds version number 4
+            mt_rand(0, 0x0fff) | 0x4000,
+            // 16 bits, 8 bits for "clk_seq_hi_res",
+            // 8 bits for "clk_seq_low",
+            // two most significant bits holds zero and one for variant DCE1.1
+            mt_rand(0, 0x3fff) | 0x8000,
+            // 48 bits for "node"
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
+    };
+
+    $res = $ilDB->query('SELECT * FROM ecr_deletion_log WHERE log_id IS NULL');
+    while ($row = $ilDB->fetchAssoc($res)) {
+        $ilDB->manipulateF(
+            'UPDATE ecr_deletion_log SET log_id = %s WHERE crs_ref_id = %s AND folder_ref_id = %s',
+            ['text', 'integer', 'integer'],
+            [$uuid(), $row['crs_ref_id'], $row['folder_ref_id']]
+        );
+    }
+}
+?>
+<#24>
+<?php
+if ($ilDB->tableExists('ecr_deletion_log')) {
+    $ilDB->dropPrimaryKey("ecr_deletion_log");
+}
+?>
+<#25>
+<?php
+if ($ilDB->tableExists('ecr_deletion_log') && $ilDB->tableColumnExists('ecr_deletion_log', 'log_id')) {
+    $ilDB->addPrimaryKey(
+        'ecr_deletion_log',
+        ['log_id']
+    );
+}
+?>
+<#26>
+<?php
+if ($ilDB->tableExists('ecr_deletion_log') && !$ilDB->tableColumnExists('ecr_deletion_log', 'deletion_timestamp_ms')) {
+    $ilDB->addTableColumn(
+        'ecr_deletion_log',
+        'deletion_timestamp_ms',
+        [
+            'type' => 'integer',
+            'length' => 8,
+            'notnull' => true,
+            'default' => 0
+        ]
+    );
+    $ilDB->manipulate('UPDATE ecr_deletion_log SET deletion_timestamp_ms = (deletion_timestamp * 100)');
+}
+?>
+<#27>
+<?php
+$ilDB->addIndex('ecr_deletion_log', ['crs_ref_id'], 'i1');
+?>
+<#28>
+<?php
+$ilDB->addIndex('ecr_deletion_log', ['folder_ref_id'], 'i2');
+?>
+<#29>
+<?php
+$ilDB->addIndex('ecr_deletion_log', ['folder_ref_id', 'deletion_timestamp_ms'], 'i3');
+?>

@@ -426,31 +426,64 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         );
     }
 
-    public function deleteFolderItemImportRecords(int $folderRefId)
+    public function deleteFolderItemImportRecords(int $folderRefId, ?array $itemRefIds)
     {
         global $DIC;
 
-        $DIC->database()->manipulateF(
-            'DELETE FROM ecr_description WHERE folder_ref_id = %s',
-            ['integer'],
-            [$folderRefId]
-        );
+        if (null === $itemRefIds) {
+            $DIC->database()->manipulateF(
+                'DELETE FROM ecr_description WHERE folder_ref_id = %s',
+                ['integer'],
+                [$folderRefId]
+            );
+        } else {
+            $DIC->database()->manipulateF(
+                'DELETE FROM ecr_description WHERE folder_ref_id = %s AND ' . $DIC->database()->in('ref_id', $itemRefIds, false, 'integer'),
+                ['integer'],
+                [$folderRefId]
+            );
+        }
     }
 
-    public function logDeletion(int $crsRefId, int $folderRefId, string $mode, ?string $message)
-    {
+    public function logDeletion(
+        int $crsRefId,
+        int $folderRefId,
+        string $mode,
+        ?string $message
+    ) {
         global $DIC;
 
-        $DIC->database()->replace(
+        $uuid = static function() {
+            return sprintf(
+                '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                // 32 bits for "time_low"
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff),
+                // 16 bits for "time_mid"
+                mt_rand(0, 0xffff),
+                // 16 bits for "time_high_and_version",
+                // four most significant bits holds version number 4
+                mt_rand(0, 0x0fff) | 0x4000,
+                // 16 bits, 8 bits for "clk_seq_hi_res",
+                // 8 bits for "clk_seq_low",
+                // two most significant bits holds zero and one for variant DCE1.1
+                mt_rand(0, 0x3fff) | 0x8000,
+                // 48 bits for "node"
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff)
+            );
+        };
+
+        $DIC->database()->insert(
             'ecr_deletion_log',
             [
+                'log_id' => ['integer', $uuid()],
                 'crs_ref_id' => ['integer', $crsRefId],
-                'folder_ref_id' => ['integer', $folderRefId]
-            ],
-            [
+                'folder_ref_id' => ['integer', $folderRefId],
                 'deletion_mode' => ['text', $mode],
                 'deletion_timestamp' => ['integer', time()],
-                'deletion_message' => ['clob', $message]
+                'deletion_message' => ['clob', $message],
             ]
         );
     }
@@ -481,7 +514,15 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     {
         global $DIC;
 
-        $query = 'SELECT deletion_message FROM ecr_deletion_log WHERE folder_ref_id = ' . $DIC->database()->quote($refId, 'integer');
+        $query = '
+            SELECT deletion_message
+            FROM ecr_deletion_log
+            INNER JOIN (
+                SELECT folder_ref_id, MAX(deletion_timestamp_ms) deletion_timestamp_ms
+                FROM ecr_deletion_log
+                WHERE folder_ref_id = ' . $DIC->database()->quote($refId, 'integer') . '
+                GROUP BY folder_ref_id
+            ) tmp ON ecr_deletion_log.folder_ref_id = tmp.folder_ref_id AND ecr_deletion_log.deletion_timestamp_ms = tmp.deletion_timestamp_ms';
         $res = $DIC->database()->query($query);
         $row = $DIC->database()->fetchAssoc($res);
 
