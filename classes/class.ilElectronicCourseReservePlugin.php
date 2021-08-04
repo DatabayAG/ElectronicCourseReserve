@@ -483,6 +483,10 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
                 'folder_ref_id' => ['integer', $folderRefId],
                 'deletion_mode' => ['text', $mode],
                 'deletion_timestamp' => ['integer', time()],
+                'deletion_timestamp_ms' => ['integer', (static function () {
+                    list($usec, $sec) = explode(' ', microtime());
+                    return (int) ((int) $sec * 1000 + ((float) $usec * 1000));
+                })()],
                 'deletion_message' => ['clob', $message],
             ]
         );
