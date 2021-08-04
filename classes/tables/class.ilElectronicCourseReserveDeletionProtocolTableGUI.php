@@ -180,8 +180,9 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
         } elseif ('deletion_message' === $column) {
             $value = ilUtil::prepareFormOutput($value);
         } elseif ('deletion_mode' === $column) {
+            $mode = $value;
             $value = $this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_column_deletion_mode_imported');
-            if ('all' === strtolower($value)) {
+            if ('all' === strtolower($mode)) {
                 $value = $this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_column_deletion_mode_all');
             }
         } elseif ('crs_title' === $column) {
