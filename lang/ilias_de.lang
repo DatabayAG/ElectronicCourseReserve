@@ -35,7 +35,8 @@ token_append_to_bibl_info#:#Wenn aktiviert, werden die für das Recherchesystem 
 notification_mail_imp#:#Benachrichtigungs Mail (Import)
 notification_mail_imp_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn der Import einzelner XML-Import-Manifest-Dateien fehlgeschlagen ist.
 notification_mail_del#:#Benachrichtigungs Mail (Löschung)
-notification_mail_del_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung, wenn das Löschen einzelner XML-Lösch-Manifest-Dateien fehlgeschlagen ist.
+notification_mail_del_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung beim Verarbeiten von Lösch-Manifesten, unabhängig davon ob bei der Verarbeitung ein Fehler aufgetreten ist oder das XML-Dokument erfolgreich verarbeitet werden konnte.
+mail_del_processed_without_errors#:#Das Lösch-Manifest '%s' wurde erfolgreich verarbeitet.
 recipients#:#Empfänger
 recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
 import_directory#:#Importverzeichnis
@@ -60,6 +61,7 @@ ecr_example_url_info#:#Hier sehen Sie einen Beispiel-URL ausgehend von der aktue
 ecr_accepted_agreement#:#Die Nutzungsvereinbarungen wurden erfolgreich akzeptiert
 error_with_import_item#:#Elektronischer Semesterapparat: Problem beim Verarbeiten eines Import-XML-Manifests
 error_with_deletion_item#:#Elektronischer Semesterapparat: Problem beim Verarbeiten eines Lösch-XML-Manifests
+success_with_deletion_item#:#Elektronischer Semesterapparat: Lösch-XML-Manifest erfolgreich verarbeitet
 error_mail_greeting#:#Hallo, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
 ecr_gpg_secret_keys#:#Mögliche Schlüssel

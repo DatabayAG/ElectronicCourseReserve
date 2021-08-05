@@ -35,7 +35,8 @@ token_append_to_bibl_info#:#If enabled, the query parameters and the token for t
 notification_mail_imp#:#Notification Mail (Import)
 notification_mail_imp_info#:#If activated, an email notification will be sent if an error occurs while processing XML import manifest files.
 notification_mail_del#:#Notification Mail (Deletion)
-notification_mail_del_info#:#If activated, an email notification will be sent if an error occurs while processing XML deletion manifest files.
+notification_mail_del_info#:#If activated, an email notification will be sent when processing XML deletion manifests.
+mail_del_processed_without_errors#:#The XML deletion manifest '%s' has been successfully processed.
 recipients#:#Recipients
 recipients_info#:#Please insert the login names of the recipients.
 import_directory#:#Import Directory
@@ -60,6 +61,7 @@ ecr_example_url_info#:#This is an example URL based on the current configuration
 ecr_accepted_agreement#:#The user agreement has been accepted.
 error_with_import_item#:#Electronic Course Reserve: Problem while processing import XML manifest
 error_with_deletion_item#:#Electronic Course Reserve: Problem while processing deletion XML manifest
+success_with_deletion_item#:#Electronic Course Reserve: Successfully processed deletion XML manifest
 error_mail_greeting#:#Hello, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
 ecr_gpg_secret_keys#:#Possible Keys
