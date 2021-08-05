@@ -253,7 +253,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     }
 
                     if ($unhandledErrors === []) {
-                        if (!$this->moveXmlToBackupFolder($pathname)) {
+                        if ($this->moveXmlToBackupFolder($pathname)) {
+                            $msg = sprintf($this->pluginObj->txt('mail_del_processed_without_errors'), $pathname);
+                            $this->sendMailOnDeletionSuccess($msg);
+                        } else {
                             $msg = sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
                             $this->sendMailOnDeletionError($msg);
                         }
@@ -837,6 +840,24 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             if ($attachment !== null) {
                 $mail->Attach($attachment);
             }
+            $mail->Send();
+        }
+    }
+
+    protected function sendMailOnDeletionSuccess(string $msg)
+    {
+        if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
+            $mail = new ilMimeMail();
+            $mail->From($this->from);
+            $recipients = $this->pluginObj->getSetting('mail_del_recipients');
+            $mail->To($this->getEmailsForRecipients($recipients));
+            $mail->Subject($this->pluginObj->txt(sprintf('success_with_deletion_item')));
+            $mail_text = str_replace(
+                '[BR]',
+                "\n",
+                $this->pluginObj->txt('error_mail_greeting') . $msg . ilMail::_getInstallationSignature()
+            );
+            $mail->Body($mail_text);
             $mail->Send();
         }
     }
