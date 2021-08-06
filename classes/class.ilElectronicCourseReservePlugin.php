@@ -478,7 +478,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         $DIC->database()->insert(
             'ecr_deletion_log',
             [
-                'log_id' => ['integer', $uuid()],
+                'log_id' => ['text', $uuid()],
                 'crs_ref_id' => ['integer', $crsRefId],
                 'folder_ref_id' => ['integer', $folderRefId],
                 'deletion_mode' => ['text', $mode],
