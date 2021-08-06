@@ -18,6 +18,7 @@ class DeletionLogTableProvider extends DatabaseProvider
             'del_log.deletion_mode',
             'del_log.deletion_timestamp',
             'del_log.deletion_message',
+            'del_log.metadata result',
             'del_log.crs_ref_id',
             'del_log.folder_ref_id',
             'crs_od.title crs_title',

@@ -37,6 +37,11 @@ notification_mail_imp_info#:#Wenn aktiviert, erhalten die hier konfigurierten IL
 notification_mail_del#:#Benachrichtigungs Mail (Löschung)
 notification_mail_del_info#:#Wenn aktiviert, erhalten die hier konfigurierten ILIAS-Benutzerkonten eine Benachrichtigung beim Verarbeiten von Lösch-Manifesten, unabhängig davon ob bei der Verarbeitung ein Fehler aufgetreten ist oder das XML-Dokument erfolgreich verarbeitet werden konnte.
 mail_del_processed_without_errors#:#Das Lösch-Manifest '%s' wurde erfolgreich verarbeitet.
+mail_del_processed_with_partial_errors#:#Das Lösch-Manifest '%s' wurde teilweise erfolgreich verarbeitet.
+mail_del_folder_header#:#Ergebnis für Ordner '%s':
+mail_del_folder_metric_num_obj_bd#:#Anzahl Objekte vor dem Löschen: %s
+mail_del_folder_metric_num_obj_ad#:#Anzahl Objekte nach dem Löschen: %s
+mail_del_folder_metric_num_obj_d#:#Anzahl gelöschter Objekte: %s
 recipients#:#Empfänger
 recipients_info#:#Bitte die Benutzernamen der gewünschten Empfänger eintragen.
 import_directory#:#Importverzeichnis
@@ -71,6 +76,7 @@ err_invalid_login_s#:#Die folgende Eingabe entspricht keinem gültigen ILIAS-Ben
 metadata#:#Metadata
 agr_accepted_on#:#Sie haben die Vereinbarung zur Nutzung des Elektronischen Semesterapparats zu folgendem Zeitpunkt akzepziert: %s
 adm_ecr_tab_del_protocol#:#Löschprotokoll
+adm_ecr_tab_del_column_result#:#Ergebnis
 adm_ecr_tab_del_column_crs#:#Kurs
 adm_ecr_tab_del_column_fold#:#Semesterapparats-Ordner
 adm_ecr_tab_del_column_deletion_datetime#:#Löschzeitpunkt
@@ -78,6 +84,9 @@ adm_ecr_tab_del_column_deletion_mode#:#Modus
 adm_ecr_tab_del_column_deletion_mode_all#:#Alle Inhalte
 adm_ecr_tab_del_column_deletion_mode_imported#:#Nur importierte Inhalte
 adm_ecr_tab_del_column_deletion_message#:#Nachricht
+del_folder_metric_num_obj_bd#:#Anzahl Objekte vor dem Löschen
+del_folder_metric_num_obj_ad#:#Anzahl Objekte nach dem Löschen
+del_folder_metric_num_obj_d#:#Anzahl gelöschter Objekte
 period#:#Zeitraum
 period_from#:#Von
 period_until#:#Bis

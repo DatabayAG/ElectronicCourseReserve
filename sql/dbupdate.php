@@ -407,7 +407,7 @@ if (!$ilDB->tableExists('ecr_deletion_log')) {
             'notnull' => true
         ],
         'deletion_message' => [
-            'type' => 'clob',
+            'type' => 'blob',
             'notnull' => false,
             'default' => null
         ]
@@ -509,4 +509,32 @@ $ilDB->addIndex('ecr_deletion_log', ['folder_ref_id'], 'i2');
 <#29>
 <?php
 $ilDB->addIndex('ecr_deletion_log', ['folder_ref_id', 'deletion_timestamp_ms'], 'i3');
+?>
+<#30>
+<?php
+if ($ilDB->tableExists('ecr_deletion_log')) {
+    $ilDB->addTableColumn(
+        'ecr_deletion_log',
+        'metadata',
+        [
+            'type' => 'blob',
+            'notnull' => false,
+            'default' => null,
+        ]
+    );
+}
+?>
+<#31>
+<?php
+if ($ilDB->tableExists('ecr_deletion_log') && $ilDB->tableColumnExists('ecr_deletion_log', 'deletion_message')) {
+    $ilDB->modifyTableColumn(
+        'ecr_deletion_log',
+        'deletion_message',
+        [
+            'type' => 'blob',
+            'notnull' => false,
+            'default' => null,
+        ]
+    );
+}
 ?>

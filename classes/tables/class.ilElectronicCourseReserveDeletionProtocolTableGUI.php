@@ -94,7 +94,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
             'default' => true,
             'optional' => false,
             'sortable' => true,
-            'width' => '20%',
+            'width' => '10%',
         ];
         $columns[++$i] = [
             'field' => 'deletion_mode',
@@ -102,11 +102,19 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
             'default' => true,
             'optional' => false,
             'sortable' => true,
-            'width' => '20%',
+            'width' => '10%',
         ];
         $columns[++$i] = [
             'field' => 'deletion_message',
             'txt' => $this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_column_deletion_message'),
+            'default' => false,
+            'optional' => true,
+            'sortable' => false,
+            'width' => '20%',
+        ];
+        $columns[++$i] = [
+            'field' => 'result',
+            'txt' => $this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_column_result'),
             'default' => false,
             'optional' => true,
             'sortable' => false,
@@ -202,6 +210,18 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
                     $row[$column],
                     ilLink::_getLink($row['folder_ref_id'], 'fold')
                 ));
+            }
+        } elseif ('result' === $column) {
+            if ((string) $value !== '') {
+                global $DIC;
+
+                $result = json_decode($value);
+
+                $value = $DIC->ui()->renderer()->render($DIC->ui()->factory()->listing()->descriptive([
+                    $this->parent_obj->getPluginObject()->txt('del_folder_metric_num_obj_bd') => (string) count($result->itemsBeforeDeletion),
+                    $this->parent_obj->getPluginObject()->txt('del_folder_metric_num_obj_ad') => (string) count($result->itemsAfterDeletion),
+                    $this->parent_obj->getPluginObject()->txt('del_folder_metric_num_obj_ad') => (string) (count($result->itemsBeforeDeletion) - count($result->itemsAfterDeletion)),
+                ]));
             }
         }
 

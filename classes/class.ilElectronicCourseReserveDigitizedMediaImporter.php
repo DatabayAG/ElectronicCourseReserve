@@ -200,8 +200,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     $crsRefIdsByFolderRefId = $this->pluginObj->getRelevantCourseAndFolderData((int) $esaCrsRefId);
                     $folderRefIds = array_unique(array_keys($crsRefIdsByFolderRefId));
 
-                    $unhandledErrors = [];
-
+                    $deletionErrors = [];
+                    $partialSuccesses = [];
                     foreach ($folderRefIds as $folderRefId) {
                         try {
                             $this->logger->info(sprintf(
@@ -221,28 +221,40 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                                 continue;
                             }
 
+                            $partialSuccesses[$folderRefId] = new stdClass();
+                            $partialSuccesses[$folderRefId]->ref_id = $folderRefId;
+                            $partialSuccesses[$folderRefId]->title = ilObject::_lookupTitle(
+                                ilObject::_lookupObjId($folderRefId)
+                            );
+
                             $itemRefIds = null;
+
+                            $folderNode = $DIC->repositoryTree()->getNodeData($folderRefId);
+                            $partialSuccesses[$folderRefId]->itemsBeforeDeletion = $DIC->repositoryTree()->getSubTree($folderNode);
                             if ('all' === $deletionMode) {
                                 $this->deleteFolder($folderRefId, null);
                             } else {
-                               $items = $this->pluginObj->getImportedFolderItems($folderRefId);
-                               $itemRefIds = array_map(static function (array $item) : int {
-                                   return (int) $item['ref_id'];
-                               }, $items);
+                                $items = $this->pluginObj->getImportedFolderItems($folderRefId);
+                                $itemRefIds = array_map(static function (array $item) : int {
+                                    return (int) $item['ref_id'];
+                                }, $items);
 
-                               $this->deleteFolder($folderRefId, $itemRefIds);
+                                $this->deleteFolder($folderRefId, $itemRefIds);
                             }
+                            $partialSuccesses[$folderRefId]->itemsAfterDeletion = $DIC->repositoryTree()->getSubTree($folderNode);
 
                             $this->pluginObj->logDeletion(
                                 (int) $esaCrsRefId,
                                 (int) $folderRefId,
                                 $deletionMode,
-                                $deletionMessage
+                                $deletionMessage,
+                                json_encode($partialSuccesses[$folderRefId])
                             );
 
                             $this->pluginObj->deleteFolderItemImportRecords((int) $folderRefId, $itemRefIds);
+                            $partialSuccesses[$folderRefId]->finished = true;
                         } catch (Exception $e) {
-                            $unhandledErrors[] = $e;
+                            $deletionErrors[] = $e;
                             $this->sendMailOnDeletionError($e->getMessage());
                         } finally {
                             $this->logger->info(sprintf(
@@ -252,19 +264,28 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                         }
                     }
 
-                    if ($unhandledErrors === []) {
+                    $partialSuccesses = array_filter(
+                        $partialSuccesses,
+                        static function (stdClass $deletionProtocol) : bool {
+                            return property_exists($deletionProtocol, 'finished') && $deletionProtocol->finished === true;
+                        }
+                    );
+                    if ($deletionErrors === []) {
                         if ($this->moveXmlToBackupFolder($pathname)) {
                             $msg = sprintf($this->pluginObj->txt('mail_del_processed_without_errors'), $pathname);
-                            $this->sendMailOnDeletionSuccess($msg);
+                            $this->sendMailOnDeletionSuccess($msg, $partialSuccesses);
                         } else {
                             $msg = sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
-                            $this->sendMailOnDeletionError($msg);
+                            $this->sendMailOnDeletionError($msg, $partialSuccesses);
                         }
+                    } elseif ($partialSuccesses !== []) {
+                        $msg = sprintf($this->pluginObj->txt('mail_del_processed_with_partial_errors'), $pathname);
+                        $this->sendMailOnDeletionSuccess($msg, $partialSuccesses);
                     }
 
                     $this->logger->info('...item deletion done.');
                 } else {
-                    $this->sendMailOnDeletionError($valid, $pathname);
+                    $this->sendMailOnDeletionError($valid, null, $pathname);
                 }
             }
 
@@ -819,11 +840,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         return 0;
     }
 
-    /**
-     * @param string $msg
-     * @param string|null $attachment
-     */
-    protected function sendMailOnDeletionError($msg, $attachment = null)
+    protected function sendMailOnDeletionError(string $msg,  ?array $deletionProtocols = null, string $attachment = null)
     {
         if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
             $mail = new ilMimeMail();
@@ -834,9 +851,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $mail_text = str_replace(
                 '[BR]',
                 "\n",
-                $this->pluginObj->txt('error_mail_greeting') . $msg . ilMail::_getInstallationSignature()
+                $this->pluginObj->txt('error_mail_greeting') . $msg
             );
-            $mail->Body($mail_text);
+            $this->renderMailDeletionProtocol($deletionProtocols, $mail_text);
+            $mail->Body($mail_text . ilMail::_getInstallationSignature());
             if ($attachment !== null) {
                 $mail->Attach($attachment);
             }
@@ -844,7 +862,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         }
     }
 
-    protected function sendMailOnDeletionSuccess(string $msg)
+    protected function sendMailOnDeletionSuccess(string $msg, array $deletionProtocols)
     {
         if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
             $mail = new ilMimeMail();
@@ -855,10 +873,40 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $mail_text = str_replace(
                 '[BR]',
                 "\n",
-                $this->pluginObj->txt('error_mail_greeting') . $msg . ilMail::_getInstallationSignature()
+                $this->pluginObj->txt('error_mail_greeting') . $msg 
             );
-            $mail->Body($mail_text);
+            $this->renderMailDeletionProtocol($deletionProtocols, $mail_text);
+            $mail->Body($mail_text . ilMail::_getInstallationSignature());
             $mail->Send();
+        }
+    }
+
+    protected function renderMailDeletionProtocol(array $deletionProtocols, string &$mail_text)
+    {
+        if ($deletionProtocols !== []) {
+            $mail_text .= "\n";
+            foreach ($deletionProtocols as $deletionProtocol) {
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_header'),
+                    $deletionProtocol->title
+                );
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_metric_num_obj_bd'),
+                    count($deletionProtocol->itemsBeforeDeletion)
+                );
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_metric_num_obj_ad'),
+                    count($deletionProtocol->itemsAfterDeletion)
+                );
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_metric_num_obj_d'),
+                    count($deletionProtocol->itemsBeforeDeletion) - count($deletionProtocol->itemsAfterDeletion)
+                );
+            }
         }
     }
 

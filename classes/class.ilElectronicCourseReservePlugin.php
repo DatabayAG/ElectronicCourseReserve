@@ -449,7 +449,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         int $crsRefId,
         int $folderRefId,
         string $mode,
-        ?string $message
+        ?string $message,
+        ?string $metadata
     ) {
         global $DIC;
 
@@ -487,7 +488,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
                     list($usec, $sec) = explode(' ', microtime());
                     return (int) ((int) $sec * 1000 + ((float) $usec * 1000));
                 })()],
-                'deletion_message' => ['clob', $message],
+                'deletion_message' => ['blob', $message],
+                'metadata' => ['blob', $metadata],
             ]
         );
     }
