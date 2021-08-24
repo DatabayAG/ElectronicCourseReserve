@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="semesterapparat" type="semesterapparatType"/>
+
+    <xs:complexType name="semesterapparatType">
+        <xs:sequence>
+            <xs:element type="deleteType" name="delete"/>
+        </xs:sequence>
+        <xs:attribute type="xs:int" name="iliasID" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="deletionType" final="restriction">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="imported"/>
+            <xs:enumeration value="all"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="deleteType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="message" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute type="deletionType" name="type" use="required"/>
+    </xs:complexType>
+
+</xs:schema>

@@ -1,8 +1,12 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\Data\Factory as DataTypeFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Purger;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
+use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\PathResolver;
+use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\ErrorFormatter;
+use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\SchemaValidator;
 
 require_once 'Modules/Course/classes/class.ilObjCourse.php';
 require_once 'Modules/File/classes/class.ilObjFile.php';
@@ -47,7 +51,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @var string
      */
-    const PATH_TO_XSD = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/xsd/import.xsd';
+    const PATH_TO_IMPORT_XSD = 'import.xsd';
+
+    /**
+     * @var string
+     */
+    const PATH_TO_DELETE_XSD = 'deletion.xsd';
 
     /**
      * @var string
@@ -134,6 +143,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      */
     protected function perform($job_id)
     {
+        global $DIC;
+
         $this->logger->info('Digitized media import script started');
         try {
             $this->ensureUserRelatedPreconditions();
@@ -152,22 +163,150 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
             $dir = $this->getImportDir();
             ilUtil::makeDirParents($dir);
+
             $iter = new RegexIterator(
                 new DirectoryIterator($dir),
-                '/(.*).xml/'
+                '/(\d+)\-delete\-(.*?)\-manifest\.xml$/'
             );
             foreach ($iter as $file_info) {
                 ilCronManager::ping($job_id);
 
-                /**
-                 * @var $file_info SplFileInfo
-                 */
+                /** @var $file_info SplFileInfo */
                 if ($file_info->isDir()) {
                     continue;
                 }
 
                 $pathname = $file_info->getPathname();
                 $filename = $file_info->getFileName();
+
+                $this->logger->info('Found deletion file: ' . $filename);
+                $this->logger->info('Pathname: ' . $pathname);
+
+                $content = @file_get_contents($pathname);
+
+                $valid = $this->validateXmlAgainstXsd($filename, $content, self::PATH_TO_DELETE_XSD);
+                if ($valid === true) {
+                    $this->logger->info('MD5 checksum: ' . md5($content));
+                    $this->logger->info('SHA1 checksum: ' . sha1($content));
+
+                    $this->logger->info('Starting item deletion...');
+ 
+                    $deletionDocument = new SimpleXMLElement($content);
+                    $esaCrsRefId = trim((string) $deletionDocument['iliasID']);
+                    $deletionMode = trim((string) $deletionDocument->delete['type']);
+                    $deletionMessage = trim((string) $deletionDocument->delete->message);
+
+                    $this->logger->info('Searching folders for iliasID (course)' . $esaCrsRefId);
+                    $crsRefIdsByFolderRefId = $this->pluginObj->getRelevantCourseAndFolderData((int) $esaCrsRefId);
+                    $folderRefIds = array_unique(array_keys($crsRefIdsByFolderRefId));
+
+                    $deletionErrors = [];
+                    $partialSuccesses = [];
+                    foreach ($folderRefIds as $folderRefId) {
+                        try {
+                            $this->logger->info(sprintf(
+                                'Started deletion process of folder with ref_id %s with mode %s and message %s',
+                                $folderRefId,
+                                $deletionMode,
+                                $deletionMessage ?: '-'
+                            ));
+
+                            $referenceExists = ilObject::_exists($folderRefId, true);
+                            if (!$referenceExists) {
+                                $this->logger->info(sprintf('Folder is already deleted'));
+                                continue;
+                            }
+                            if ($DIC->repositoryTree()->isDeleted($folderRefId)) {
+                                $this->logger->info(sprintf('Folder is already deleted'));
+                                continue;
+                            }
+
+                            $partialSuccesses[$folderRefId] = new stdClass();
+                            $partialSuccesses[$folderRefId]->ref_id = $folderRefId;
+                            $partialSuccesses[$folderRefId]->title = ilObject::_lookupTitle(
+                                ilObject::_lookupObjId($folderRefId)
+                            );
+
+                            $itemRefIds = null;
+
+                            $folderNode = $DIC->repositoryTree()->getNodeData($folderRefId);
+                            $partialSuccesses[$folderRefId]->itemsBeforeDeletion = $DIC->repositoryTree()->getSubTree($folderNode);
+                            if ('all' === $deletionMode) {
+                                $this->deleteFolder($folderRefId, null);
+                            } else {
+                                $items = $this->pluginObj->getImportedFolderItems($folderRefId);
+                                $itemRefIds = array_map(static function (array $item) : int {
+                                    return (int) $item['ref_id'];
+                                }, $items);
+
+                                $this->deleteFolder($folderRefId, $itemRefIds);
+                            }
+                            $partialSuccesses[$folderRefId]->itemsAfterDeletion = $DIC->repositoryTree()->getSubTree($folderNode);
+
+                            $this->pluginObj->logDeletion(
+                                (int) $esaCrsRefId,
+                                (int) $folderRefId,
+                                $deletionMode,
+                                $deletionMessage,
+                                json_encode($partialSuccesses[$folderRefId])
+                            );
+
+                            $this->pluginObj->deleteFolderItemImportRecords((int) $folderRefId, $itemRefIds);
+                            $partialSuccesses[$folderRefId]->finished = true;
+                        } catch (Exception $e) {
+                            $deletionErrors[] = $e;
+                            $this->sendMailOnDeletionError($e->getMessage());
+                        } finally {
+                            $this->logger->info(sprintf(
+                                'Finished deletion process of folder with ref_id %s',
+                                $folderRefId
+                            ));
+                        }
+                    }
+
+                    $partialSuccesses = array_filter(
+                        $partialSuccesses,
+                        static function (stdClass $deletionProtocol) : bool {
+                            return property_exists($deletionProtocol, 'finished') && $deletionProtocol->finished === true;
+                        }
+                    );
+                    if ($deletionErrors === []) {
+                        if ($this->moveXmlToBackupFolder($pathname)) {
+                            $msg = sprintf($this->pluginObj->txt('mail_del_processed_without_errors'), $pathname);
+                            $this->sendMailOnDeletionSuccess($msg, $partialSuccesses);
+                        } else {
+                            $msg = sprintf($this->pluginObj->txt('error_move_mail'), $pathname);
+                            $this->sendMailOnDeletionError($msg, $partialSuccesses);
+                        }
+                    } elseif ($partialSuccesses !== []) {
+                        $msg = sprintf($this->pluginObj->txt('mail_del_processed_with_partial_errors'), $pathname);
+                        $this->sendMailOnDeletionSuccess($msg, $partialSuccesses);
+                    }
+
+                    $this->logger->info('...item deletion done.');
+                } else {
+                    $this->sendMailOnDeletionError($valid, null, $pathname);
+                }
+            }
+
+            $iter = new RegexIterator(
+                new DirectoryIterator($dir),
+                '/(.*)\.xml$/'
+            );
+            foreach ($iter as $file_info) {
+                ilCronManager::ping($job_id);
+
+                /** @var $file_info SplFileInfo */
+                if ($file_info->isDir()) {
+                    continue;
+                }
+
+                $pathname = $file_info->getPathname();
+                $filename = $file_info->getFileName();
+
+                if (preg_match('/(\d+)\-delete\-(.*?)\-manifest\.xml$/', $pathname)) {
+                    continue;
+                }
 
                 $this->logger->info('Found file to import: ' . $filename);
                 $this->logger->info('Pathname: ' . $pathname);
@@ -184,25 +323,31 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     $parsed_item = $parser->getElectronicCourseReserveContainer();
 
                     if (!in_array($parsed_item->getType(), $this->valid_items)) {
-                        $this->logger->info(sprintf('Type of item (%s) is unknown, skipping item.',
-                            $parsed_item->getType()));
+                        $this->logger->info(sprintf(
+                            'Type of item (%s) is unknown, skipping item.',
+                            $parsed_item->getType()
+                        ));
                         continue;
                     }
 
                     $this->logger->info('Starting item creation...');
                     if ($parsed_item->getType() === self::ITEM_TYPE_FILE) {
                         if (!$this->createFileItem($parsed_item, $content)) {
-                            $msg = sprintf($this->pluginObj->txt('error_create_file_mail'), $parsed_item->getCrsRefId(),
-                                $parsed_item->getFolderImportId());
+                            $msg = sprintf(
+                                $this->pluginObj->txt('error_create_file_mail'),
+                                $parsed_item->getCrsRefId(),
+                                $parsed_item->getFolderImportId()
+                            );
                             $this->sendMailOnError($msg);
                         }
-                    } else {
-                        if ($parsed_item->getType() === self::ITEM_TYPE_URL) {
-                            if (!$this->createWebResourceItem($parsed_item, $content)) {
-                                $msg = sprintf($this->pluginObj->txt('error_create_url_mail'),
-                                    $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId());
-                                $this->sendMailOnError($msg);
-                            }
+                    } elseif ($parsed_item->getType() === self::ITEM_TYPE_URL) {
+                        if (!$this->createWebResourceItem($parsed_item, $content)) {
+                            $msg = sprintf(
+                                $this->pluginObj->txt('error_create_url_mail'),
+                                $parsed_item->getCrsRefId(),
+                                $parsed_item->getFolderImportId()
+                            );
+                            $this->sendMailOnError($msg);
                         }
                     }
                     $this->logger->info('...item creation done.');
@@ -233,36 +378,36 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @param string $filename
      * @param string $xml_string
+     * @param string $path_to_schema
      * @return bool|string
      */
-    protected function validateXmlAgainstXsd($filename, $xml_string)
+    protected function validateXmlAgainstXsd($filename, $xml_string, $path_to_schema = '')
     {
-        $this->logger->info('Started XML validation');
+        $this->logger->info(sprintf('Started XML validation of %s', $filename));
 
-        libxml_use_internal_errors(true);
-        $xml = new DOMDocument();
-        $xml->loadXML($xml_string);
-
-        if (!$xml->schemaValidate(self::PATH_TO_XSD)) {
-            $errors = libxml_get_errors();
-            $error_msg = '';
-            foreach ($errors as $error) {
-                $error_msg .= sprintf("\n" . 'XML error "%s" [%d] (Code %d) in %s on line %d column %d' . "\n",
-                    $error->message, $error->level, $error->code, $error->file,
-                    $error->line, $error->column);
-            }
-            $msg = sprintf($this->pluginObj->txt('error_with_xml_validation'), $filename, $error_msg);
-            libxml_clear_errors();
-            libxml_use_internal_errors(false);
-
-            $this->logger->info('Finished XML validation');
-
-            return $msg;
+        if ('' === $path_to_schema) {
+            $path_to_schema = self::PATH_TO_IMPORT_XSD;
         }
-        libxml_clear_errors();
-        libxml_use_internal_errors(false);
+
+        require_once __DIR__ . '/Xml/Schema/Validation/SchemaValidator.php';
+        require_once __DIR__ . '/Xml/Schema/PathResolver.php';
+        require_once __DIR__ . '/Xml/Schema/Validation/ErrorFormatter.php';
+        $schemaValidator = new SchemaValidator(
+            new DataTypeFactory(),
+            new PathResolver(ilElectronicCourseReservePlugin::getInstance()),
+            new ErrorFormatter()
+        );
+
+        $validation = $schemaValidator->validate(
+            $xml_string,
+            $path_to_schema
+        );
 
         $this->logger->info('Finished XML validation');
+
+        if (!$validation->result()->isOK()) {
+            return $validation->result()->error();
+        }
 
         return true;
     }
@@ -648,7 +793,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
         $crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
         if ($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && !ilObject::_isInTrash($crs_ref_id)) {
-            $this->logger->info(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
+            $this->logger->info(sprintf('Found course for ref_id %s, looking for folder.', $crs_ref_id));
             $folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id_prefix);
             if ($folder_obj_id === 0) {
                 $this->logger->info(sprintf('Folder with Import id (%s) not found creating new folder.',
@@ -695,9 +840,79 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         return 0;
     }
 
+    protected function sendMailOnDeletionError(string $msg,  ?array $deletionProtocols = null, string $attachment = null)
+    {
+        if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
+            $mail = new ilMimeMail();
+            $mail->From($this->from);
+            $recipients = $this->pluginObj->getSetting('mail_del_recipients');
+            $mail->To($this->getEmailsForRecipients($recipients));
+            $mail->Subject($this->pluginObj->txt(sprintf('error_with_deletion_item')));
+            $mail_text = str_replace(
+                '[BR]',
+                "\n",
+                $this->pluginObj->txt('error_mail_greeting') . $msg
+            );
+            $this->renderMailDeletionProtocol($deletionProtocols, $mail_text);
+            $mail->Body($mail_text . ilMail::_getInstallationSignature());
+            if ($attachment !== null) {
+                $mail->Attach($attachment);
+            }
+            $mail->Send();
+        }
+    }
+
+    protected function sendMailOnDeletionSuccess(string $msg, array $deletionProtocols)
+    {
+        if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
+            $mail = new ilMimeMail();
+            $mail->From($this->from);
+            $recipients = $this->pluginObj->getSetting('mail_del_recipients');
+            $mail->To($this->getEmailsForRecipients($recipients));
+            $mail->Subject($this->pluginObj->txt(sprintf('success_with_deletion_item')));
+            $mail_text = str_replace(
+                '[BR]',
+                "\n",
+                $this->pluginObj->txt('error_mail_greeting') . $msg 
+            );
+            $this->renderMailDeletionProtocol($deletionProtocols, $mail_text);
+            $mail->Body($mail_text . ilMail::_getInstallationSignature());
+            $mail->Send();
+        }
+    }
+
+    protected function renderMailDeletionProtocol(array $deletionProtocols, string &$mail_text)
+    {
+        if ($deletionProtocols !== []) {
+            $mail_text .= "\n";
+            foreach ($deletionProtocols as $deletionProtocol) {
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_header'),
+                    $deletionProtocol->title
+                );
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_metric_num_obj_bd'),
+                    count($deletionProtocol->itemsBeforeDeletion)
+                );
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_metric_num_obj_ad'),
+                    count($deletionProtocol->itemsAfterDeletion)
+                );
+                $mail_text .= "\n";
+                $mail_text .= sprintf(
+                    $this->pluginObj->txt('mail_del_folder_metric_num_obj_d'),
+                    count($deletionProtocol->itemsBeforeDeletion) - count($deletionProtocol->itemsAfterDeletion)
+                );
+            }
+        }
+    }
+
     /**
-     * @param $msg
-     * @param $attachment
+     * @param string $msg
+     * @param string|null $attachment
      */
     protected function sendMailOnError($msg, $attachment = null)
     {
@@ -706,9 +921,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $mail->From($this->from);
             $recipients = $this->pluginObj->getSetting('mail_recipients');
             $mail->To($this->getEmailsForRecipients($recipients));
-            $mail->Subject($this->pluginObj->txt(sprintf('error_with_import_item', '')));
-            $mail_text = str_replace('[BR]', "\n", $this->pluginObj->txt('error_mail_greeting')
-                . $msg . ilMail::_getInstallationSignature());
+            $mail->Subject($this->pluginObj->txt(sprintf('error_with_import_item')));
+            $mail_text = str_replace(
+                '[BR]',
+                "\n",
+                $this->pluginObj->txt('error_mail_greeting') . $msg . ilMail::_getInstallationSignature()
+            );
             $mail->Body($mail_text);
             if ($attachment !== null) {
                 $mail->Attach($attachment);
@@ -746,5 +964,81 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $dir = self::IMPORT_DIR;
         }
         return ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * @param int $refId
+     * @param int[]|null $childrenRefIds
+     */
+    private function deleteFolder(int $refId, ?array $childrenRefIds = null) : void
+    {
+        global $DIC;
+
+        $refIdsToDeleteByParent = [];
+        $refIdsToBeRemovedFromSystem = [];
+
+        if (null === $childrenRefIds) {
+            $childrenRefIds = [];
+            foreach ($DIC->repositoryTree()->getChildIds($refId) as $childRefId) {
+                $childrenRefIds[] = $childRefId;
+                $refIdsToDeleteByParent[$refId][] = $childRefId;
+            }
+        } else {
+            foreach ($childrenRefIds as $childRefId) {
+                $referenceExists = ilObject::_exists($childRefId, true);
+                if (!$referenceExists) {
+                    continue;
+                }
+                if ($DIC->repositoryTree()->isDeleted($childRefId)) {
+                    $refIdsToBeRemovedFromSystem[] = $childRefId;
+                    continue;
+                }
+
+                $parents = $DIC->repositoryTree()->getPathId($childRefId, ROOT_FOLDER_ID);
+                $parents = array_filter(array_map('intval', $parents));
+                array_pop($parents); // Remove element itself
+                $is = array_intersect($parents, $childrenRefIds); // Check if parent is to be deleted as well
+                if (count($is) === 0) {
+                    $parentRefId = array_pop($parents);
+                    $refIdsToDeleteByParent[$parentRefId][] = $childRefId;
+                }
+            }
+        }
+
+        $DIC['ilObjDataCache']->preloadReferenceCache($childrenRefIds);
+        $DIC['ilObjDataCache']->preloadReferenceCache(array_keys($refIdsToDeleteByParent));
+
+        foreach ($refIdsToDeleteByParent as $parentRefId => $childRefIds) {
+            $DIC->logger()->root()->info(sprintf(
+                "Delegated deletion request in context of parent reference '%s' (ref_id: %s|obj_id: %s) " .
+                "for children '%s' to ILIAS core process...",
+                $DIC['ilObjDataCache']->lookupTitle($DIC['ilObjDataCache']->lookupObjId($parentRefId)),
+                $parentRefId,
+                $DIC['ilObjDataCache']->lookupObjId($parentRefId),
+                implode(', ', $childRefIds)
+            ));
+
+            try {
+                ilRepUtil::deleteObjects($parentRefId, $childRefIds);
+                if ($DIC->settings()->get('enable_trash')) {
+                    // If the trash is enabled, we have to remove the references afterwards
+                    ilRepUtil::removeObjectsFromSystem($childRefIds);
+                }
+            } catch (Exception $e) {
+                $DIC->logger()->root()->error('Error during object deletion');
+                $DIC->logger()->root()->error($e->getMessage());
+                $DIC->logger()->root()->error($e->getTraceAsString());
+            }
+        }
+
+        if ($DIC->settings()->get('enable_trash')) {
+            try {
+                ilRepUtil::removeObjectsFromSystem($refIdsToBeRemovedFromSystem);
+            } catch (Exception $e) {
+                $DIC->logger()->root()->error('Error during object deletion');
+                $DIC->logger()->root()->error($e->getMessage());
+                $DIC->logger()->root()->error($e->getTraceAsString());
+            }
+        }
     }
 }
