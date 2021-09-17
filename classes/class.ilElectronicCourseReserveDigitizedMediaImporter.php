@@ -4,21 +4,7 @@
 use ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Purger;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
 
-require_once 'Modules/Course/classes/class.ilObjCourse.php';
-require_once 'Modules/File/classes/class.ilObjFile.php';
-require_once 'Modules/Folder/classes/class.ilObjFolder.php';
-require_once 'Modules/WebResource/classes/class.ilLinkResourceItems.php';
-require_once 'Modules/WebResource/classes/class.ilObjLinkResource.php';
-require_once 'Services/Cron/classes/class.ilCronJobResult.php';
-require_once 'Services/Cron/classes/class.ilCronManager.php';
-require_once 'Services/Mail/classes/class.ilMail.php';
-require_once 'Services/Mail/classes/class.ilMimeMail.php';
-require_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
-require_once 'Services/Utilities/classes/class.ilMimeTypeUtil.php';
-require_once 'Services/WebServices/SOAP/classes/class.ilSoapClient.php';
-require_once 'Services/WebServices/Rest/classes/class.ilRestFileStorage.php';
-require_once 'Services/Xml/classes/class.ilXmlWriter.php';
-require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveHistoryEntity.php';
+require_once __DIR__ . '/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
 require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReservePostPurifier.php';
 
@@ -355,42 +341,69 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @return bool
      * @throws ilFileUtilsException
      */
-    protected function createFileItem($parsed_item, $raw_xml)
+    protected function createFileItem(ilElectronicCourseReserveContainer $parsed_item, string $raw_xml) : bool
     {
+        global $DIC;
+
         $folder_ref_id = (int) $this->ensureCorrectCourseAndFolderStructure($parsed_item);
         $file_path = $this->getResolvedFilePath($parsed_item->getItem()->getFile());
 
-        if ($folder_ref_id != 0 && file_exists($file_path)) {
-
+        if ($folder_ref_id !== 0 && file_exists($file_path)) {
             $filename = basename($parsed_item->getItem()->getFilename());
+
             $new_file = new ilObjFile();
+
             $file_type = pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION);
-            $new_file->setTitle($parsed_item->getItem()->getLabel() . '.' . $file_type);
-            $new_file->setFileType($file_type);
-            $new_file->setFileName($filename);
-            $new_file->setVersion(1);
+            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '<')) {
+                $new_file->setTitle($parsed_item->getItem()->getLabel() . '.' . $file_type);
+                $new_file->setFileType($file_type);
+                $new_file->setFileName($filename);
+                $new_file->setVersion(1);
+            }
             $new_file->create();
-            $new_file->setFilename($new_file->getFileName());
-            $new_file->addNewsNotification("file_updated");
+            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '<')) {
+                $new_file->setFilename($new_file->getFileName());
+                $new_file->addNewsNotification("file_updated");
+            }
+
             $new_file->createReference();
             $new_file->putInTree($folder_ref_id);
             $new_file->setPermissions($folder_ref_id);
-            $new_file->update();
-            $dir = $new_file->getDirectory(1);
-            if (!is_dir($dir)) {
-                ilUtil::makeDirParents($dir);
+
+            $rbac_log_roles = $DIC->rbac()->review()->getParentRoleIds($new_file->getRefId(), false);
+            $rbac_log = ilRbacLog::gatherFaPa($new_file->getRefId(), array_keys($rbac_log_roles), true);
+            ilRbacLog::add(ilRbacLog::CREATE_OBJECT, $new_file->getRefId(), $rbac_log);
+
+            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '>=')) {
+                $fileHandle = fopen($file_path, 'rb');
+                $stream = \ILIAS\Filesystem\Stream\Streams::ofResource($fileHandle);
+                $new_file->appendStream($stream, $parsed_item->getItem()->getLabel() . '.' . $file_type);
             }
 
-            if (file_exists($file_path)) {
-                copy($file_path, $dir . '/' . $filename);
-                if (file_exists($dir . '/' . $filename)) {
-                    if (self::DELETE_FILES) {
-                        unlink($file_path);
+            $new_file->update();
+
+            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '<')) {
+                $dir = $new_file->getDirectory(1);
+                if (!is_dir($dir)) {
+                    ilUtil::makeDirParents($dir);
+                }
+
+                if (file_exists($file_path)) {
+                    copy($file_path, $dir . '/' . $filename);
+                    if (file_exists($dir . '/' . $filename)) {
+                        if (self::DELETE_FILES) {
+                            unlink($file_path);
+                        }
                     }
+                }
+
+                $new_file->determineFileSize();
+            } else {
+                if (self::DELETE_FILES) {
+                    unlink($file_path);
                 }
             }
 
-            $new_file->determineFileSize();
             $new_file->update();
 
             $this->writeDescriptionToDB($parsed_item, $new_file->getRefId(), $raw_xml, $folder_ref_id);
@@ -586,7 +599,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
         $DIC->database()->insert('ecr_folder', array(
             'ref_id' => array('integer', $ref_id),
-            'import_id' => array('integer', $import_id),
+            'import_id' => array('text', $import_id),
             'crs_ref_id' => array('integer', $crs_ref_id)
         ));
     }
@@ -628,7 +641,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param ilElectronicCourseReserveContainer $parsed_item
      * @return int
      */
-    protected function ensureCorrectCourseAndFolderStructure($parsed_item)
+    protected function ensureCorrectCourseAndFolderStructure(ilElectronicCourseReserveContainer $parsed_item) : int
     {
         $crs_ref_id = (int) $parsed_item->getCrsRefId();
         $folder_import_id = (int) $parsed_item->getFolderImportId();
@@ -648,7 +661,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
         $crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
         if ($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && !ilObject::_isInTrash($crs_ref_id)) {
-            $this->logger->info(sprintf('Found course for ref_id, looking for folder.', $crs_ref_id));
+            $this->logger->info(sprintf('Found course for ref_id %s, looking for folder.', $crs_ref_id));
             $folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id_prefix);
             if ($folder_obj_id === 0) {
                 $this->logger->info(sprintf('Folder with Import id (%s) not found creating new folder.',
@@ -706,7 +719,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $mail->From($this->from);
             $recipients = $this->pluginObj->getSetting('mail_recipients');
             $mail->To($this->getEmailsForRecipients($recipients));
-            $mail->Subject($this->pluginObj->txt(sprintf('error_with_import_item', '')));
+            $mail->Subject($this->pluginObj->txt('error_with_import_item'));
             $mail_text = str_replace('[BR]', "\n", $this->pluginObj->txt('error_mail_greeting')
                 . $msg . ilMail::_getInstallationSignature());
             $mail->Body($mail_text);
