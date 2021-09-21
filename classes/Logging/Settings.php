@@ -3,9 +3,6 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging;
 
-require_once './Services/Logging/classes/public/class.ilLogLevel.php';
-require_once './Services/Logging/interfaces/interface.ilLoggingSettings.php';
-
 /**
  * Class Settings
  * @package ILIAS\Plugin\ElectronicCourseReserve\Logging

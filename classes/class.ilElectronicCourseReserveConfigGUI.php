@@ -1,9 +1,7 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
-require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
-require_once 'Modules/Course/classes/class.ilObjCourse.php';
+require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
  * Class ilElectronicCourseReserveConfigGUI
@@ -59,7 +57,6 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
                 $importDirectory = ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory');
                 if ($this->isValidDirectory($importDirectory) && is_dir($importDirectory)) {
-                    require_once 'Services/FileSystem/classes/class.ilFileSystemGUI.php';
                     $gui = new ilFileSystemGUI(ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory'));
                     $gui->setAllowFileCreation(true);
                     $gui->setAllowDirectoryCreation(false);
@@ -325,7 +322,6 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             'limit_to_groles');
         $limitToGlobalRoles->setInfo($this->getPluginObject()->txt('global_roles_info'));
         $limitToGlobalRoles->setDisabled($disabled);
-        require_once 'Services/Form/classes/class.ilMultiSelectInputGUI.php';
         $permittedRoles = new ilMultiSelectInputGUI(
             $this->getPluginObject()->txt('global_roles'),
             'global_roles'
@@ -493,7 +489,6 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             $result_field = (string) $_GET['autoCompleteField'];
         }
 
-        require_once 'Services/User/classes/class.ilUserAutoComplete.php';
         $auto = new ilUserAutoComplete();
         $auto->setSearchFields($a_fields);
         $auto->setResultField($result_field);
@@ -507,7 +502,6 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
      */
     protected function confirmReleaseLock()
     {
-        require_once 'Services/Utilities/classes/class.ilConfirmationGUI.php';
         $confirmation = new ilConfirmationGUI();
         $confirmation->setFormAction($this->ctrl->getFormAction($this, 'showConfigurationForm'));
         $confirmation->setConfirm($this->lng->txt('confirm'), 'performReleaseLock');

@@ -3,7 +3,6 @@
 use ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder;
 
 ilElectronicCourseReservePlugin::getInstance()->includeClass('controller/class.ilECRBaseController.php');
-require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 
 /**
  * Class ilECRContentController

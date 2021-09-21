@@ -1,7 +1,7 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
+require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
  * Class ilElectronicCourseReserveContentConfigGUI
@@ -102,7 +102,6 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
         ilElectronicCourseReserveRTEHelper::moveMediaObjects($lang_obj_id, $form->getInput('ecr_content'),
             'ecr_content~:html', 'ecr_content:html');
 
-        require_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
         $oldMediaObjects = ilObjMediaObject::_getMobsOfObject('ecr_content:html', $lang_obj_id);
         $curMediaObjects = ilRTE::_getMediaObjects($form->getInput('ecr_content'), 0);
         foreach ($oldMediaObjects as $oldMob) {
@@ -136,7 +135,6 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
      */
     protected function getContentForm()
     {
-        require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
         $form = new ilPropertyFormGUI();
         $form->setFormAction($this->ctrl->getFormAction($this, 'saveContent'));
         $form->setTitle($this->getPluginObject()->txt('edit_ecr_content') . ': ' . $this->lng->txt('meta_l_' . $_GET['ecr_lang']));

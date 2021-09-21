@@ -1,6 +1,4 @@
 <?php
-require_once 'Services/Table/classes/class.ilTable2GUI.php';
-require_once 'Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php';
 
 /**
  * Class ilElectronicCourseReserveLangTableGUI
@@ -49,7 +47,6 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
      */
     protected function fillRow($data)
     {
-        require_once 'Services/Form/classes/class.ilTextInputGUI.php';
         $field = new ilTextInputGUI('', $data['lang_key']);
         $field->setValue($data['value']);
 

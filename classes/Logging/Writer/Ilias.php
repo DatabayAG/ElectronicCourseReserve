@@ -5,8 +5,6 @@ namespace ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer;
 
 use ILIAS\Plugin\ElectronicCourseReserve\Logging;
 
-require_once 'Services/Calendar/classes/class.ilDateTime.php';
-
 /**
  * Class ILIAS
  * @author Michael Jansen <mjansen@databay.de>

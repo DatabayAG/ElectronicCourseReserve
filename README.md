@@ -9,6 +9,7 @@ in this document are to be interpreted as described in
 
 * [Requirements](#requirements)
 * [Install](#install)
+  * [Composer](#composer)
 * [Logging](#logging)
 * [Dependencies](#dependencies)
   * [GnuPG](#gnupg)
@@ -38,6 +39,17 @@ ensured by the responsible system administrator.
 
 The plugin's files and folder SHOULD NOT be created, 
 as root.
+
+### Composer
+
+After the plugin files have been installed as described above,
+please install the [`composer`](https://getcomposer.org/) dependencies:
+
+```bash
+cd Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve
+composer install --no-dev
+```
+
 
 ## Logging
 

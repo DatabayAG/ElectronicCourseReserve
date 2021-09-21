@@ -1,8 +1,7 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
-require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
+require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
  * Class ilElectronicCourseReserveAgreementConfigGUI
@@ -99,7 +98,6 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
     {
         $this->tabs->activateSubTab('editUserAgreements');
 
-        require_once 'Services/UIComponent/Button/classes/class.ilLinkButton.php';
         $button = ilLinkButton::getInstance();
         $button->setCaption($this->getPluginObject()->txt('add_use_agreement'), false);
         $button->setUrl($this->ctrl->getLinkTarget($this, 'showUserAgreementForm'));

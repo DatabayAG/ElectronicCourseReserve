@@ -3,9 +3,6 @@
 
 use ILIAS\DI\Container;
 
-require_once 'Services/UIComponent/classes/class.ilUIHookPluginGUI.php';
-require_once 'Services/Mail/classes/class.ilMailbox.php';
-
 /**
  * Class ilElectronicCourseReserveUIHookGUI
  * @author Nadia Matuschek <nmatuschek@databay.de>
