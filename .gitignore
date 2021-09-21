@@ -1,3 +1,2 @@
-tests/coverage/
-./libs/composer/vendor/
+/libs/composer/vendor/
 .idea
