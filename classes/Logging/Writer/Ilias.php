@@ -6,10 +6,10 @@ namespace ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging;
 
 /**
- * Class ILIAS
+ * Class Ilias
  * @author Michael Jansen <mjansen@databay.de>
  */
-class ILIAS extends Base
+class Ilias extends Base
 {
     /** @var \ilLogger */
     protected $aggregated_logger;
