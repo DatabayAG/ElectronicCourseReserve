@@ -18,7 +18,6 @@ class ilElectronicCourseReserveRTEHelper
      */
     public static function moveMediaObjects($content_id, $content, $source_type, $target_type, $direction = 0)
     {
-        include_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
         $mediaObjects = ilRTE::_getMediaObjects($content, $direction);
         $myMediaObjects = ilObjMediaObject::_getMobsOfObject($source_type, $content_id);
         foreach ($mediaObjects as $mob) {
@@ -40,7 +39,6 @@ class ilElectronicCourseReserveRTEHelper
      */
     public static function saveMediaObjects($content_id, $content, $target_type, $direction = 0)
     {
-        include_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
         $mediaObjects = ilRTE::_getMediaObjects($content, $direction);
 
         foreach ($mediaObjects as $mob) {

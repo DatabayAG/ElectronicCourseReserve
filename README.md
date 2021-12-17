@@ -9,6 +9,7 @@ in this document are to be interpreted as described in
 
 * [Requirements](#requirements)
 * [Install](#install)
+  * [Composer](#composer)
 * [Logging](#logging)
 * [Dependencies](#dependencies)
   * [GnuPG](#gnupg)
@@ -21,8 +22,8 @@ in this document are to be interpreted as described in
 
 ## Requirements
 
-* PHP: [![Minimum PHP Version](https://img.shields.io/badge/Minimum_PHP-7.0.x-blue.svg)](https://php.net/) [![Maximum PHP Version](https://img.shields.io/badge/Maximum_PHP-7.4.x-blue.svg)](https://php.net/)
-* ILIAS: [![Minimum ILIAS Version](https://img.shields.io/badge/Minimum_ILIAS-5.4.x-orange.svg)](https://ilias.de/) [![Maximum ILIAS Version](https://img.shields.io/badge/Maximum_ILIAS-5.4.x-orange.svg)](https://ilias.de/)
+* PHP: [![Minimum PHP Version](https://img.shields.io/badge/Minimum_PHP-7.3.x-blue.svg)](https://php.net/) [![Maximum PHP Version](https://img.shields.io/badge/Maximum_PHP-7.4.x-blue.svg)](https://php.net/)
+* ILIAS: [![Minimum ILIAS Version](https://img.shields.io/badge/Minimum_ILIAS-7.x-orange.svg)](https://ilias.de/) [![Maximum ILIAS Version](https://img.shields.io/badge/Maximum_ILIAS-7.x-orange.svg)](https://ilias.de/)
 
 ## Install
 
@@ -38,6 +39,17 @@ ensured by the responsible system administrator.
 
 The plugin's files and folder SHOULD NOT be created, 
 as root.
+
+### Composer
+
+After the plugin files have been installed as described above,
+please install the [`composer`](https://getcomposer.org/) dependencies:
+
+```bash
+cd Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve
+composer install --no-dev
+```
+
 
 ## Logging
 

@@ -5,8 +5,6 @@ use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use Zend\Crypt\BlockCipher;
 
-require_once 'Services/Component/classes/class.ilPluginConfigGUI.php';
-
 /**
  * @author Michael Jansen <mjansen@databay.de>
  */

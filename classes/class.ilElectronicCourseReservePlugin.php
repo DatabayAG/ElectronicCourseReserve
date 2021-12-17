@@ -10,8 +10,6 @@ use ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer\StdOut;
 use ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper;
 use Zend\Crypt;
 
-require_once 'Services/UIComponent/classes/class.ilUserInterfaceHookPlugin.php';
-
 class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 {
     /**
@@ -176,9 +174,9 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * Registers the plugin autoloader
      */
-    public function registerAutoloader()
+    public function registerAutoloader() : void
     {
-        require_once dirname(__FILE__) . '/../autoload.php';
+        require_once __DIR__ . '/../libs/composer/vendor/autoload.php';
     }
 
     /**
@@ -263,7 +261,6 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     public static function getInstance()
     {
         if (null === self::$instance) {
-            require_once 'Services/Component/classes/class.ilPluginAdmin.php';
             return self::$instance = ilPluginAdmin::getPluginObject(
                 self::CTYPE,
                 self::CNAME,

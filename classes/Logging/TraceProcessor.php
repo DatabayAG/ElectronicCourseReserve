@@ -3,8 +3,6 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging;
 
-require_once 'Services/Logging/classes/extensions/class.ilTraceProcessor.php';
-
 /**
  * Class TraceProcessor
  * @package ILIAS\Plugin\ElectronicCourseReserve\Logging

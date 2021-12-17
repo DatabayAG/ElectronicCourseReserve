@@ -3,9 +3,6 @@
 
 use ILIAS\DI\Container;
 
-require_once 'Services/UIComponent/classes/class.ilUIHookPluginGUI.php';
-require_once 'Services/Mail/classes/class.ilMailbox.php';
-
 /**
  * Class ilElectronicCourseReserveUIHookGUI
  * @author Nadia Matuschek <nmatuschek@databay.de>
@@ -33,11 +30,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 
     public function executeCommand()
     {
-        if (version_compare(ILIAS_VERSION_NUMERIC, '6.0', '>=')) {
-            $this->dic->ui()->mainTemplate()->loadStandardTemplate();
-        } else {
-            $this->dic->ui()->mainTemplate()->getStandardTemplate();
-        }
+        $this->dic->ui()->mainTemplate()->loadStandardTemplate();
 
         $this->dic->ctrl()->saveParameter($this, 'ref_id');
         $next_class = $this->dic->ctrl()->getNextClass();
@@ -48,11 +41,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                 $dispatcher = ilECRCommandDispatcher::getInstance($this);
                 $response = $dispatcher->dispatch($this->dic->ctrl()->getCmd());
                 $this->dic->ui()->mainTemplate()->setContent($response);
-                if (version_compare(ILIAS_VERSION_NUMERIC, '6.0', '>=')) {
-                    $this->dic->ui()->mainTemplate()->printToStdOut();
-                } else {
-                    $this->dic->ui()->mainTemplate()->show();
-                }
+                $this->dic->ui()->mainTemplate()->show();
                 break;
         }
     }
@@ -180,6 +169,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             $this->isCommandClass(ilCalendarPresentationGUI::class) ||
             $this->isCommandClass(ilCalendarCategoryGUI::class) ||
             $this->isCommandClass(ilPublicUserProfileGUI::class) ||
+            $this->isCommandClass(self::class) ||
             $this->isCommandClass(ilMailMemberSearchGUI::class) || (
                 $this->isOneOfCommands(['create',]) &&
                 $this->isBaseClass(ilRepositoryGUI::class)
