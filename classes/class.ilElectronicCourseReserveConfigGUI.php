@@ -6,7 +6,9 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
 /**
  * Class ilElectronicCourseReserveConfigGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilFileSystemGUI, ilGpgFingerPrintInputGUI
- * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI, ilElectronicCourseReserveContentConfigGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveContentConfigGUI
+ * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveDeletionProtocolGUI
  */
 class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
@@ -87,6 +89,11 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             case strtolower('ilElectronicCourseReserveAgreementConfigGUI'):
                 ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveAgreementConfigGUI.php');
                 $this->ctrl->forwardCommand(new ilElectronicCourseReserveAgreementConfigGUI(ilElectronicCourseReservePlugin::getInstance()));
+                break;
+
+            case strtolower('ilElectronicCourseReserveDeletionProtocolGUI'):
+                ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveDeletionProtocolGUI.php');
+                $this->ctrl->forwardCommand(new ilElectronicCourseReserveDeletionProtocolGUI(ilElectronicCourseReservePlugin::getInstance()));
                 break;
 
             case strtolower('ilElectronicCourseReserveContentConfigGUI'):
@@ -202,7 +209,9 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             'token_append_to_bibl' => $this->getPluginObject()->getSetting('token_append_to_bibl'),
             'is_mail_enabled' => $this->getPluginObject()->getSetting('is_mail_enabled'),
             'recipients' => explode(',', $this->getPluginObject()->getSetting('mail_recipients')),
-            'import_directory' => $this->getPluginObject()->getSetting('import_directory')
+            'import_directory' => $this->getPluginObject()->getSetting('import_directory'),
+            'is_del_mail_enabled' => $this->getPluginObject()->getSetting('is_del_mail_enabled'),
+            'del_recipients' => explode(',', $this->getPluginObject()->getSetting('mail_del_recipients')),
         ]);
     }
 
@@ -249,20 +258,6 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
         $searchSystemUrl->setValidationRegexp('/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/');
         $searchSystemUrl->setValidationFailureMessage($this->getPluginObject()->txt('ecr_url_search_system_invalid'));
         $searchSystemUrl->setInfo($this->getPluginObject()->txt('ecr_url_search_system_info'));
-
-        $form->setValuesByArray([
-            'gpg_homedir' => $this->getPluginObject()->getSetting('gpg_homedir'),
-            'sign_key_fingerprint' => $this->getPluginObject()->getSetting('sign_key_fingerprint'),
-            'limit_to_groles' => $this->getPluginObject()->getSetting('limit_to_groles'),
-            'global_roles' => explode(',', $this->getPluginObject()->getSetting('global_roles')),
-            'url_search_system' => $this->getPluginObject()->getSetting('url_search_system'),
-            'enable_use_agreement' => $this->getPluginObject()->getSetting('enable_use_agreement'),
-            'token_append_obj_title' => $this->getPluginObject()->getSetting('token_append_obj_title'),
-            'token_append_to_bibl' => $this->getPluginObject()->getSetting('token_append_to_bibl'),
-            'is_mail_enabled' => $this->getPluginObject()->getSetting('is_mail_enabled'),
-            'recipients' => explode(',', $this->getPluginObject()->getSetting('mail_recipients')),
-            'import_directory' => $this->getPluginObject()->getSetting('import_directory')
-        ]);
 
         if (
             $this->getPluginObject()->getSetting('gpg_homedir') &&
@@ -339,15 +334,14 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
         $importFormSection = new ilFormSectionHeaderGUI();
         $importFormSection->setTitle($this->getPluginObject()->txt('form_header_import'));
 
-        $mail = new ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail'), 'is_mail_enabled');
-        $mail->setValue(1);
-        $mail->setInfo($this->getPluginObject()->txt('notification_mail_info'));
+        $mail = new ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail_imp'), 'is_mail_enabled');
+        $mail->setValue('1');
+        $mail->setInfo($this->getPluginObject()->txt('notification_mail_imp_info'));
         $mail->setDisabled($disabled);
 
         $dsDataLink = $this->ctrl->getLinkTarget($this, 'doUserAutoComplete', '', true);
         $recipients = new ilTextInputGUI($this->getPluginObject()->txt('recipients'), 'recipients');
         $recipients->setRequired(true);
-
         $recipients->setValue([]);
         $recipients->setDataSource($dsDataLink);
         $recipients->setMaxLength(null);
@@ -355,6 +349,22 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
         $recipients->setInfo($this->getPluginObject()->txt('recipients_info'));
         $mail->addSubItem($recipients);
         $recipients->setDisabled($disabled);
+
+        $deletionMail = new ilCheckboxInputGUI($this->getPluginObject()->txt('notification_mail_del'), 'is_del_mail_enabled');
+        $deletionMail->setValue('1');
+        $deletionMail->setInfo($this->getPluginObject()->txt('notification_mail_del_info'));
+        $deletionMail->setDisabled($disabled);
+
+        $dsDataLink = $this->ctrl->getLinkTarget($this, 'doUserAutoComplete', '', true);
+        $deletionRecipients = new ilTextInputGUI($this->getPluginObject()->txt('recipients'), 'del_recipients');
+        $deletionRecipients->setRequired(true);
+        $deletionRecipients->setValue([]);
+        $deletionRecipients->setDataSource($dsDataLink);
+        $deletionRecipients->setMaxLength(null);
+        $deletionRecipients->setMulti(true);
+        $deletionRecipients->setInfo($this->getPluginObject()->txt('recipients_info'));
+        $deletionMail->addSubItem($deletionRecipients);
+        $deletionRecipients->setDisabled($disabled);
 
         $importDirectory = new ilTextInputGUI($this->getPluginObject()->txt('import_directory'), 'import_directory');
         $dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $this->getPluginObject()->getSetting('import_directory');
@@ -400,6 +410,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             $form->addItem($configUrl);
         }
         $form->addItem($mail);
+        $form->addItem($deletionMail);
         $form->addItem($importDirectory);
 
         $form->addCommandButton('saveSettings', $this->lng->txt('save'));
@@ -422,25 +433,11 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
         $form = $this->getGeneralSettingsForm();
         if ($form->checkInput()) {
-            $recipients = array_filter((array) $form->getInput('recipients'));
+            if (!$this->validateRecipients($form, 'recipients')) {
+                return;
+            }
 
-            $validRecipients = array_filter($recipients, function ($rcp) {
-                $usrId = ilObjUser::_lookupId($rcp);
-
-                return is_numeric($usrId) && $usrId > 0;
-            });
-
-            if (count($validRecipients) !== count($recipients)) {
-                $invalidRecipients = array_diff($recipients, $validRecipients);
-
-                $form->setValuesByPost();
-                $form->getItemByPostVar('recipients')->setAlert(sprintf(
-                    $this->getPluginObject()->txt('err_invalid_login' . (1 === count($invalidRecipients) ? '_s' : '_p')),
-                    implode(', ', $invalidRecipients)
-                ));
-
-                ilUtil::sendFailure($this->lng->txt('form_input_not_valid'));
-                $this->tpl->setContent($form->getHTML());
+            if (!$this->validateRecipients($form, 'del_recipients')) {
                 return;
             }
 
@@ -449,7 +446,9 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             $this->getPluginObject()->setSetting('gpg_homedir', $form->getInput('gpg_homedir'));
             $this->getPluginObject()->setSetting('sign_key_fingerprint', $form->getInput('sign_key_fingerprint'));
             $this->getPluginObject()->setSetting('is_mail_enabled', $form->getInput('is_mail_enabled'));
-            $this->getPluginObject()->setSetting('mail_recipients', implode(',', $recipients));
+            $this->getPluginObject()->setSetting('mail_recipients', implode(',', $form->getInput('recipients')));
+            $this->getPluginObject()->setSetting('is_del_mail_enabled', $form->getInput('is_del_mail_enabled'));
+            $this->getPluginObject()->setSetting('mail_del_recipients', implode(',', $form->getInput('del_recipients')));
             $import_path = $form->getInput('import_directory');
             $this->getPluginObject()->setSetting('import_directory', $import_path);
 
@@ -537,5 +536,37 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 ilUtil::sendInfo($this->getPluginObject()->txt('import_directory_info_perms'));
             }
         }
+    }
+
+    /**
+     * @param ilPropertyFormGUI $form
+     * @param string $httpPostVariable
+     * @return bool
+     */
+    protected function validateRecipients(ilPropertyFormGUI $form, string $httpPostVariable) : bool
+    {
+        $recipients = array_filter((array) $form->getInput($httpPostVariable));
+
+        $validRecipients = array_filter($recipients, static function ($rcp) : bool {
+            $usrId = ilObjUser::_lookupId($rcp);
+
+            return is_numeric($usrId) && $usrId > 0;
+        });
+
+        if (count($validRecipients) !== count($recipients)) {
+            $invalidRecipients = array_diff($recipients, $validRecipients);
+
+            $form->setValuesByPost();
+            $form->getItemByPostVar($httpPostVariable)->setAlert(sprintf(
+                $this->getPluginObject()->txt('err_invalid_login' . (1 === count($invalidRecipients) ? '_s' : '_p')),
+                implode(', ', $invalidRecipients)
+            ));
+
+            ilUtil::sendFailure($this->lng->txt('form_input_not_valid'));
+            $this->tpl->setContent($form->getHTML());
+            return false;
+        }
+
+        return true;
     }
 }

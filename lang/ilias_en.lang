@@ -32,8 +32,16 @@ token_append_obj_title#:#Append Course Title to Search System URL
 token_append_obj_title_info#:#If enabled, the course title will be appended (as 'iltitle') when building the URL to the search system. It will also be part of the token generation.
 token_append_to_bibl#:#OpenURL in Bibliography
 token_append_to_bibl_info#:#If enabled, the query parameters and the token for the search system will be appended to inventory lookup urls in bibliography objects, if these are used as content in ILIAS courses. Please note that at least one library has to be added in <a href="%s" target="_blank" rel="noopener noreferrer"><span style="font-style: italic">Administration » Bibliography</span></a>.
-notification_mail#:#Notification Mail
-notification_mail_info#:#If activated, an email notification will be sent if an error occurs while importing XML files.
+notification_mail_imp#:#Notification Mail (Import)
+notification_mail_imp_info#:#If activated, an email notification will be sent if an error occurs while processing XML import manifest files.
+notification_mail_del#:#Notification Mail (Deletion)
+notification_mail_del_info#:#If activated, an email notification will be sent when processing XML deletion manifests.
+mail_del_processed_without_errors#:#The XML deletion manifest '%s' has been successfully processed.
+mail_del_processed_with_partial_errors#:#The XML deletion manifest '%s' has been partly successfully processed.
+mail_del_folder_header#:#Deletion Protocol of Folder '%s':
+mail_del_folder_metric_num_obj_bd#:#Number of objects before deletion: %s
+mail_del_folder_metric_num_obj_ad#:#Number of objects after deletion: %s
+mail_del_folder_metric_num_obj_d#:#Number of deleted objects: %s
 recipients#:#Recipients
 recipients_info#:#Please insert the login names of the recipients.
 import_directory#:#Import Directory
@@ -56,7 +64,9 @@ ecr_contents_adm_tbl_head#:#Here you can globally defined the translation for th
 ecr_example_url#:#Example URL 
 ecr_example_url_info#:#This is an example URL based on the current configuration. Please <span style="font-weight: bold">don't</span> use this link for obligatory orders.
 ecr_accepted_agreement#:#The user agreement has been accepted.
-error_with_import_item#:#there was a problem while importing a Electronic Course Reserver item
+error_with_import_item#:#Electronic Course Reserve: Problem while processing import XML manifest
+error_with_deletion_item#:#Electronic Course Reserve: Problem while processing deletion XML manifest
+success_with_deletion_item#:#Electronic Course Reserve: Successfully processed deletion XML manifest
 error_mail_greeting#:#Hello, [BR][BR]
 ecr_cron_configuration_page#:#Cron-Job-Konfiguration
 ecr_gpg_secret_keys#:#Possible Keys
@@ -65,3 +75,18 @@ err_invalid_login_p#:#The following input does not match any ILIAS user account:
 err_invalid_login_s#:#The following input does not match any ILIAS user account: %s
 metadata#:#Metadata
 agr_accepted_on#:#You accepted the user agreement to use the Electronic Course Reserve on %s
+adm_ecr_tab_del_protocol#:#Deletion Protocol
+adm_ecr_tab_del_column_result#:#Result
+adm_ecr_tab_del_column_crs#:#Course
+adm_ecr_tab_del_column_fold#:#Electroni Course Reserve Folder
+adm_ecr_tab_del_column_deletion_datetime#:#Deletetion Datetime
+adm_ecr_tab_del_column_deletion_mode#:#Mode
+adm_ecr_tab_del_column_deletion_mode_all#:#All Content
+adm_ecr_tab_del_column_deletion_mode_imported#:#Imported Content Only
+adm_ecr_tab_del_column_deletion_message#:#Message
+del_folder_metric_num_obj_bd#:#Number of objects before deletion: %s
+del_folder_metric_num_obj_ad#:#Number of objects after deletion: %s
+del_folder_metric_num_obj_d#:#Number of deleted objects: %s
+period#:#Period
+period_from#:#From
+period_until#:#Until

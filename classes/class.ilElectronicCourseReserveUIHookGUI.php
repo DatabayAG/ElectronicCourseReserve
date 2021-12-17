@@ -15,45 +15,33 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 {
     /** @var Container */
     private $dic;
-    /**
-     * @var ilECRBaseModifier[]|null
-     */
+    /** @var ilECRBaseModifier[]|null */
     protected static $modifier = null;
 
     /**
-     * ilElectronicCourseReserveUIHookGUI constructor.
+     * ilServicePortalUserInterfaceUIHookGUI constructor.
      */
     public function __construct()
     {
         global $DIC;
 
         $this->dic = $DIC;
-        parent::getPluginObject();
-
-        if (null === self::$modifier) {
-            $this->initModifier();
-        }
     }
 
     public function executeCommand()
     {
-        global $DIC;
+        $this->dic->ui()->mainTemplate()->loadStandardTemplate();
 
-        $tpl = $DIC->ui()->mainTemplate();
-        $ilCtrl = $DIC->ctrl();
-
-        $tpl->loadStandardTemplate();
-
-        $ilCtrl->saveParameter($this, 'ref_id');
-        $next_class = $ilCtrl->getNextClass();
+        $this->dic->ctrl()->saveParameter($this, 'ref_id');
+        $next_class = $this->dic->ctrl()->getNextClass();
 
         switch (strtolower($next_class)) {
             default:
                 ilElectronicCourseReservePlugin::getInstance()->includeClass('dispatcher/class.ilECRCommandDispatcher.php');
                 $dispatcher = ilECRCommandDispatcher::getInstance($this);
-                $response = $dispatcher->dispatch($ilCtrl->getCmd());
-                $tpl->setContent($response);
-                $tpl->printToStdOut();
+                $response = $dispatcher->dispatch($this->dic->ctrl()->getCmd());
+                $this->dic->ui()->mainTemplate()->setContent($response);
+                $this->dic->ui()->mainTemplate()->show();
                 break;
         }
     }
@@ -68,13 +56,9 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         $ilUser = $DIC->user();
         $ilAccess = $DIC->access();
 
-        if ($a_par['tpl_id'] == 'tpl.adm_content.html') {
-            $a = 0;
-        }
-        if ($a_part != 'template_get') {
+        if ($a_part !== 'template_get' && !(isset($a_par['tpl_id']) && $a_par['tpl_id'] === 'tpl.main.html')) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
-
 
         $plugin = ilElectronicCourseReservePlugin::getInstance();
 
@@ -82,12 +66,16 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         if ($plugin->isFolderRelevant($ref_id)) {
             $plugin->queryFolderData($ref_id);
         }
+
         /**
          * @var $modifier ilECRBaseModifier
          */
-        foreach (self::$modifier as $modifier) {
-            if ($modifier->shouldModifyHtml($a_comp, $a_part, $a_par)) {
-                return $modifier->modifyHtml($a_comp, $a_part, $a_par);
+        self::initModifier();
+        if (is_array(self::$modifier)) {
+            foreach (self::$modifier as $modifier) {
+                if ($modifier->shouldModifyHtml($a_comp, $a_part, $a_par)) {
+                    return $modifier->modifyHtml($a_comp, $a_part, $a_par);
+                }
             }
         }
 
@@ -241,6 +229,23 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
      */
     protected function initModifier()
     {
+        if (
+            !isset($this->dic['tpl']) ||
+            !isset($this->dic['ilToolbar'])
+        ) {
+            return;
+        }
+
+        if (version_compare(ILIAS_VERSION_NUMERIC, '6.0', '>=')) {
+            if (!isset($this->dic['refinery'])) {
+                return;
+            }
+        }
+
+        if (null !== self::$modifier) {
+            return;
+        }
+
         $this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
         $this->plugin_object->includeClass('modifier/class.ilECRInfoScreenModifier.php');
         $this->plugin_object->includeClass('modifier/class.ilECRFileAndWebResourceImageGuiModifier.php');
@@ -249,6 +254,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         $this->plugin_object->includeClass("modifier/class.ilECRFolderListGuiModifier.php");
         $this->plugin_object->includeClass("modifier/class.ilECRilCopyObjectGuiModifier.php");
         $this->plugin_object->includeClass("modifier/class.ilECRCourseFolderTileGuiModifier.php");
+        $this->plugin_object->includeClass("modifier/class.ilECRFolderContentModifier.php");
 
         self::$modifier = [
             new ilECRCourseListGuiModifier(),
@@ -258,8 +264,8 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             new ilECRilCopyObjectGuiModifier(),
             new ilECRBibliographicItemModifier(),
             new ilECRCourseFolderTileGuiModifier(),
+            new ilECRFolderContentModifier(),
         ];
-
     }
 
     /**

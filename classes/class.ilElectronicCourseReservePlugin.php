@@ -392,13 +392,144 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
                 array('integer'),
                 array($folder_ref_id)
             );
+            $items = [];
             while ($row = $DIC->database()->fetchAssoc($res)) {
                 if (is_array($row) && array_key_exists('ref_id', $row)) {
+                    $items[] = $row;
                     $this->item_data[$row['ref_id']] = $row;
                 }
             }
-            $this->already_queried_folders[$folder_ref_id];
+            $this->already_queried_folders[$folder_ref_id] = $items;
         }
+    }
+
+    public function getImportedFolderItems(int $folderRefId) : array
+    {
+        if (!array_key_exists($folderRefId, $this->already_queried_folders)) {
+            $this->queryFolderData($folderRefId);
+        }
+
+        return $this->already_queried_folders[$folderRefId];
+    }
+
+    public function deleteFolderImportRecord(int $folderRefId)
+    {
+        global $DIC;
+
+        $DIC->database()->manipulateF(
+            'DELETE FROM ecr_folder WHERE ref_id = %s',
+            ['integer'],
+            [$folderRefId]
+        );
+    }
+
+    public function deleteFolderItemImportRecords(int $folderRefId, ?array $itemRefIds)
+    {
+        global $DIC;
+
+        if (null === $itemRefIds) {
+            $DIC->database()->manipulateF(
+                'DELETE FROM ecr_description WHERE folder_ref_id = %s',
+                ['integer'],
+                [$folderRefId]
+            );
+        } else {
+            $DIC->database()->manipulateF(
+                'DELETE FROM ecr_description WHERE folder_ref_id = %s AND ' . $DIC->database()->in('ref_id', $itemRefIds, false, 'integer'),
+                ['integer'],
+                [$folderRefId]
+            );
+        }
+    }
+
+    public function logDeletion(
+        int $crsRefId,
+        int $folderRefId,
+        string $mode,
+        ?string $message,
+        ?string $metadata
+    ) {
+        global $DIC;
+
+        $uuid = static function() {
+            return sprintf(
+                '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                // 32 bits for "time_low"
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff),
+                // 16 bits for "time_mid"
+                mt_rand(0, 0xffff),
+                // 16 bits for "time_high_and_version",
+                // four most significant bits holds version number 4
+                mt_rand(0, 0x0fff) | 0x4000,
+                // 16 bits, 8 bits for "clk_seq_hi_res",
+                // 8 bits for "clk_seq_low",
+                // two most significant bits holds zero and one for variant DCE1.1
+                mt_rand(0, 0x3fff) | 0x8000,
+                // 48 bits for "node"
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff)
+            );
+        };
+
+        $DIC->database()->insert(
+            'ecr_deletion_log',
+            [
+                'log_id' => ['text', $uuid()],
+                'crs_ref_id' => ['integer', $crsRefId],
+                'folder_ref_id' => ['integer', $folderRefId],
+                'deletion_mode' => ['text', $mode],
+                'deletion_timestamp' => ['integer', time()],
+                'deletion_timestamp_ms' => ['integer', (static function () {
+                    list($usec, $sec) = explode(' ', microtime());
+                    return (int) ((int) $sec * 1000 + ((float) $usec * 1000));
+                })()],
+                'deletion_message' => ['blob', $message],
+                'metadata' => ['blob', $metadata],
+            ]
+        );
+    }
+
+    /**
+     * @param int $refId
+     * @return bool
+     */
+    public function hasFolderDeletionMessage(int $refId) : bool
+    {
+        global $DIC;
+
+        $query = "
+            SELECT folder_ref_id
+            FROM ecr_deletion_log
+            WHERE deletion_message IS NOT NULL AND TRIM(deletion_message) != ''
+            AND folder_ref_id = " . $DIC->database()->quote($refId, 'integer');
+        $res = $DIC->database()->query($query);
+
+        return $DIC->database()->numRows($res) > 0;
+    }
+
+    /**
+     * @param int $refId
+     * @return string
+     */
+    public function getFolderDeletionMessage(int $refId) : string
+    {
+        global $DIC;
+
+        $query = '
+            SELECT deletion_message
+            FROM ecr_deletion_log
+            INNER JOIN (
+                SELECT folder_ref_id, MAX(deletion_timestamp_ms) deletion_timestamp_ms
+                FROM ecr_deletion_log
+                WHERE folder_ref_id = ' . $DIC->database()->quote($refId, 'integer') . '
+                GROUP BY folder_ref_id
+            ) tmp ON ecr_deletion_log.folder_ref_id = tmp.folder_ref_id AND ecr_deletion_log.deletion_timestamp_ms = tmp.deletion_timestamp_ms';
+        $res = $DIC->database()->query($query);
+        $row = $DIC->database()->fetchAssoc($res);
+
+        return $row['deletion_message'];
     }
 
     /**
