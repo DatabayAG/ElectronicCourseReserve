@@ -41,7 +41,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                 $dispatcher = ilECRCommandDispatcher::getInstance($this);
                 $response = $dispatcher->dispatch($this->dic->ctrl()->getCmd());
                 $this->dic->ui()->mainTemplate()->setContent($response);
-                $this->dic->ui()->mainTemplate()->show();
+                $this->dic->ui()->mainTemplate()->printToStdout();
                 break;
         }
     }
@@ -70,7 +70,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         /**
          * @var $modifier ilECRBaseModifier
          */
-        self::initModifier();
+        $this->initModifier();
         if (is_array(self::$modifier)) {
             foreach (self::$modifier as $modifier) {
                 if ($modifier->shouldModifyHtml($a_comp, $a_part, $a_par)) {
@@ -79,7 +79,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             }
         }
 
-        if (!isset($_GET['pluginCmd']) || 'Services/PersonalDesktop' != $a_comp || !isset($_GET['ref_id'])) {
+        if (!isset($_GET['pluginCmd']) || 'Services/Dashboard' != $a_comp || !isset($_GET['ref_id'])) {
             return parent::getHTML($a_comp, $a_part, $a_par);
         }
 
