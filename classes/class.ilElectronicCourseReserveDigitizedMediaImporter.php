@@ -769,7 +769,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         global $DIC;
         $DIC->database()->manipulate(
             'DELETE ecr.* FROM ecr_description ecr LEFT JOIN object_reference ON object_reference.ref_id = ecr.ref_id WHERE object_reference.ref_id IS NULL');
-        $this->logger->info('Removed deleted entries from table ecs_description.');
+        $this->logger->info('Removed deleted entries from table ers_description.');
     }
 
     /**
