@@ -17,6 +17,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     private $dic;
     /** @var ilECRBaseModifier[]|null */
     protected static $modifier = null;
+    protected static $tabsRendered = [];
 
     /**
      * ilServicePortalUserInterfaceUIHookGUI constructor.
@@ -103,7 +104,8 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             if ($obj instanceof ilObjCourse &&
                 $ilAccess->checkAccess('read', '', $obj->getRefId()) &&
                 $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId()) &&
-                $this->shouldRenderCustomCourseTabs()
+                $this->shouldRenderCustomCourseTabs() &&
+                !isset(self::$tabsRendered['ecr_tab_title'])
             ) {
                 $ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
                 $DIC->tabs()->addTab(
@@ -112,12 +114,14 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                     $ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__],
                         'ilECRContentController.showECRContent')
                 );
+                self::$tabsRendered['ecr_tab_title'] = true;
             } else {
                 if (
                     ($obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
                     && $ilAccess->checkAccess('write', '', $obj->getRefId())
                     && $this->getPluginObject()->isAssignedToRequiredRole($ilUser->getId())
-                    && $this->getPluginObject()->queryItemData($ref_id)
+                    && $this->getPluginObject()->queryItemData($ref_id) &&
+                    !isset(self::$tabsRendered['ecr_tab_title'])
                 ) {
                     $ilCtrl->setParameterByClass(__CLASS__, 'ref_id', $obj->getRefId());
                     $DIC->tabs()->addTab(
@@ -126,6 +130,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                         $ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__],
                             'ilECRContentController.showECRItemContent')
                     );
+                    self::$tabsRendered['ecr_tab_title'] = true;
                 }
             }
         }
