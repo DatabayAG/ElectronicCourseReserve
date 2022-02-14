@@ -22,9 +22,16 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
     {
         $cmd_class = ilUtil::stripSlashes((string) ($_GET['cmdClass'] ?? ''));
         $cmd = ilUtil::stripSlashes((string) ($_GET['cmd'] ?? ''));
+
+        $template = $a_par['tpl_id'] ?? '';
+        if ($template !== 'Services/Table/tpl.table2.html') {
+           return false;
+        }
+
         if (strtolower($cmd_class) === 'ilobjectcopygui' && $cmd !== 'initTargetSelection') {
             return true;
         }
+
         return false;
     }
 
