@@ -2,7 +2,6 @@
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\UI\Factory;
-use ILIAS\UI\Implementation\Component\Legacy\Legacy;
 use ILIAS\UI\Renderer;
 
 /**
@@ -101,9 +100,9 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
                     foreach ($result as $key) {
                         if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.0', '>=')) {
                             $items[$key['fingerprint']] = $this->uiRenderer->render([
-                                new Legacy('Key Id: ' . $key['keyid']),
-                                new Legacy(' | '),
-                                new Legacy('UID: ' . implode('/', array_map('htmlspecialchars', (array) $key['uid'])))
+                                $this->uiFactory->legacy('Key Id: ' . $key['keyid']),
+                                $this->uiFactory->legacy(' | '),
+                                $this->uiFactory->legacy('UID: ' . implode('/', array_map('htmlspecialchars', (array) $key['uid'])))
                             ]);
                         } else {
                             $items[$key['fingerprint']] = implode('', [
