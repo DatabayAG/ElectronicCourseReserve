@@ -13,7 +13,7 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
     /**
      * @var ilCtrl
      */
-    protected $ctrl;
+    protected ilCtrl $ctrl;
 
     /**
      * @inheritdoc
@@ -45,7 +45,7 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
     /**
      * @inheritdoc
      */
-    protected function fillRow($data)
+    protected function fillRow($data): void
     {
         $field = new ilTextInputGUI('', $data['lang_key']);
         $field->setValue($data['value']);

@@ -50,7 +50,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     /**
      * @inheritdoc
      */
-    public function getHTML($a_comp, $a_part, $a_par = array())
+    public function getHTML($a_comp, $a_part, $a_par = array()): array
     {
         global $DIC;
 
@@ -86,7 +86,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     /**
      * @inheritdoc
      */
-    public function modifyGUI($a_comp, $a_part, $a_par = array())
+    public function modifyGUI($a_comp, $a_part, $a_par = array()): void
     {
         global $DIC;
 

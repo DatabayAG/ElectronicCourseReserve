@@ -44,7 +44,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
     protected $encrypter;
 
     /** @var BlockCipher $symmetric */
-    protected $plugin_object;
+    protected ?ilPlugin $plugin_object;
 
     /** @var Factory */
     protected $uiFactory;
@@ -91,7 +91,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
     /**
      * @throws ilCtrlException
      */
-    public function executeCommand()
+    public function executeCommand(): void
     {
         $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'ctype', $_GET['ctype']);
         $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'cname', $_GET['cname']);
@@ -170,7 +170,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
     /**
      * @param string $cmd
      */
-    public function performCommand($cmd)
+    public function performCommand($cmd): void
     {
         switch (true) {
             case method_exists($this, $cmd):

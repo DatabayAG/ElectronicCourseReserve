@@ -23,7 +23,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
     /**
      * @inheritdoc
      */
-    public function executeCommand()
+    public function executeCommand(): void
     {
         $nextClass = $this->ctrl->getNextClass();
         switch (strtolower($nextClass)) {

@@ -50,7 +50,7 @@ class ilECRContentController extends ilECRBaseController
     /**
      *
      */
-    public function executeCommand()
+    public function executeCommand(): void
     {
         $cmd = $this->ctrl->getCmd();
         if (method_exists($this, $cmd)) {
@@ -58,10 +58,7 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
-    /**
-     * @return bool
-     */
-    private function checkUseAgreementCondition()
+    private function checkUseAgreementCondition(): bool
     {
         $is_use_agreement_enabled = $this->plugin_object->getSetting('enable_use_agreement');
         if ($is_use_agreement_enabled) {
@@ -71,7 +68,7 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
-    private function printUserAgreementAcceptance()
+    private function printUserAgreementAcceptance(): void
     {
         $is_use_agreement_enabled = $this->plugin_object->getSetting('enable_use_agreement');
         if ($is_use_agreement_enabled) {
@@ -86,10 +83,7 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
-    /**
-     * @return bool
-     */
-    private function checkUserAcceptance()
+    private function checkUserAcceptance(): bool
     {
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
@@ -106,7 +100,7 @@ class ilECRContentController extends ilECRBaseController
         return false;
     }
 
-    public function handleAcceptanceCmd()
+    public function handleAcceptanceCmd(): void
     {
         if (isset($_POST['cmd']['saveAcceptedUserAgreement'])) {
             $this->saveAcceptedUserAgreement();
@@ -115,7 +109,7 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
-    private function showUseAgreement()
+    private function showUseAgreement(): void
     {
         $this->plugin_object->includeClass('class.ilElectronicCourseReserveAgreement.php');
 
@@ -152,7 +146,7 @@ class ilECRContentController extends ilECRBaseController
         $this->tpl->setContent('');
     }
 
-    public function cancelAcceptance()
+    public function cancelAcceptance(): void
     {
         $ref_id = (int) $_GET['ref_id'];
         $this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $ref_id);
@@ -165,7 +159,7 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
-    public function saveAcceptedUserAgreement()
+    public function saveAcceptedUserAgreement(): void
     {
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
@@ -185,10 +179,7 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
-    /**
-     * @return string
-     */
-    public function showECRContent()
+    public function showECRContent(): string
     {
         $this->plugin_object->includeClass('class.ilElectronicCourseReserveLangData.php');
 
@@ -229,11 +220,7 @@ class ilECRContentController extends ilECRBaseController
         return $html;
     }
 
-    /**
-     * @param $obj
-     * @return string
-     */
-    protected function getDefaultECRContent()
+    protected function getDefaultECRContent(): string
     {
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->plugin_object->txt('ecr_title'));
@@ -249,10 +236,7 @@ class ilECRContentController extends ilECRBaseController
         return $form->getHTML();
     }
 
-    /**
-     * @return string
-     */
-    public function showECRItemContent()
+    public function showECRItemContent(): string
     {
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
@@ -332,7 +316,7 @@ class ilECRContentController extends ilECRBaseController
         return $form->getHTML();
     }
 
-    protected function replacePlaceholder($html)
+    protected function replacePlaceholder($html): string
     {
         $url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
             'ilECRContentController.performRedirect');
@@ -340,10 +324,7 @@ class ilECRContentController extends ilECRBaseController
         return str_replace('###URL_ESA###', $esa_url, $html);
     }
 
-    /**
-     *
-     */
-    public function updateItemSettings()
+    public function updateItemSettings(): void
     {
         $show_description = (int) $_POST['show_description'];
         $show_image = (int) $_POST['show_image'];
@@ -355,10 +336,7 @@ class ilECRContentController extends ilECRBaseController
         $this->ctrl->redirect(new ilElectronicCourseReserveUIHookGUI(), 'ilECRContentController.showECRItemContent');
     }
 
-    /**
-     * @return string
-     */
-    public function performRedirect()
+    public function performRedirect(): ?string
     {
         $this->checkPermission('write');
 
@@ -381,12 +359,11 @@ class ilECRContentController extends ilECRBaseController
             }
             return '';
         }
+        return null;
     }
 
-    /**
-     * @param string $permission
-     */
-    public function checkPermission($permission = 'write')
+
+    public function checkPermission(string $permission = 'write'): void
     {
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);

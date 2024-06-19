@@ -46,7 +46,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function getLevelByComponent($a_component_id)
+    public function getLevelByComponent($a_component_id): int
     {
         return $this->getLevel();
     }
@@ -54,7 +54,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return true;
     }
@@ -62,7 +62,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function getLogDir()
+    public function getLogDir(): string
     {
         return $this->directory;
     }
@@ -70,7 +70,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function getLogFile()
+    public function getLogFile(): string
     {
         return $this->file;
     }
@@ -78,7 +78,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function getLevel()
+    public function getLevel(): int
     {
         return $this->level;
     }
@@ -86,7 +86,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function getCacheLevel()
+    public function getCacheLevel(): int
     {
         return $this->cache_level;
     }
@@ -94,7 +94,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function isCacheEnabled()
+    public function isCacheEnabled(): bool
     {
         return $this->cache;
     }
@@ -102,7 +102,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function isMemoryUsageEnabled()
+    public function isMemoryUsageEnabled(): bool
     {
         return true;
     }
@@ -110,7 +110,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function isBrowserLogEnabled()
+    public function isBrowserLogEnabled(): bool
     {
         return false;
     }
@@ -118,7 +118,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function isBrowserLogEnabledForUser($a_login)
+    public function isBrowserLogEnabledForUser($a_login): bool
     {
         return false;
     }
@@ -126,7 +126,7 @@ class Settings implements \ilLoggingSettings
     /**
      * @inheritdoc
      */
-    public function getBrowserLogUsers()
+    public function getBrowserLogUsers(): array
     {
         return array();
     }

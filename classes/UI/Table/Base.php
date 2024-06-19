@@ -108,7 +108,7 @@ abstract class Base extends ilTable2GUI
     /**
      * @ineritdoc
      */
-    public function getSelectableColumns()
+    public function getSelectableColumns(): array
     {
         $optionalColumns = array_filter($this->getColumnDefinition(), static function (array $column) : bool {
             return isset($column['optional']) && $column['optional'];
@@ -149,7 +149,7 @@ abstract class Base extends ilTable2GUI
     /**
      * @param array $row
      */
-    final protected function fillRow($row)
+    final protected function fillRow($row): void
     {
         $this->prepareRow($row);
 
@@ -223,7 +223,7 @@ abstract class Base extends ilTable2GUI
 
         $this->setData($data['items']);
         if ($this->getExternalSegmentation()) {
-            $this->setMaxCount($data['cnt']);
+            $this->setMaxCount($data['cnt'][0]); //@todo rausfinden ob das so funktioniert
         }
     }
 }

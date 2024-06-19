@@ -84,7 +84,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * @inheritdoc
      */
-    public function getPluginName()
+    public function getPluginName(): string
     {
         return self::PNAME;
     }
@@ -92,7 +92,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * @inheritdoc
      */
-    protected function init()
+    protected function init(): void
     {
         parent::init();
         $this->registerAutoloader();

@@ -11,14 +11,14 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
     /**
      * @inheritDoc
      */
-    public function performCommand($cmd)
+    public function performCommand($cmd): void
     {
         $this->plugin_object->includeClass('UI/Table/Base.php');
         $this->plugin_object->includeClass('UI/Table/Data/Provider.php');
         $this->plugin_object->includeClass('UI/Table/Data/DatabaseProvider.php');
         parent::performCommand($cmd);
     }
-    
+
     /**
      * @inheritdoc
      */

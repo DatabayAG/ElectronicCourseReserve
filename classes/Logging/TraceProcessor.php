@@ -14,20 +14,12 @@ class TraceProcessor extends \ilTraceProcessor
      */
     private $level = 0;
 
-    /**
-     * ilElectronicCourseReserveLogTraceProcessor constructor.
-     * @param int @a_level
-     */
-    public function __construct($a_level)
-    {
-        $this->level = $a_level;
-    }
 
     /**
      * @param array $record
      * @return array
      */
-    public function __invoke(array $record)
+    public function __invoke(array $record): array
     {
         if ($record['level'] < $this->level) {
             return $record;

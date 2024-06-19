@@ -6,7 +6,7 @@
  */
 class ilElectronicCourseReserveAgreementTableGUI extends ilTable2GUI
 {
-    public $ctrl;
+    public ilCtrl $ctrl;
 
     public $tpl;
 
@@ -32,7 +32,7 @@ class ilElectronicCourseReserveAgreementTableGUI extends ilTable2GUI
     /**
      * @param array $a_set
      */
-    public function fillRow($a_set)
+    public function fillRow($a_set): void
     {
         $actions = new ilAdvancedSelectionListGUI();
         $actions->setId('action' . $a_set['lang']);

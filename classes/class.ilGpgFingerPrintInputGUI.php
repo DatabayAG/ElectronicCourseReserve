@@ -77,11 +77,7 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
         $this->{$cmd}();
     }
 
-    /**
-     * @param string $homeDirectory
-     * @return string
-     */
-    protected function getKeyListHtml($homeDirectory = '')
+    protected function getKeyListHtml(string $homeDirectory = ''): ?string
     {
         if ($homeDirectory) {
             try {
@@ -129,12 +125,13 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
                 $this->log->error($e->getMessage());
             }
         }
+        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function render($a_mode = "")
+    public function render($a_mode = ""): string
     {
         $html = parent::render($a_mode);
 

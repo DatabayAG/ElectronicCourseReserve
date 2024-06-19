@@ -39,7 +39,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
         $this->setId('tbl_ecr_deletion_protocol');
         $this->setFormName($this->getId());
         parent::__construct($a_parent_obj, $a_parent_cmd);
-        
+
         $this->uiFactory = $DIC->ui()->factory();
         $this->uiRenderer = $DIC->ui()->renderer();
 
@@ -129,7 +129,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
     /**
      * @inheritDoc
      */
-    public function initFilter()
+    public function initFilter(): void
     {
         $crsTitle = new ilTextInputGUI($this->lng->txt('obj_crs'), 'crs_title');
         $crsTitle->setDataSource($this->ctrl->getLinkTarget(
@@ -143,7 +143,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
         $this->addFilterItem($crsTitle);
         $crsTitle->readFromSession();
         $this->filter['crs_title'] = $crsTitle->getValue();
-        
+
         $foldTitle = new ilTextInputGUI($this->lng->txt('obj_fold'), 'fold_title');
         $foldTitle->setDataSource($this->ctrl->getLinkTarget(
             $this->getParentObject(),

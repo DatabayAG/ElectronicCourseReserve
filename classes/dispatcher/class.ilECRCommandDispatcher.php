@@ -6,36 +6,22 @@
  */
 class ilECRCommandDispatcher
 {
-    /**
-     * @var self
-     */
-    private static $instance = null;
+    private static ?ilECRCommandDispatcher $instance = null;
 
-    /**
-     * @var ilUIHookPluginGUI
-     */
-    protected $controller;
 
-    /**
-     *
-     */
+    protected ilUIHookPluginGUI $controller;
+
     private function __clone()
     {
     }
 
-    /**
-     * @param $controller
-     */
+
     private function __construct($controller)
     {
         $this->controller = $controller;
     }
 
-    /**
-     * @param  $controller
-     * @return self
-     */
-    public static function getInstance($controller)
+    public static function getInstance($controller): ilECRCommandDispatcher
     {
         if (self::$instance === null) {
             self::$instance = new self($controller);
@@ -43,11 +29,7 @@ class ilECRCommandDispatcher
         return self::$instance;
     }
 
-    /**
-     * @param string $cmd
-     * @return string
-     */
-    public function dispatch($cmd)
+    public function dispatch(string $cmd): string
     {
         $controller = $this->getController($cmd);
         $command = $this->getCommand($cmd);
@@ -55,11 +37,7 @@ class ilECRCommandDispatcher
         return $controller->$command();
     }
 
-    /**
-     * @param string $cmd
-     * @return string
-     */
-    protected function getController($cmd)
+    protected function getController(string $cmd): string
     {
         $parts = explode('.', $cmd);
 
@@ -91,27 +69,27 @@ class ilECRCommandDispatcher
         return new $controller($controller);
     }
 
-    /**
-     * @return string
-     */
-    protected function getControllerPath()
+//    /**
+//     * @return string
+//     */
+    protected function getControllerPath()  //@todo rausfinden wieso das auskommentiert
     {
 //
-//		
+//
 //		$path = $this->getCoreController()->getPluginObject()->getDirectory() .
 //			DIRECTORY_SEPARATOR .
 //			'classes' .
 //			DIRECTORY_SEPARATOR .
 //			'controller' .
 //			DIRECTORY_SEPARATOR;
-//		
+//
 //		return $path;
     }
 
     /**
      * @param string $controller
      */
-    protected function requireController($controller)
+    protected function requireController(string $controller)
     {
 
     }
