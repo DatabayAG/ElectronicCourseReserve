@@ -1,7 +1,7 @@
 {
     "require": {
-        "php": "^7.3 | ^7.4",
-        "zendframework/zend-crypt": "^3.3"
+        "php": "^8.2",
+        "laminas/laminas-crypt": "^3.11"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
