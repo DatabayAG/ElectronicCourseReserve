@@ -3,20 +3,23 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Filter;
 
+use FilterIterator;
+use Iterator;
+use SplFileInfo;
+
 /**
  * Class Mtime
  * @package ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Filter
  */
-class Mtime extends \FilterIterator
+class Mtime extends FilterIterator
 {
-    /** @var int */
-    protected $boundaryTimestamp;
+    protected int $boundaryTimestamp;
 
     /**
-     * @param \Iterator $iter
+     * @param Iterator $iter
      * @param int $boundaryTimestamp
      */
-    public function __construct(\Iterator $iter, int $boundaryTimestamp)
+    public function __construct(Iterator $iter, int $boundaryTimestamp)
     {
         parent::__construct($iter);
         $this->boundaryTimestamp = $boundaryTimestamp;
@@ -27,7 +30,7 @@ class Mtime extends \FilterIterator
      */
     public function accept(): bool
     {
-        /** @var \SplFileInfo */
+        /** @var SplFileInfo $current */
         $current = parent::current();
 
         if (!is_numeric($this->boundaryTimestamp) || $this->boundaryTimestamp <= 0) {

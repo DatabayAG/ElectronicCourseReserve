@@ -13,8 +13,7 @@ use InvalidArgumentException;
  */
 abstract class DatabaseProvider implements Provider
 {
-    /** @var ilDBInterface */
-    protected $db;
+    protected ilDBInterface $db;
 
     /**
      * DatabaseProvider constructor.
@@ -103,18 +102,18 @@ abstract class DatabaseProvider implements Provider
         }
 
         $where = strlen($where) ? 'WHERE ' . $where : '';
-        $query = "SELECT {$select} FROM {$from} {$where}";
+        $query = "SELECT $select FROM $from $where";
 
         if (strlen($group)) {
-            $query .= " GROUP BY {$group}";
+            $query .= " GROUP BY $group";
         }
 
         if (strlen($having)) {
-            $query .= " HAVING {$having}";
+            $query .= " HAVING $having";
         }
 
         if (strlen($order)) {
-            $query .= " ORDER BY {$order}";
+            $query .= " ORDER BY $order";
         }
 
         $res = $this->db->query($query);
@@ -123,7 +122,7 @@ abstract class DatabaseProvider implements Provider
         }
 
         if (isset($params['limit'])) {
-            $cnt_sql = "SELECT COUNT(*) cnt FROM ({$query}) subquery";
+            $cnt_sql = "SELECT COUNT(*) cnt FROM ($query) subquery";
             $row_cnt = $this->db->fetchAssoc($this->db->query($cnt_sql));
             $data['cnt'] = $row_cnt['cnt'];
         }

@@ -10,6 +10,9 @@ class ilElectronicCourseReserveAgreementTableGUI extends ilTable2GUI
 
     public $tpl;
 
+    /**
+     * @throws ilException
+     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
         global $DIC;
@@ -31,8 +34,10 @@ class ilElectronicCourseReserveAgreementTableGUI extends ilTable2GUI
 
     /**
      * @param array $a_set
+     * @throws ilCtrlException
+     * @throws JsonException
      */
-    public function fillRow($a_set): void
+    public function fillRow(array $a_set): void
     {
         $actions = new ilAdvancedSelectionListGUI();
         $actions->setId('action' . $a_set['lang']);

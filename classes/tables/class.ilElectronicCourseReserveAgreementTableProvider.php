@@ -6,7 +6,7 @@
  */
 class ilElectronicCourseReserveAgreementTableProvider
 {
-    protected $db;
+    protected ilDBInterface $db;
 
     public function __construct()
     {
@@ -15,7 +15,7 @@ class ilElectronicCourseReserveAgreementTableProvider
         $this->db = $DIC->database();
     }
 
-    public function getTableData()
+    public function getTableData(): array
     {
         $res = $this->db->queryF('SELECT * FROM ecr_lang_agreements WHERE is_active = %s ORDER BY time_created DESC',
             array('integer'), array(1));

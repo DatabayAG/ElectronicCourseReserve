@@ -3,26 +3,22 @@
 
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
+use JetBrains\PhpStorm\NoReturn;
 
 /**
  * Class ilGpgFingerPrintInputGUI
  */
 class ilGpgFingerPrintInputGUI extends ilTextInputGUI
 {
-    /** @var ilElectronicCourseReservePlugin */
-    protected $plugin;
+    protected ilElectronicCourseReservePlugin $plugin;
 
-    /** @var Factory */
-    protected $uiFactory;
+    protected Factory $uiFactory;
 
-    /** @var Renderer */
-    protected $uiRenderer;
+    protected Renderer $uiRenderer;
 
-    /** @var ilLogger */
-    protected $log;
+    protected ilLogger $log;
 
-    /** @var ilGpgHomeDirInputGUI */
-    protected $homeDirInputGUI;
+    protected ilGpgHomeDirInputGUI $homeDirInputGUI;
 
     /***
      * ilGpgHomeDirInputGUI constructor.
@@ -37,13 +33,13 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
      */
     public function __construct(
         ilElectronicCourseReservePlugin $plugin,
-        ilGpgHomeDirInputGUI $homeDirInputGUI,
-        ilCtrl $ctrl,
-        ilLogger $log,
-        Factory $uiFactory,
-        Renderer $uiRenderer,
-        $a_title = '',
-        $a_postvar = ''
+        ilGpgHomeDirInputGUI            $homeDirInputGUI,
+        ilCtrl                          $ctrl,
+        ilLogger                        $log,
+        Factory                         $uiFactory,
+        Renderer                        $uiRenderer,
+        string                          $a_title = '',
+        string                          $a_postvar = ''
     ) {
         parent::__construct($a_title, $a_postvar);
         $this->plugin = $plugin;
@@ -57,7 +53,7 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
     /**
      *
      */
-    public function renderKeyList()
+    #[NoReturn] public function renderKeyList(): void
     {
         $response = new stdClass();
         $response->html = $this->getKeyListHtml(isset($_GET['path']) && is_string($_GET['path']) ? $_GET['path'] : '');
@@ -68,8 +64,9 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
 
     /**
      * @inheritdoc
+     * @throws ilCtrlException
      */
-    public function executeCommand()
+    public function executeCommand(): void
     {
         $nextClass = $this->ctrl->getNextClass($this);
         $cmd = $this->ctrl->getCmd('renderKeyList');
@@ -94,19 +91,12 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
                         continue;
                     }
                     foreach ($result as $key) {
-                        if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.0', '>=')) {
-                            $items[$key['fingerprint']] = $this->uiRenderer->render([
-                                $this->uiFactory->legacy('Key Id: ' . $key['keyid']),
-                                $this->uiFactory->legacy(' | '),
-                                $this->uiFactory->legacy('UID: ' . implode('/', array_map('htmlspecialchars', (array) $key['uid'])))
-                            ]);
-                        } else {
-                            $items[$key['fingerprint']] = implode('', [
-                                'Key Id: ' . $key['keyid'],
-                                ' | ',
-                                'UID: ' . implode('/', array_map('htmlspecialchars', (array) $key['uid'])),
-                            ]);
-                        }
+                        $items[$key['fingerprint']] = $this->uiRenderer->render([
+                            $this->uiFactory->legacy('Key Id: ' . $key['keyid']),
+                            $this->uiFactory->legacy(' | '),
+                            $this->uiFactory->legacy('UID: ' . implode('/', array_map('htmlspecialchars', (array) $key['uid'])))
+                        ]);
+
                     }
                 }
 
@@ -116,12 +106,10 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
                     $list = $this->uiFactory->listing()->descriptive($items);
                     $keyList->setValue($this->uiRenderer->render($list));
                     return $keyList->render();
-                } else {
-                    $this->log->info('No keys found');
                 }
+
+                $this->log->info('No keys found');
             } catch (Throwable $e) {
-                $this->log->error($e->getMessage());
-            } catch (Exception $e) {
                 $this->log->error($e->getMessage());
             }
         }
@@ -129,19 +117,20 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
     }
 
     /**
-     * @inheritdoc
+     * @throws ilCtrlException
+     * @throws ilTemplateException
      */
     public function render($a_mode = ""): string
     {
         $html = parent::render($a_mode);
 
-        $tpl = $this->plugin->getTemplate('tpl.gpg_keys.html', true, true);
+        $tpl = $this->plugin->getTemplate('tpl.gpg_keys.html');
         $tpl->setVariable('LOADER_IMG_SRC', ilUtil::getImagePath('loader.svg'));
         $tpl->setVariable('HTML', $this->getKeyListHtml($this->plugin->getSetting('gpg_homedir')));
         $tpl->setVariable('OBSERVABLE_ELEMENT_ID', $this->homeDirInputGUI->getFieldId());
         $tpl->setVariable('URL', $this->ctrl->getLinkTargetByClass(
             ['ilAdministrationGUI', 'ilobjcomponentsettingsgui', 'ilElectronicCourseReserveConfigGUI', self::class],
-            'renderKeyList', '', true, false
+            'renderKeyList', '', true
         ));
 
         return $html . $tpl->get();

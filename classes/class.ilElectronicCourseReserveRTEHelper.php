@@ -16,7 +16,7 @@ class ilElectronicCourseReserveRTEHelper
      * @param     $target_type
      * @param int $direction
      */
-    public static function moveMediaObjects($content_id, $content, $source_type, $target_type, $direction = 0)
+    public static function moveMediaObjects($content_id, $content, $source_type, $target_type, int $direction = 0): void
     {
         $mediaObjects = ilRTE::_getMediaObjects($content, $direction);
         $myMediaObjects = ilObjMediaObject::_getMobsOfObject($source_type, $content_id);
@@ -33,11 +33,12 @@ class ilElectronicCourseReserveRTEHelper
     }
 
     /**
-     * @param $post_message
+     * @param $content_id
+     * @param $content
      * @param $target_type
-     * @param $target_id
+     * @param int $direction
      */
-    public static function saveMediaObjects($content_id, $content, $target_type, $direction = 0)
+    public static function saveMediaObjects($content_id, $content, $target_type, int $direction = 0): void
     {
         $mediaObjects = ilRTE::_getMediaObjects($content, $direction);
 

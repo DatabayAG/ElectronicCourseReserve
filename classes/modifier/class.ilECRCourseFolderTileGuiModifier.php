@@ -8,20 +8,12 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
 {
-    /**
-     * @var ilElectronicCourseReserveListGUIHelper
-     */
-    protected $list_gui_helper;
 
-    /**
-     * @var ilObjDataCache
-     */
-    protected $data_cache;
+    protected ilElectronicCourseReserveListGUIHelper $list_gui_helper;
 
-    /**
-     * @var ilAccessHandler
-     */
-    protected $access;
+    protected ilObjectDataCache $data_cache;
+
+    protected ilAccessHandler $access;
 
     public function __construct()
     {
@@ -31,7 +23,7 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
         $this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
     }
 
-    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         if ($a_par['tpl_id'] != 'src/UI/templates/default/Deck/tpl.deck_card.html') {
             return false;
@@ -52,7 +44,11 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
         return false;
     }
 
-    public function modifyHtml($a_comp, $a_part, $a_par)
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilDatabaseException
+     */
+    public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         $contextRefId = (int) $_GET['ref_id'];
 

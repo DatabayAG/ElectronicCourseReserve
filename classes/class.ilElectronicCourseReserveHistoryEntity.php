@@ -3,30 +3,20 @@
 
 class ilElectronicCourseReserveHistoryEntity
 {
-    /**
-     * @var int
-     */
-    protected $ref_id;
 
-    /**
-     * @var int
-     */
-    protected $target_ref_id;
+    protected int $ref_id;
 
-    /**
-     * @var string
-     */
-    protected $job_number;
+    protected int $target_ref_id;
 
-    /**
-     * @var int
-     */
-    protected $timestamp;
+    protected string $job_number;
+
+
+    protected int $timestamp;
 
     /**
      * @param string $job_number
      */
-    public function setJobNumber($job_number)
+    public function setJobNumber(string $job_number): void
     {
         $this->job_number = $job_number;
     }
@@ -34,7 +24,7 @@ class ilElectronicCourseReserveHistoryEntity
     /**
      * @return string
      */
-    public function getJobNumber()
+    public function getJobNumber(): string
     {
         return $this->job_number;
     }
@@ -42,7 +32,7 @@ class ilElectronicCourseReserveHistoryEntity
     /**
      * @param int $ref_id
      */
-    public function setRefId($ref_id)
+    public function setRefId(int $ref_id): void
     {
         $this->ref_id = $ref_id;
     }
@@ -50,7 +40,7 @@ class ilElectronicCourseReserveHistoryEntity
     /**
      * @return int
      */
-    public function getRefId()
+    public function getRefId(): int
     {
         return $this->ref_id;
     }
@@ -58,7 +48,7 @@ class ilElectronicCourseReserveHistoryEntity
     /**
      * @param int $target_ref_id
      */
-    public function setTargetRefId($target_ref_id)
+    public function setTargetRefId(int $target_ref_id): void
     {
         $this->target_ref_id = $target_ref_id;
     }
@@ -66,7 +56,7 @@ class ilElectronicCourseReserveHistoryEntity
     /**
      * @return int
      */
-    public function getTargetRefId()
+    public function getTargetRefId(): int
     {
         return $this->target_ref_id;
     }
@@ -74,7 +64,7 @@ class ilElectronicCourseReserveHistoryEntity
     /**
      * @param int $timestamp
      */
-    public function setTimestamp($timestamp)
+    public function setTimestamp(int $timestamp): void
     {
         $this->timestamp = $timestamp;
     }
@@ -82,7 +72,7 @@ class ilElectronicCourseReserveHistoryEntity
     /**
      * @return int
      */
-    public function getTimestamp()
+    public function getTimestamp(): int
     {
         return $this->timestamp;
     }

@@ -11,19 +11,17 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
     /**
      * @inheritdoc
      */
-    protected function getDefaultCommand()
+    protected function getDefaultCommand(): string
     {
         return 'showTabTranslationTable';
     }
 
     /**
      *
+     * @throws ilException
      */
-    protected function showTabTranslationTable()
+    protected function showTabTranslationTable(): void
     {
-        $this->getPluginObject()->includeClass('tables/class.ilElectronicCourseReserveLangTableGUI.php');
-        $this->getPluginObject()->includeClass('tables/class.ilElectronicCourseReserveLangTableProvider.php');
-
         $table = new ilElectronicCourseReserveLangTableGUI($this, 'showTabTranslationTable');
         $provider = new ilElectronicCourseReserveLangTableProvider();
         $table->setData($provider->getTableData());
@@ -33,8 +31,9 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
 
     /**
      *
+     * @throws ilException
      */
-    protected function saveTabTranslationsVars()
+    protected function saveTabTranslationsVars(): void
     {
         $translationData = new ilElectronicCourseReserveLangData();
 
@@ -47,17 +46,18 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
             }
         }
 
-        ilUtil::sendSuccess($this->lng->txt('saved_successfully'));
+        $this->tpl->setOnScreenMessage("success", $this->lng->txt('saved_successfully'));
         $this->showTabTranslationTable();
     }
 
     /**
      * @param ilPropertyFormGUI|null $form
+     * @throws ilCtrlException
      */
-    protected function editContent(ilPropertyFormGUI $form = null)
+    protected function editContent(ilPropertyFormGUI $form = null): void
     {
         if (!isset($_GET['ecr_lang'])) {
-            ilUtil::sendFailure($this->lng->txt('obj_not_found'), true);
+            $this->tpl->setOnScreenMessage("failure", $this->lng->txt('obj_not_found'), true);
             $this->ctrl->redirect($this, 'showTabTranslationTable');
             return;
         }
@@ -65,7 +65,7 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
         $lang_key = trim($_GET['ecr_lang']);
         $lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
         if (!$lang_obj_id) {
-            ilUtil::sendFailure($this->lng->txt('obj_not_found'), true);
+            $this->tpl->setOnScreenMessage("failure", $this->lng->txt('obj_not_found'), true);
             $this->ctrl->redirect($this, 'showTabTranslationTable');
         }
 
@@ -86,15 +86,14 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
 
     /**
      *
+     * @throws ilCtrlException
      */
-    protected function saveContent()
+    protected function saveContent(): void
     {
         $form = $this->getContentForm();
         $form->checkInput();
 
-        $content = ilRTE::_replaceMediaObjectImageSrc($form->getInput('ecr_content'), 0);
-
-        $this->getPluginObject()->includeClass('class.ilElectronicCourseReserveRTEHelper.php');
+        $content = ilRTE::_replaceMediaObjectImageSrc($form->getInput('ecr_content'));
 
         $lang_key = $form->getInput('ecr_lang');
         $lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
@@ -103,7 +102,7 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
             'ecr_content~:html', 'ecr_content:html');
 
         $oldMediaObjects = ilObjMediaObject::_getMobsOfObject('ecr_content:html', $lang_obj_id);
-        $curMediaObjects = ilRTE::_getMediaObjects($form->getInput('ecr_content'), 0);
+        $curMediaObjects = ilRTE::_getMediaObjects($form->getInput('ecr_content'));
         foreach ($oldMediaObjects as $oldMob) {
             $found = false;
 
@@ -125,15 +124,16 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
 
         ilElectronicCourseReserveLangData::writeEcrContent($lang_key, $content);
 
-        ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+        $this->tpl->setOnScreenMessage("success", $this->lng->txt('saved_successfully'), true);
         $this->ctrl->setParameter($this, 'ecr_lang', $lang_key);
         $this->ctrl->redirect($this, 'editContent');
     }
 
     /**
      * @return ilPropertyFormGUI
+     * @throws ilCtrlException
      */
-    protected function getContentForm()
+    protected function getContentForm(): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();
         $form->setFormAction($this->ctrl->getFormAction($this, 'saveContent'));
@@ -166,7 +166,6 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
         $ecr_content_input->setRTESupport($this->user->getId(), 'ecr_content', 'ecr_content');
         $ecr_content_input->setInfo($this->getPluginObject()->txt('insert_url_esa_info'));
 
-        $this->getPluginObject()->includeClass('class.ilElectronicCourseReservePostPurifier.php');
         $purifier = new ilElectronicCourseReservePostPurifier();
         $ecr_content_input->usePurifier(true);
         $ecr_content_input->setPurifier($purifier);

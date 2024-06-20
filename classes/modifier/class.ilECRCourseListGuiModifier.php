@@ -8,20 +8,12 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRCourseListGuiModifier implements ilECRBaseModifier
 {
-    /**
-     * @var ilElectronicCourseReserveListGUIHelper
-     */
-    protected $list_gui_helper;
+    protected ilElectronicCourseReserveListGUIHelper $list_gui_helper;
 
-    /**
-     * @var ilObjDataCache
-     */
-    protected $data_cache;
+    protected ilObjectDataCache $data_cache;
 
-    /**
-     * @var ilAccessHandler
-     */
-    protected $access;
+
+    protected ilAccessHandler $access;
 
     public function __construct()
     {
@@ -31,7 +23,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
         $this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
     }
 
-    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         if (
             $a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html' &&
@@ -59,7 +51,12 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
         return true;
     }
 
-    public function modifyHtml($a_comp, $a_part, $a_par)
+    /**
+     * @throws DOMException
+     * @throws ilObjectNotFoundException
+     * @throws ilDatabaseException
+     */
+    public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         $processedHtml = '';
         $contextRefId = (int) $_GET['ref_id'];
@@ -110,13 +107,13 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
                     }
                 }
             }
-            
+
             $processed = false;
 
             foreach ($elements as $element) {
                 $action = $element->getAttribute('href');
                 foreach ($this->list_gui_helper->actions_to_remove as $key => $cmd) {
-                    if (strpos($action, 'cmd=' . $cmd) !== false) {
+                    if (str_contains($action, 'cmd=' . $cmd)) {
                         $element->parentNode->removeChild($element);
                         $processed = true;
                     }

@@ -1,30 +1,27 @@
 <?php
 
 use ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder;
-
-ilElectronicCourseReservePlugin::getInstance()->includeClass('controller/class.ilECRBaseController.php');
+use ILIAS\UI\Factory as UIFactory;
+use ILIAS\UI\Renderer as UIRenderer;
 
 /**
  * Class ilECRContentController
  * @author Nadia Matuschek <nmatuschek@databay.de>
  */
-class ilECRContentController extends ilECRBaseController
+class ilECRContentController
 {
-    /**
-     * @var ilElectronicCourseReservePlugin
-     */
-    protected $plugin_object;
+    protected ilElectronicCourseReservePlugin $plugin_object;
 
-    protected $tpl;
-    protected $ctrl;
-    protected $tabs;
-    protected $lng;
-    protected $logger;
-    protected $settings;
-    protected $user;
-    protected $access;
-    protected $uiFactory;
-    protected $uiRenderer;
+    protected ilGlobalTemplateInterface $tpl;
+    protected ilCtrlInterface $ctrl;
+    protected ilTabsGUI $tabs;
+    protected ilLanguage $lng;
+    protected ilLogger $logger;
+    protected ilSetting $settings;
+    protected ilObjUser $user;
+    protected ilAccessHandler $access;
+    protected UIFactory $uiFactory;
+    protected UIRenderer $uiRenderer;
 
     /**
      * ilECRContentController constructor.
@@ -58,6 +55,12 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     * @throws ilTemplateException
+     */
     private function checkUseAgreementCondition(): bool
     {
         $is_use_agreement_enabled = $this->plugin_object->getSetting('enable_use_agreement');
@@ -68,6 +71,11 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilDateTimeException
+     * @throws ilDatabaseException
+     */
     private function printUserAgreementAcceptance(): void
     {
         $is_use_agreement_enabled = $this->plugin_object->getSetting('enable_use_agreement');
@@ -76,19 +84,24 @@ class ilECRContentController extends ilECRBaseController
             $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
             $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
             if ($ilUserAcceptance->hasUserAcceptedAgreement()) {
-                ilUtil::sendInfo(sprintf($this->plugin_object->txt('agr_accepted_on'),
+                $this->tpl->setOnScreenMessage("info", sprintf($this->plugin_object->txt('agr_accepted_on'),
                     ilDatePresentation::formatDate(new ilDateTime($ilUserAcceptance->getAcceptanceTimestamp(),
                         IL_CAL_UNIX))));
             }
         }
     }
 
+    /**
+     * @return bool
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     * @throws ilObjectNotFoundException
+     * @throws ilTemplateException
+     */
     private function checkUserAcceptance(): bool
     {
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
-
-        $this->plugin_object->includeClass('class.ilElectronicCourseReserveAcceptance.php');
 
         $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
         if ($ilUserAcceptance->hasUserAcceptedAgreement()) {
@@ -100,6 +113,11 @@ class ilECRContentController extends ilECRBaseController
         return false;
     }
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     */
     public function handleAcceptanceCmd(): void
     {
         if (isset($_POST['cmd']['saveAcceptedUserAgreement'])) {
@@ -109,11 +127,13 @@ class ilECRContentController extends ilECRBaseController
         }
     }
 
+    /**
+     * @throws ilCtrlException
+     * @throws ilTemplateException
+     */
     private function showUseAgreement(): void
     {
-        $this->plugin_object->includeClass('class.ilElectronicCourseReserveAgreement.php');
-
-        $agreementTpl = $this->plugin_object->getTemplate('tpl.crs_acceptance_agreement.html', true, true);
+        $agreementTpl = $this->plugin_object->getTemplate('tpl.crs_acceptance_agreement.html');
         $agreementTpl->setVariable('TXT_USER_AGREEMENT', $this->plugin_object->txt('use_agreement'));
 
         $agreement = new ilElectronicCourseReserveAgreement();
@@ -141,48 +161,52 @@ class ilECRContentController extends ilECRBaseController
             $agreementTpl->parseCurrentBlock();
         }
 
-        ilUtil::sendQuestion($agreementTpl->get());
+        $this->tpl->setOnScreenMessage("question", $agreementTpl->get());
 
         $this->tpl->setContent('');
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     public function cancelAcceptance(): void
     {
         $ref_id = (int) $_GET['ref_id'];
         $this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $ref_id);
-        $url = $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view', '', false, false);
+        $url = $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view', '');
 
-        if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.x', '>=')) {
-            $this->ctrl->redirectToURL($url);
-        } else {
-            ilUtil::redirect($url);
-        }
+        $this->ctrl->redirectToURL($url);
     }
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     */
     public function saveAcceptedUserAgreement(): void
     {
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
-        $this->plugin_object->includeClass('class.ilElectronicCourseReserveAcceptance.php');
-
         $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
         $ilUserAcceptance->saveUserAcceptance();
         $url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
-            'ilECRContentController.showECRContent', '', false, false);
+            'ilECRContentController.showECRContent', '');
 
-        ilUtil::sendSuccess($this->plugin_object->txt('ecr_accepted_agreement'), true);
-        if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.x', '>=')) {
-            $this->ctrl->redirectToURL($url);
-        } else {
-            ilUtil::redirect($url);
-        }
+        $this->tpl->setOnScreenMessage("success", $this->plugin_object->txt('ecr_accepted_agreement'), true);
+
+        $this->ctrl->redirectToURL($url);
     }
 
+    /**
+     * @throws ilCtrlException
+     * @throws ilObjectNotFoundException
+     * @throws ilDatabaseException
+     * @throws ilDateTimeException
+     * @throws ilTemplateException
+     */
     public function showECRContent(): string
     {
-        $this->plugin_object->includeClass('class.ilElectronicCourseReserveLangData.php');
-
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
@@ -203,23 +227,21 @@ class ilECRContentController extends ilECRBaseController
         $html = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
         if (strlen($html)) {
 
-            $html = $this->replacePlaceholder($html);
-            return $html;
+            return $this->replacePlaceholder($html);
         }
 
         $ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($this->lng->getDefaultLanguage());
         $html = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
         if (strlen($html)) {
-            $html = $this->replacePlaceholder($html);
-
-            return $html;
+            return $this->replacePlaceholder($html);
         }
 
-        $html = $this->getDefaultECRContent();
-
-        return $html;
+        return $this->getDefaultECRContent();
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     protected function getDefaultECRContent(): string
     {
         $form = new ilPropertyFormGUI();
@@ -236,19 +258,23 @@ class ilECRContentController extends ilECRBaseController
         return $form->getHTML();
     }
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     */
     public function showECRItemContent(): string
     {
         $ref_id = (int) $_GET['ref_id'];
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
         $item = $this->plugin_object->queryItemData($ref_id);
 
-        $this->checkPermission('write');
+        $this->checkPermission();
 
         $this->tpl->setTitle($obj->getTitle());
 
         if ($obj->getType() === 'file') {
             if (array_key_exists('show_image', $item)
-                && $item['show_image']
                 && $item['show_image'] == 1
                 && strlen($item['icon']) > 0) {
                 $image_path = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item['icon'];
@@ -262,7 +288,6 @@ class ilECRContentController extends ilECRBaseController
         } else {
             if ($obj->getType() === 'webr') {
                 if (array_key_exists('show_image', $item)
-                    && $item['show_image']
                     && $item['show_image'] == 1
                     && strlen($item['icon']) > 0) {
                     $image_path = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item['icon'];
@@ -287,7 +312,6 @@ class ilECRContentController extends ilECRBaseController
         $show_description = new ilCheckboxInputGUI($this->plugin_object->txt('show_description'), 'show_description');
 
         if (array_key_exists('show_description', $item)
-            && $item['show_description']
             && $item['show_description'] == 1) {
             $show_description->setChecked(true);
         }
@@ -295,7 +319,6 @@ class ilECRContentController extends ilECRBaseController
 
         $show_image = new ilCheckboxInputGUI($this->plugin_object->txt('show_image'), 'show_image');
         if (array_key_exists('show_image', $item)
-            && $item['show_image']
             && $item['show_image'] == 1) {
             $show_image->setChecked(true);
         }
@@ -316,6 +339,9 @@ class ilECRContentController extends ilECRBaseController
         return $form->getHTML();
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     protected function replacePlaceholder($html): string
     {
         $url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
@@ -324,6 +350,9 @@ class ilECRContentController extends ilECRBaseController
         return str_replace('###URL_ESA###', $esa_url, $html);
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     public function updateItemSettings(): void
     {
         $show_description = (int) $_POST['show_description'];
@@ -336,9 +365,13 @@ class ilECRContentController extends ilECRBaseController
         $this->ctrl->redirect(new ilElectronicCourseReserveUIHookGUI(), 'ilECRContentController.showECRItemContent');
     }
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilDatabaseException
+     */
     public function performRedirect(): ?string
     {
-        $this->checkPermission('write');
+        $this->checkPermission();
 
         try {
             $ref_id = (int) $_GET['ref_id'];
@@ -347,15 +380,20 @@ class ilECRContentController extends ilECRBaseController
             /** @var LinkBuilder $linkBuilder */
             $linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
 
-            $url = $linkBuilder->getLibraryOrderLink($obj);
+            if($obj instanceof ilObjCourse){
+                $url = $linkBuilder->getLibraryOrderLink($obj);
 
-            ilUtil::redirect($url);
+                ilUtil::redirect($url);
+            } else {
+                throw new Exception("Ref ID does not belong to an ilObjCourse");
+            }
+
         } catch (Exception $e) {
             if (defined('DEVMODE') && DEVMODE) {
-                ilUtil::sendFailure($e->getMessage());
+                $this->tpl->setOnScreenMessage("failure", $e->getMessage());
             } else {
                 $this->logger->write($e->getMessage());
-                ilUtil::sendFailure($this->plugin_object->txt('ecr_sign_error_occured'));
+                $this->tpl->setOnScreenMessage("failure", $this->plugin_object->txt('ecr_sign_error_occured'));
             }
             return '';
         }
@@ -363,6 +401,10 @@ class ilECRContentController extends ilECRBaseController
     }
 
 
+    /**
+     * @throws ilObjectNotFoundException
+     * @throws ilDatabaseException
+     */
     public function checkPermission(string $permission = 'write'): void
     {
         $ref_id = (int) $_GET['ref_id'];
@@ -371,7 +413,7 @@ class ilECRContentController extends ilECRBaseController
         if (!(($obj instanceof ilObjCourse || $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)
             && $this->access->checkAccess($permission, '', $obj->getRefId())
             && $this->plugin_object->isAssignedToRequiredRole($this->user->getId()))) {
-            ilUtil::sendFailure($this->lng->txt("msg_no_perm_read"), true);
+            $this->tpl->setOnScreenMessage("failure", $this->lng->txt("msg_no_perm_read"), true);
         }
     }
 }

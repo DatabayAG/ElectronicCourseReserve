@@ -8,7 +8,7 @@
  */
 class ilElectronicCourseReserveLangTableProvider
 {
-    protected $db;
+    protected ilDBInterface $db;
 
     public function __construct()
     {
@@ -17,7 +17,7 @@ class ilElectronicCourseReserveLangTableProvider
         $this->db = $DIC->database();
     }
 
-    public function getTableData()
+    public function getTableData(): array
     {
         $data = array();
         $installed_langs = ilLanguage::_getInstalledLanguages();

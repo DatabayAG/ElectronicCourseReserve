@@ -17,15 +17,15 @@ interface GpgWrapper
      * @param null $keyId
      * @param null $passphrase
      * @param bool $learsign
-     * @param false $detach
-     * @param false $binary
+     * @param bool $detach
+     * @param bool $binary
      * @return GpgSignResult
      */
-    public function sign($message, $keyId = null, $passphrase = null, $learsign = true, $detach = false, $binary = false);
+    public function sign($message, $keyId = null, $passphrase = null, bool $learsign = true, bool $detach = false, bool $binary = false): GpgSignResult;
 
     /**
-     * @param false $secret
+     * @param bool $secret
      * @return GpgListKeysResult
      */
-    public function listKeys($secret = false);
+    public function listKeys(bool $secret = false): GpgListKeysResult;
 }

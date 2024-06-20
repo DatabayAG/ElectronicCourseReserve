@@ -3,40 +3,35 @@
 
 class ilElectronicCourseReserveListGUIHelper
 {
-    /**
-     * @var array
-     */
-    public $actions_to_remove = array('cut', 'initTargetSelection', 'link');
+
+    public array $actions_to_remove = array('cut', 'initTargetSelection', 'link');
 
     /**
      * @param DomXPath $xpath
      * @param int $item_ref_id
      * @param DOMDocument $dom
      * @param string $parent
+     * @throws DOMException
      */
-    public function replaceCheckbox($xpath, $item_ref_id, $dom, $parent = 'div')
+    public function replaceCheckbox(DomXPath $xpath, int $item_ref_id, DOMDocument $dom, string $parent = 'div'): void
     {
         $node_list = $xpath->query("//" . $parent . "/input[contains(@value,'" . $item_ref_id . "')]");
         $placeholder_div = $dom->createElement('div');
         $placeholder_div->setAttribute('style', 'width:15px');
         for ($i = 0; $i < count($node_list); $i++) {
             $node = $node_list->item($i);
-            if ($node !== null) {
-                $node->parentNode->replaceChild($placeholder_div, $node);
-            }
+            $node?->parentNode->replaceChild($placeholder_div, $node);
         }
     }
 
     /**
      * @param DOMNodeList $node_list
      */
-    public function removeAction($node_list)
+    public function removeAction(DOMNodeList $node_list): void
     {
         for ($i = 0; $i < count($node_list); $i++) {
             $node = $node_list->item($i);
-            if ($node !== null) {
-                $node->parentNode->removeChild($node);
-            }
+            $node?->parentNode->removeChild($node);
         }
     }
 
@@ -44,7 +39,7 @@ class ilElectronicCourseReserveListGUIHelper
      * @param DomXPath $xpath
      * @return int
      */
-    public function getRefIdFromItemUrl($xpath)
+    public function getRefIdFromItemUrl(DomXPath $xpath): int
     {
         $ref_id_node_list = $xpath->query("//a[@class='il_ContainerItemTitle']");
         $ref_id_node = $ref_id_node_list->item(0);

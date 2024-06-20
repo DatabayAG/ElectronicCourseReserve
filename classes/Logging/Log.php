@@ -3,21 +3,21 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging;
 
+use ilDateTime;
+use ilException;
+
 /**
  * Class Log
  * @package ILIAS\Plugin\ElectronicCourseReserve\Logging
  */
 class Log implements Logger
 {
-    /**
-     * @var self
-     */
-    protected static $instance;
+    protected static Log $instance;
 
     /**
      * @var Writer[]
      */
-    protected $writer = array();
+    protected array $writer = array();
 
     /**
      *
@@ -34,10 +34,7 @@ class Log implements Logger
         $this->shutdown();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function shutdown()
+    public function shutdown(): void
     {
         foreach ($this->writer as $writer) {
             $writer->shutdown();
@@ -48,7 +45,7 @@ class Log implements Logger
      * Get singleton instance
      * @return self
      */
-    public static function getInstance()
+    public static function getInstance(): Log
     {
         if (null !== self::$instance) {
             return self::$instance;
@@ -60,7 +57,7 @@ class Log implements Logger
     /**
      * @return array
      */
-    public static function getPriorities()
+    public static function getPriorities(): array
     {
         return array(
             self::EMERG => 'EMERG',
@@ -78,7 +75,7 @@ class Log implements Logger
      * @param Writer $writer
      * @param int $priority
      */
-    public function addWriter(Writer $writer, $priority = 1)
+    public function addWriter(Writer $writer, int $priority = 1): void
     {
         $this->writer[] = $writer;
     }
@@ -86,7 +83,7 @@ class Log implements Logger
     /**
      * @param Writer $writer
      */
-    public function removeWriter(Writer $writer)
+    public function removeWriter(Writer $writer): void
     {
         $key = array_search($writer, $this->writer);
         if ($key !== false) {
@@ -98,32 +95,32 @@ class Log implements Logger
      * @param int $priority
      * @param mixed $message
      * @param array $extra
-     * @throws \ilException
+     * @throws ilException
      */
-    public function log($priority, $message, $extra = array())
+    public function log(int $priority, mixed $message, array $extra = array()): void
     {
-        if (!is_int($priority) || ($priority < 0) || ($priority >= count(self::getPriorities()))) {
-            throw new \ilException(sprintf('$priority must be an integer > 0 and < %d; received %s',
+        if (($priority < 0) || ($priority >= count(self::getPriorities()))) {
+            throw new ilException(sprintf('$priority must be an integer > 0 and < %d; received %s',
                 count(self::getPriorities()),
                 var_export($priority, 1)
             ));
         }
 
         if (is_object($message) && !method_exists($message, '__toString')) {
-            throw new \ilException('$message must implement magic __toString() method');
+            throw new ilException('$message must implement magic __toString() method');
         }
 
         if (is_array($message)) {
             $message = var_export($message, true);
         }
 
-        $timestamp = new \ilDateTime(time(), IL_CAL_UNIX);
+        $timestamp = new ilDateTime(time(), IL_CAL_UNIX);
 
         $priorities = self::getPriorities();
         foreach ($this->writer as $writer) {
             $writer->write(array(
                 'timestamp' => $timestamp,
-                'priority' => (int) $priority,
+                'priority' => $priority,
                 'priorityName' => $priorities[$priority],
                 'message' => (string) $message,
                 'extra' => $extra
@@ -135,8 +132,9 @@ class Log implements Logger
      * @param string $message
      * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function emerg($message, $extra = array())
+    public function emerg(string $message, array $extra = array()): void
     {
         $this->log(self::EMERG, $message, $extra);
     }
@@ -145,8 +143,9 @@ class Log implements Logger
      * @param string $message
      * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function alert($message, $extra = array())
+    public function alert(string $message, array $extra = array()): void
     {
         $this->log(self::ALERT, $message, $extra);
     }
@@ -155,8 +154,9 @@ class Log implements Logger
      * @param string $message
      * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function crit($message, $extra = array())
+    public function crit(string $message, array $extra = array()): void
     {
         $this->log(self::CRIT, $message, $extra);
     }
@@ -165,18 +165,20 @@ class Log implements Logger
      * @param string $message
      * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function err($message, $extra = array())
+    public function err(string $message, array $extra = array()): void
     {
         $this->log(self::ERR, $message, $extra);
     }
 
     /**
      * @param string $message
-     * @param array
+     * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function info($message, $extra = array())
+    public function info(string $message, array $extra = array()): void
     {
         $this->log(self::INFO, $message, $extra);
     }
@@ -185,8 +187,9 @@ class Log implements Logger
      * @param string $message
      * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function warn($message, $extra = array())
+    public function warn(string $message, array $extra = array()): void
     {
         $this->log(self::WARN, $message, $extra);
     }
@@ -195,8 +198,9 @@ class Log implements Logger
      * @param string $message
      * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function notice($message, $extra = array())
+    public function notice(string $message, array $extra = array()): void
     {
         $this->log(self::NOTICE, $message, $extra);
     }
@@ -205,8 +209,9 @@ class Log implements Logger
      * @param string $message
      * @param array $extra
      * @return void
+     * @throws ilException
      */
-    public function debug($message, $extra = array())
+    public function debug(string $message, array $extra = array()): void
     {
         $this->log(self::DEBUG, $message, $extra);
     }

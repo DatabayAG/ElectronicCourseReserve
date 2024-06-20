@@ -6,21 +6,20 @@
  */
 class ilElectronicCourseReserveAcceptance
 {
-    protected $ref_id;
-    protected $user_id;
+    protected int $ref_id;
+    protected int $user_id;
 
-    protected $agreement_id;
-    protected $time_accepted;
+    protected int $agreement_id;
 
-    protected $db;
-    protected $user;
+    protected ilDBInterface $db;
+    protected ilObjUser $user;
 
 
     /**
      * ilElectronicCourseReserveAcceptance constructor.
      * @param int $ref_id
      */
-    public function __construct($ref_id)
+    public function __construct(int $ref_id)
     {
         global $DIC;
 
@@ -31,7 +30,7 @@ class ilElectronicCourseReserveAcceptance
         $this->user_id = $this->user->getId();
     }
 
-    public function hasUserAcceptedAgreement()
+    public function hasUserAcceptedAgreement(): bool
     {
         $res = $this->db->queryF(
             'SELECT * FROM ecr_user_acceptance WHERE ref_id = %s AND user_id = %s',
@@ -46,7 +45,7 @@ class ilElectronicCourseReserveAcceptance
     /**
      * @return int
      */
-    public function getAcceptanceTimestamp()
+    public function getAcceptanceTimestamp(): int
     {
         $res = $this->db->queryF(
             'SELECT time_accepted FROM ecr_user_acceptance WHERE ref_id = %s AND user_id = %s',
@@ -58,7 +57,7 @@ class ilElectronicCourseReserveAcceptance
         return (int) $row['time_accepted'];
     }
 
-    public function saveUserAcceptance()
+    public function saveUserAcceptance(): void
     {
         $this->db->insert('ecr_user_acceptance',
             array(
@@ -69,7 +68,7 @@ class ilElectronicCourseReserveAcceptance
             ));
     }
 
-    public function getAgreementId()
+    public function getAgreementId(): int
     {
         $res = $this->db->queryF('SELECT agreement_id FROM ecr_lang_agreements WHERE is_active = %s AND lang = %s',
             array('integer', 'text'), array(1, $this->user->getLanguage()));

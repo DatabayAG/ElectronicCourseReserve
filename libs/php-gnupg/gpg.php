@@ -923,7 +923,7 @@ class GnuPG implements GpgWrapper
 	 * @param bool $secret List secret keys when true
 	 * @return GpgListKeysResult
 	 */
-	public function listKeys ($secret = false)
+	public function listKeys (bool $secret = false)
 	{
 		return $this->execute (
 			new GpgListKeysResult (),
@@ -1039,18 +1039,18 @@ class GnuPG implements GpgWrapper
 	 * @param string $message Message for sign.
 	 * @param string $keyId key for signing, default will be used if null
 	 * @param string $passphrase key password
-	 * @param bool $clearsign Make a clear text signature.
+	 * @param bool $learsign Make a clear text signature.
 	 * @param bool $detach Make a detached signature.
 	 * @param bool $binary If false, create ASCII armored output.
 	 * @return GpgSignResult
 	 */
 	public function sign ($message, $keyId = null, $passphrase = null,
-			$clearsign = true, $detach = false, $binary = false)
+                          bool $learsign = true, bool $detach = false, bool $binary = false)
 	{
 		$args = array ($binary ? '-s' : '-sa');
 		if ($detach)
 			$args [] = '--detach-sign';
-		elseif ($clearsign)
+		elseif ($learsign)
 			$args [] = '--clearsign';
 		if ($keyId)
 			$args = array_merge ($args, array ('--default-key', $keyId));

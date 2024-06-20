@@ -8,25 +8,16 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 {
-    /**
-     * @var array
-     */
-    protected $object_types = array('file', 'webr');
 
-    /**
-     * @var ilObjDataCache
-     */
-    protected $data_cache;
+    protected array $object_types = array('file', 'webr');
 
-    /**
-     * @var ilAccessHandler
-     */
-    protected $access;
+    protected ilObjectDataCache $data_cache;
 
-    /**
-     * @var bool
-     */
-    protected $modified = false;
+
+    protected ilAccessHandler $access;
+
+
+    protected bool $modified = false;
 
     public function __construct()
     {
@@ -41,7 +32,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
      * @param $a_par
      * @return bool
      */
-    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         if ($this->modified) {
             return false;
@@ -62,13 +53,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
         return false;
     }
 
-    /**
-     * @param $a_comp
-     * @param $a_part
-     * @param $a_par
-     * @return string|void
-     */
-    public function modifyHtml($a_comp, $a_part, $a_par)
+    public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         global $DIC;
         $plugin = ilElectronicCourseReservePlugin::getInstance();
@@ -91,5 +76,6 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
             $DIC->ui()->mainTemplate()->addJavaScript('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/js/ElectronicCourseReserveObjectIcon.js');
             $DIC->ui()->mainTemplate()->addOnLoadCode('il.ElectronicCourseReserveObjectIcon.setConfig("' . $replace . '", "' . $with . '");');
         }
+        return [];
     }
 }

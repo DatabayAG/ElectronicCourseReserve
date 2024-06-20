@@ -28,54 +28,55 @@ interface Logger
      * @param array $extra
      * @return void
      */
-    public function emerg($message, $extra = array());
+    public function emerg(string $message, array $extra = array()): void;
 
     /**
      * @param string $message
      * @param array $extra
      * @return void
      */
-    public function alert($message, $extra = array());
+    public function alert(string $message, array $extra = array()): void;
 
     /**
      * @param string $message
      * @param array $extra
      * @return void
      */
-    public function crit($message, $extra = array());
+    public function crit(string $message, array $extra = array()): void;
 
     /**
      * @param string $message
      * @param array $extra
      * @return void
      */
-    public function err($message, $extra = array());
-
-    /**
-     * @param string $message
-     * @param array
-     * @return void
-     */
-    public function info($message, $extra = array());
+    public function err(string $message, array $extra = array()): void;
 
     /**
      * @param string $message
      * @param array $extra
      * @return void
      */
-    public function warn($message, $extra = array());
+    public function info(string $message, array $extra = array()): void;
 
     /**
      * @param string $message
      * @param array $extra
      * @return void
      */
-    public function notice($message, $extra = array());
+    public function warn(string $message, array $extra = array()): void;
 
     /**
      * @param string $message
      * @param array $extra
      * @return void
      */
-    public function debug($message, $extra = array());
+    public function notice(string $message, array $extra = array()): void;
+
+    /**
+     * @param string $message
+     * @param array $extra
+     * @return void
+     */
+    public function debug(string $message,
+                          array $extra = array()): void;
 }

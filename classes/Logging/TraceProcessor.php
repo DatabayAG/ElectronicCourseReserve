@@ -3,16 +3,16 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging;
 
+use ilTraceProcessor;
+
 /**
  * Class TraceProcessor
  * @package ILIAS\Plugin\ElectronicCourseReserve\Logging
  */
-class TraceProcessor extends \ilTraceProcessor
+class TraceProcessor extends ilTraceProcessor
 {
-    /**
-     * @var int
-     */
-    private $level = 0;
+
+    private int $level = 0;
 
 
     /**

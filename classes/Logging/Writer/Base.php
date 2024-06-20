@@ -3,6 +3,7 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer;
 
+use ilDateTime;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging;
 
 /**
@@ -17,12 +18,12 @@ abstract class Base implements Logging\Writer
      * @param array $message
      * @return void
      */
-    abstract protected function doWrite(array $message);
+    abstract protected function doWrite(array $message): void;
 
     /**
      * @return string
      */
-    protected static function getMemoryUsageString()
+    protected static function getMemoryUsageString(): string
     {
         return 'Memory: ' . self::formatBytes(memory_get_usage(true));
     }
@@ -31,7 +32,7 @@ abstract class Base implements Logging\Writer
      * @param $bytes
      * @return string
      */
-    private static function formatBytes($bytes)
+    private static function formatBytes($bytes): string
     {
         $memoryUnits = array('', 'kilobyte(s)', 'megabyte(s)', 'gigabyte(s)');
 
@@ -47,7 +48,7 @@ abstract class Base implements Logging\Writer
     /**
      * @return string
      */
-    protected static function getDateTimeFormat()
+    protected static function getDateTimeFormat(): string
     {
         return 'y-m-d H:i:s';
     }
@@ -57,7 +58,7 @@ abstract class Base implements Logging\Writer
      * @param array $message
      * @return string
      */
-    protected function format(array $message)
+    protected function format(array $message): string
     {
         $output = self::DEFAULT_FORMAT;
         foreach ($message as $part => $value) {
@@ -81,13 +82,13 @@ abstract class Base implements Logging\Writer
      * @param mixed $value
      * @return mixed
      */
-    protected function normalize($value)
+    protected function normalize(mixed $value): mixed
     {
         if (is_scalar($value) || null === $value) {
             return $value;
         }
 
-        if ($value instanceof \ilDateTime) {
+        if ($value instanceof ilDateTime) {
             return date(self::getDateTimeFormat(), $value->get(IL_CAL_UNIX));
         }
 
@@ -118,7 +119,7 @@ abstract class Base implements Logging\Writer
      * @param array $message
      * @return void
      */
-    public function write(array $message)
+    public function write(array $message): void
     {
         $this->doWrite($message);
     }

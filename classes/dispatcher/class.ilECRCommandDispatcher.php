@@ -41,31 +41,18 @@ class ilECRCommandDispatcher
     {
         $parts = explode('.', $cmd);
 
-        $controller = $parts[0];
-        return $controller;
+        return $parts[0];
     }
 
-    /**
-     * @param string $cmd
-     * @return string
-     */
-    protected function getCommand($cmd)
+    protected function getCommand(string $cmd): string
     {
         $parts = explode('.', $cmd);
 
-        $cmd = $parts[1];
-
-        return $cmd;
+        return $parts[1];
     }
 
-    /**
-     * @param string $controller
-     * @return mixed
-     */
-    protected function instantiateController($controller)
+    protected function instantiateController(string $controller): mixed
     {
-        ilElectronicCourseReservePlugin::getInstance()->includeClass('./controller/class.' . $controller . '.php');
-
         return new $controller($controller);
     }
 
@@ -94,10 +81,8 @@ class ilECRCommandDispatcher
 
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCoreController()
+
+    public function getCoreController(): ilUIHookPluginGUI
     {
         return $this->controller;
     }
@@ -105,7 +90,7 @@ class ilECRCommandDispatcher
     /**
      * @param $controller
      */
-    public function setCoreController($controller)
+    public function setCoreController($controller): void
     {
         $this->controller = $controller;
     }

@@ -9,36 +9,19 @@
 class ilElectronicCourseReserveLangData
 {
 
-    /**
-     * @var array
-     */
-    public static $ecr_lang_data = array();
 
-    /**
-     * @var ilDB
-     */
-    public $db;
+    public static array $ecr_lang_data = array();
 
-    /**
-     * @var string
-     */
-    protected $lang_key;
+    public ilDBInterface $db;
+
+    protected string $lang_key;
 
     /**
      * default
-     * @var string
      */
-    protected $identifier = 'ecr_tab_title';
+    protected string $identifier = 'ecr_tab_title';
 
-    /**
-     * @var null
-     */
-    protected $ecr_content = null;
-
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
     public function __construct()
     {
@@ -52,7 +35,7 @@ class ilElectronicCourseReserveLangData
      * @param $identifier
      * @return mixed|string
      */
-    public function txt($identifier)
+    public function txt($identifier): mixed
     {
         global $DIC;
         $lang_key = $DIC->user()->getLanguage();
@@ -63,7 +46,7 @@ class ilElectronicCourseReserveLangData
         return self::$ecr_lang_data[$lang_key];
     }
 
-    private function readFromDB()
+    private function readFromDB(): void
     {
         $query = 'SELECT * FROM ecr_lang_data ';
         $res = $this->db->query($query);
@@ -73,7 +56,7 @@ class ilElectronicCourseReserveLangData
         }
     }
 
-    public function saveTranslation()
+    public function saveTranslation(): void
     {
         $this->db->replace('ecr_lang_data',
             array
@@ -91,7 +74,7 @@ class ilElectronicCourseReserveLangData
     /**
      * @return string
      */
-    public function getLangKey()
+    public function getLangKey(): string
     {
         return $this->lang_key;
     }
@@ -99,7 +82,7 @@ class ilElectronicCourseReserveLangData
     /**
      * @param string $lang_key
      */
-    public function setLangKey($lang_key)
+    public function setLangKey(string $lang_key): void
     {
         $this->lang_key = $lang_key;
     }
@@ -107,7 +90,7 @@ class ilElectronicCourseReserveLangData
     /**
      * @return string
      */
-    public function getValue()
+    public function getValue(): string
     {
         return $this->value;
     }
@@ -115,7 +98,7 @@ class ilElectronicCourseReserveLangData
     /**
      * @param string $value
      */
-    public function setValue($value)
+    public function setValue(string $value): void
     {
         $this->value = $value;
     }
@@ -124,14 +107,14 @@ class ilElectronicCourseReserveLangData
      * @param $lang_key
      * @return int
      */
-    public static function lookupObjIdByLangKey($lang_key)
+    public static function lookupObjIdByLangKey($lang_key): int
     {
         global $DIC;
 
         $res = $DIC->database()->queryF('SELECT obj_id FROM object_data WHERE title = %s',
             array('text'), array(trim($lang_key)));
 
-        while ($row = $DIC->database()->fetchAssoc($res)) {
+        if ($row = $DIC->database()->fetchAssoc($res)) {
             return $row['obj_id'];
         }
 
@@ -142,14 +125,14 @@ class ilElectronicCourseReserveLangData
      * @param $lang_key
      * @return string
      */
-    public static function lookupEcrContentByLangKey($lang_key)
+    public static function lookupEcrContentByLangKey($lang_key): string
     {
         global $DIC;
 
         $res = $DIC->database()->queryF('SELECT ecr_content FROM ecr_lang_data WHERE lang_key = %s',
             array('text'), array(trim($lang_key)));
 
-        while ($row = $DIC->database()->fetchAssoc($res)) {
+        if ($row = $DIC->database()->fetchAssoc($res)) {
             return $row['ecr_content'];
         }
 
@@ -160,7 +143,7 @@ class ilElectronicCourseReserveLangData
      * @param $lang_key
      * @param $ecr_content
      */
-    public static function writeEcrContent($lang_key, $ecr_content)
+    public static function writeEcrContent($lang_key, $ecr_content): void
     {
         global $DIC;
 

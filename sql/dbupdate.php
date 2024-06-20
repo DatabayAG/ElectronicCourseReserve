@@ -1,7 +1,7 @@
 <#1>
 <?php
 /**
- * @var $ilDB ilDB|ilDBInterface
+ * @var $ilDB ilDBInterface
  */
 $fields = [
     'ref_id' => [

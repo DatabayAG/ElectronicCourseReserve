@@ -11,15 +11,16 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
     /**
      * @inheritdoc
      */
-    protected function getDefaultCommand()
+    protected function getDefaultCommand(): string
     {
         return 'showSettings';
     }
 
     /**
      * @inheritdoc
+     * @throws ilCtrlException
      */
-    protected function showTabs()
+    protected function showTabs(): void
     {
         parent::showTabs();
 
@@ -38,8 +39,9 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      * @return ilPropertyFormGUI
+     * @throws ilCtrlException
      */
-    protected function getSettingsForm()
+    protected function getSettingsForm(): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();
         $form->setFormAction($this->ctrl->getFormAction($this, 'saveSettings'));
@@ -59,8 +61,9 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      * @param ilPropertyFormGUI|null $form
+     * @throws ilCtrlException
      */
-    protected function showSettings(ilPropertyFormGUI $form = null)
+    protected function showSettings(ilPropertyFormGUI $form = null): void
     {
         $this->tabs->activateSubTab('showSettings');
 
@@ -76,14 +79,15 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      *
+     * @throws ilCtrlException
      */
-    protected function saveSettings()
+    protected function saveSettings(): void
     {
         $form = $this->getSettingsForm();
         if ($form->checkInput()) {
             $this->getPluginObject()->setSetting('enable_use_agreement', (int) $form->getInput('enable_use_agreement'));
 
-            ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+            $this->tpl->setOnScreenMessage("success", $this->lng->txt('saved_successfully'), true);
             $this->ctrl->redirect($this, 'showUseAgreementSettings');
         }
 
@@ -93,8 +97,9 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      *
+     * @throws ilCtrlException|ilException
      */
-    protected function editUserAgreements()
+    protected function editUserAgreements(): void
     {
         $this->tabs->activateSubTab('editUserAgreements');
 
@@ -102,9 +107,6 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
         $button->setCaption($this->getPluginObject()->txt('add_use_agreement'), false);
         $button->setUrl($this->ctrl->getLinkTarget($this, 'showUserAgreementForm'));
         $this->toolbar->addButtonInstance($button);
-
-        $this->getPluginObject()->includeClass('tables/class.ilElectronicCourseReserveAgreementTableGUI.php');
-        $this->getPluginObject()->includeClass('tables/class.ilElectronicCourseReserveAgreementTableProvider.php');
 
         $table = new ilElectronicCourseReserveAgreementTableGUI($this, 'editUserAgreements');
         $provider = new ilElectronicCourseReserveAgreementTableProvider();
@@ -115,8 +117,9 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      * @return ilPropertyFormGUI
+     * @throws ilCtrlException
      */
-    protected function getUserAgreementForm()
+    protected function getUserAgreementForm(): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();
         $form->setFormAction($this->ctrl->getFormAction($this, 'saveUserAgreement'));
@@ -124,6 +127,7 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
         $installed_langs = $this->lng->getInstalledLanguages();
         $this->lng->loadLanguageModule('meta');
+        $lang_options = [];
         foreach ($installed_langs as $lang) {
             $lang_options[$lang] = $this->lng->txt('meta_l_' . $lang);
         }
@@ -159,7 +163,6 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
         $agreement_input->setRTESupport($this->user->getId(), 'ecr_ua', 'ecr_ua');
 
-        $this->getPluginObject()->includeClass('class.ilElectronicCourseReservePostPurifier.php');
         $purifier = new ilElectronicCourseReservePostPurifier();
         $agreement_input->usePurifier(true);
         $agreement_input->setPurifier($purifier);
@@ -173,8 +176,9 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      * @param ilPropertyFormGUI|null $form
+     * @throws ilCtrlException
      */
-    protected function showUserAgreementForm(ilPropertyFormGUI $form = null)
+    protected function showUserAgreementForm(ilPropertyFormGUI $form = null): void
     {
         $this->tabs->activateSubTab('editUserAgreements');
 
@@ -187,21 +191,21 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      *
+     * @throws ilCtrlException
      */
-    protected function saveUserAgreement()
+    protected function saveUserAgreement(): void
     {
         $form = $this->getUserAgreementForm();
         if ($form->checkInput()) {
             $lang = $form->getInput('lang');
             $agreement_text = $form->getInput('agreement');
 
-            $this->getPluginObject()->includeClass('class.ilElectronicCourseReserveAgreement.php');
             $agreement_obj = new ilElectronicCourseReserveAgreement();
             $agreement_obj->setLang($lang);
             $agreement_obj->setAgreement($agreement_text);
             $agreement_obj->saveAgreement();
 
-            ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+            $this->tpl->setOnScreenMessage("success", $this->lng->txt('saved_successfully'), true);
             $this->ctrl->redirect($this, 'editUserAgreements');
         }
 
@@ -211,12 +215,13 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
 
     /**
      * @param ilPropertyFormGUI|null $form
+     * @throws ilCtrlException
      */
-    protected function editUserAgreement(ilPropertyFormGUI $form = null)
+    protected function editUserAgreement(ilPropertyFormGUI $form = null): void
     {
         $this->tabs->activateSubTab('editUserAgreements');
 
-        $language = isset($_GET['ecr_lang']) ? $_GET['ecr_lang'] : '';
+        $language = $_GET['ecr_lang'] ?? '';
         if (null === $form) {
             $form = $this->getUserAgreementForm();
             $this->getUserAgreementValues($form, $language);
@@ -230,9 +235,8 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
      * @param ilPropertyFormGUI $form
      * @param string $language
      */
-    protected function getUserAgreementValues(ilPropertyFormGUI $form, $language)
+    protected function getUserAgreementValues(ilPropertyFormGUI $form, string $language): void
     {
-        $this->getPluginObject()->includeClass('class.ilElectronicCourseReserveAgreement.php');
         $use_agreement = new ilElectronicCourseReserveAgreement();
         $use_agreement->loadByLang($language);
 

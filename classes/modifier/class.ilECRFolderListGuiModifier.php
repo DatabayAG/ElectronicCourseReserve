@@ -9,20 +9,13 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
 class ilECRFolderListGuiModifier implements ilECRBaseModifier
 {
 
-    /**
-     * @var ilElectronicCourseReserveListGUIHelper
-     */
-    protected $list_gui_helper;
 
-    /**
-     * @var ilObjDataCache
-     */
-    protected $data_cache;
+    protected ilElectronicCourseReserveListGUIHelper $list_gui_helper;
 
-    /**
-     * @var ilAccessHandler
-     */
-    protected $access;
+    protected ilObjectDataCache $data_cache;
+
+
+    protected ilAccessHandler $access;
 
     public function __construct()
     {
@@ -33,7 +26,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
         $this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
     }
 
-    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         if (
             $a_par['tpl_id'] != 'Services/Container/tpl.container_list_item.html' &&
@@ -57,7 +50,12 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
         return true;
     }
 
-    public function modifyHtml($a_comp, $a_part, $a_par)
+    /**
+     * @throws DOMException
+     * @throws ilObjectNotFoundException
+     * @throws ilDatabaseException
+     */
+    public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         $contextRefId = (int) $_GET['ref_id'];
 
@@ -113,7 +111,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
                 foreach ($elements as $element) {
                     $action = $element->getAttribute('href');
                     foreach ($this->list_gui_helper->actions_to_remove as $key => $cmd) {
-                        if (strpos($action, 'cmd=' . $cmd) !== false) {
+                        if (str_contains($action, 'cmd=' . $cmd)) {
                             $element->parentNode->removeChild($element);
                             $processed = true;
                         }
@@ -144,8 +142,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
                 if ($show_image == 1 && strlen($image) > 0) {
                     $image_node_list = $xpath->query("//img[@class='ilListItemIcon']");
                     $image_node = $image_node_list->item(0);
-                    /** @var ilElectronicCourseReservePlugin $plugin */
-                    $plugin = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+                    $plugin = ilElectronicCourseReservePlugin::getInstance();
 
                     if ($itemData[$itemRefId]['icon_type'] === $plugin::ICON_URL) {
                         $image_node->setAttribute('src', $image);

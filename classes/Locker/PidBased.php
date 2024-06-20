@@ -3,28 +3,28 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Locker;
 
+use Exception;
+use ilLogger;
+use ilSetting;
+
 /**
  * Class PidBased
  * @package ILIAS\Plugin\ElectronicCourseReserve\Locker
  */
 class PidBased implements LockerInterface
 {
-    /**
-     * @var \ilSetting
-     */
-    protected $settings;
 
-    /**
-     * @var \ilLogger
-     */
-    protected $logger;
+    protected ilSetting $settings;
+
+
+    protected ilLogger $logger;
 
     /**
      * PidBased constructor.
-     * @param \ilSetting $settings
-     * @param \ilLogger $logger
+     * @param ilSetting $settings
+     * @param ilLogger $logger
      */
-    public function __construct(\ilSetting $settings, \ilLogger $logger)
+    public function __construct(ilSetting $settings, ilLogger $logger)
     {
         $this->settings = $settings;
         $this->logger = $logger;
@@ -34,14 +34,14 @@ class PidBased implements LockerInterface
      * @param string $pid
      * @return bool
      */
-    protected function isRunning($pid)
+    protected function isRunning(string $pid): bool
     {
         try {
             $result = shell_exec(sprintf("ps %d", $pid));
             if (count(preg_split("/\n/", $result)) > 2) {
                 return true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error("Can\'t determine locking state: " . $e->getMessage());
         }
 
@@ -51,7 +51,7 @@ class PidBased implements LockerInterface
     /**
      *
      */
-    protected function writeLockedState()
+    protected function writeLockedState(): void
     {
         $this->settings->set('esa_cron_lock_status', 1);
         $this->settings->set('esa_cron_lock_ts', time());
@@ -61,14 +61,14 @@ class PidBased implements LockerInterface
     /**
      * @inheritdoc
      */
-    public function acquireLock()
+    public function acquireLock(): bool
     {
         if (!$this->settings->get('esa_cron_lock_status', 0)) {
             $this->writeLockedState();
             return true;
         }
 
-        $pid = $this->settings->get('esa_cron_lock_pid', null);
+        $pid = $this->settings->get('esa_cron_lock_pid');
         if ($pid && $this->isRunning($pid)) {
             $lastLockTimestamp = $this->settings->get('esa_cron_lock_ts', time());
             if ($lastLockTimestamp > time() - (60 * 60 * 3)) {
@@ -83,7 +83,7 @@ class PidBased implements LockerInterface
     /**
      * @inheritdoc
      */
-    public function isLocked()
+    public function isLocked(): bool
     {
         return (bool) $this->settings->get('esa_cron_lock_status', 0);
     }
@@ -91,7 +91,7 @@ class PidBased implements LockerInterface
     /**
      * @inheritdoc
      */
-    public function releaseLock()
+    public function releaseLock(): void
     {
         $this->settings->set('esa_cron_lock_status', 0);
         $this->settings->set('esa_cron_lock_ts', null);

@@ -3,7 +3,13 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Filesystem;
 
+use Exception;
+use FilesystemIterator;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Logger;
+use ParentIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use Throwable;
 
 /**
  * Class Purger
@@ -11,17 +17,15 @@ use ILIAS\Plugin\ElectronicCourseReserve\Logging\Logger;
  */
 class Purger
 {
-    /** @var Logger */
-    protected $log;
+    protected Logger $log;
 
-    /** @var string */
-    protected $directory = '';
+    protected string $directory = '';
 
     /**
      * @param Logger $log
      * @param string $directory
      */
-    public function __construct(Logger $log, $directory)
+    public function __construct(Logger $log, string $directory)
     {
         $this->log = $log;
         $this->directory = $directory;
@@ -30,19 +34,19 @@ class Purger
     /**
      *
      */
-    public function purge()
+    public function purge(): void
     {
         try {
             $this->log->info('Started cleanup job for: ' . realpath($this->directory));
 
-            $iterator = new \RecursiveDirectoryIterator(
+            $iterator = new RecursiveDirectoryIterator(
                 realpath($this->directory),
-                \RecursiveDirectoryIterator::SKIP_DOTS
+                FilesystemIterator::SKIP_DOTS
             );
 
-            $directories = new \ParentIterator($iterator);
+            $directories = new ParentIterator($iterator);
             $filterIterator = new Filter\Mtime(
-                new \RecursiveIteratorIterator($directories, \RecursiveIteratorIterator::SELF_FIRST),
+                new RecursiveIteratorIterator($directories, RecursiveIteratorIterator::SELF_FIRST),
                 strtotime('-1 minute')
             );
 
@@ -59,9 +63,9 @@ class Purger
             }
 
             $this->log->info('Finished cleanup.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->log->err($e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->log->err($e->getMessage());
         }
     }

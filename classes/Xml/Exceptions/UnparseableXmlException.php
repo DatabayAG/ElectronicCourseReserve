@@ -14,7 +14,7 @@ use RuntimeException;
 class UnparseableXmlException extends RuntimeException
 {
     /** @var array<int, string> */
-    private static $levelMap = [
+    private static array $levelMap = [
         LIBXML_ERR_WARNING => 'WARNING',
         LIBXML_ERR_ERROR => 'ERROR',
         LIBXML_ERR_FATAL => 'FATAL'

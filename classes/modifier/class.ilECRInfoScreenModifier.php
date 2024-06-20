@@ -12,15 +12,10 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
 class ilECRInfoScreenModifier implements ilECRBaseModifier
 {
 
-    /**
-     * @var ilObjDataCache
-     */
-    protected $data_cache;
+    protected ilObjectDataCache $data_cache;
 
-    /**
-     * @var ilAccessHandler
-     */
-    protected $access;
+
+    protected ilAccessHandler $access;
 
     public function __construct()
     {
@@ -32,7 +27,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
     /**
      * @inheritdoc
      */
-    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
             return false;
@@ -59,8 +54,10 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 
     /**
      * @inheritdoc
+     * @throws ilException
+     * @throws DOMException
      */
-    public function modifyHtml($a_comp, $a_part, $a_par)
+    public function modifyHtml($a_comp, $a_part, $a_par): array|string
     {
         /** @var Helper $objectHelper */
         $objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];
@@ -91,7 +88,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
         $label->setAttribute('class', 'il_InfoScreenProperty control-label col-xs-3');
         $value = $dom->createElement('div');
         $value->setAttribute('class', 'il_InfoScreenPropertyValue col-xs-9');
-        $value->nodeValue = (int) $instance->getRefId();
+        $value->nodeValue = $instance->getRefId();
         $row->appendChild($label);
         $row->appendChild($value);
 

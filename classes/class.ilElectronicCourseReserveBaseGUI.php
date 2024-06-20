@@ -3,72 +3,53 @@
 
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
-use Zend\Crypt\BlockCipher;
+use Laminas\Crypt\BlockCipher;
 
 /**
  * @author Michael Jansen <mjansen@databay.de>
  */
 abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
 {
-    /** @var ilCtrl */
-    protected $ctrl;
+    protected ilCtrl|ilCtrlInterface $ctrl;
 
-    /** @var ilTabsGUI */
-    protected $tabs;
+    protected ilTabsGUI $tabs;
 
-    /** @var ilLanguage */
-    protected $lng;
+    protected ilLanguage $lng;
 
-    /** @var ilTemplate */
-    protected $tpl;
+    protected ilTemplate|ilGlobalTemplateInterface $tpl;
 
-    /** @var ilObjUser */
-    protected $user;
+    protected ilObjUser $user;
 
-    /** @var ilToolbarGUI */
-    protected $toolbar;
+    protected ilToolbarGUI $toolbar;
 
-    /** @var ilObjectDataCache */
-    protected $objectCache;
+    protected ilObjectDataCache $objectCache;
 
-    /** @var ilRbacReview */
-    public $rbacreview;
+    public ilRbacReview $rbacreview;
 
-    /** @var ilSetting */
-    public $settings;
+    public ilSetting $settings;
 
-    /** @var ILIAS\Plugin\ElectronicCourseReserve\Locker\LockerInterface */
-    protected $lock;
+    protected ILIAS\Plugin\ElectronicCourseReserve\Locker\LockerInterface $lock;
 
-    /** @var BlockCipher */
-    protected $encrypter;
-
-    /** @var BlockCipher $symmetric */
+    protected BlockCipher $encrypter;
     protected ?ilPlugin $plugin_object;
 
-    /** @var Factory */
-    protected $uiFactory;
+    protected Factory $uiFactory;
 
-    /** @var Renderer */
-    protected $uiRenderer;
+    protected Renderer $uiRenderer;
 
-    /** @var ilLogger */
-    protected $log;
+    protected ilLogger $log;
 
     /**
      * ilCourseBookingDecisionMakerGUI constructor.
-     * @param ilElectronicCourseReservePlugin $plugin
      */
-    public function __construct(ilElectronicCourseReservePlugin $plugin = null)
+    public function __construct(?ilElectronicCourseReservePlugin $plugin = null)
     {
         global $DIC;
 
         if (null === $plugin) {
-            $plugin = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+            $plugin = ilElectronicCourseReservePlugin::getInstance();
         }
         $this->plugin_object = $plugin;
-
-        $this->plugin_object->includeClass('class.ilElectronicCourseReserveLangData.php');
 
         $this->tabs = $DIC->tabs();
         $this->ctrl = $DIC->ctrl();
@@ -108,8 +89,9 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
 
     /**
      *
+     * @throws ilCtrlException
      */
-    protected function showTabs()
+    protected function showTabs(): void
     {
         $this->tabs->clearTargets();
 
@@ -151,8 +133,9 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
 
     /**
      *
+     * @throws ilCtrlException
      */
-    protected function showBackTargetTab()
+    protected function showBackTargetTab(): void
     {
         if (isset($_GET['plugin_id']) && $_GET['plugin_id']) {
             $this->tabs->setBackTarget(
@@ -170,7 +153,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
     /**
      * @param string $cmd
      */
-    public function performCommand($cmd): void
+    public function performCommand(string $cmd): void
     {
         switch (true) {
             case method_exists($this, $cmd):
@@ -186,5 +169,5 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
     /**
      * @return string
      */
-    abstract protected function getDefaultCommand();
+    abstract protected function getDefaultCommand(): string;
 }

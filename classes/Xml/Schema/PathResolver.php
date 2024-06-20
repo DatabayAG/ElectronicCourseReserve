@@ -12,8 +12,7 @@ use ilElectronicCourseReservePlugin;
  */
 final class PathResolver
 {
-    /** @var ilElectronicCourseReservePlugin */
-    private $plugin;
+    private ilElectronicCourseReservePlugin $plugin;
 
     /**
      * PathResolver constructor.

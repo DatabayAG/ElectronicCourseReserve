@@ -15,12 +15,10 @@ use ReflectionClass;
  */
 trait HttpContext
 {
-    /** @var ilObjectDataCache */
-    protected $objectCache;
-    /** @var ServerRequestInterface */
-    protected $httpRequest;
-    /** @var ilCtrl */
-    protected $ctrl;
+    protected ilObjectDataCache $objectCache;
+    protected ServerRequestInterface $httpRequest;
+
+    protected ilCtrl $ctrl;
 
     /**
      * @param string $class
@@ -93,7 +91,7 @@ trait HttpContext
             )
         );
     }
-    
+
     /**
      * @param string[] $commands
      * @return bool
@@ -104,8 +102,8 @@ trait HttpContext
             if (class_exists($command)) {
                 $command = (new ReflectionClass($command))->getShortName();
             }
-            
-            return strpos(strtolower((string) $this->ctrl->getCmd()), strtolower($command)) !== false;
+
+            return str_contains(strtolower((string)$this->ctrl->getCmd()), strtolower($command));
         })) > 0;
     }
 
@@ -114,9 +112,7 @@ trait HttpContext
      */
     final public function getRefId() : int
     {
-        $refId = (int) ($_GET['ref_id'] ?? 0);
-
-        return $refId;
+        return (int) ($_GET['ref_id'] ?? 0);
     }
 
     /**
@@ -146,7 +142,7 @@ trait HttpContext
             return false;
         }
 
-        return ((int) $this->objectCache->lookupObjId($refId) === $objId);
+        return ($this->objectCache->lookupObjId($refId) === $objId);
     }
 
     /**
@@ -160,7 +156,7 @@ trait HttpContext
             return false;
         }
 
-        $objId = (int) $this->objectCache->lookupObjId($refId);
+        $objId = $this->objectCache->lookupObjId($refId);
 
         return $this->objectCache->lookupType($objId) === $type;
     }
@@ -176,7 +172,7 @@ trait HttpContext
             return false;
         }
 
-        $objId = (int) $this->objectCache->lookupObjId($refId);
+        $objId = $this->objectCache->lookupObjId($refId);
 
         return $this->objectCache->lookupType($objId) === $type;
     }

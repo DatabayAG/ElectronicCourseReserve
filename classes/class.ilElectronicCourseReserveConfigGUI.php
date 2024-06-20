@@ -1,6 +1,8 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use JetBrains\PhpStorm\NoReturn;
+
 require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
@@ -9,14 +11,14 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveContentConfigGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveDeletionProtocolGUI
- * @ilCtrl_IsCalledBy ilElectronicCourseReserveConfigGUI: ilAdministrationGUI
+ * @ilCtrl_IsCalledBy ilElectronicCourseReserveConfigGUI: ilObjComponentSettingsGUI
  */
 class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
     /**
      * @inheritdoc
      */
-    protected function getDefaultCommand()
+    protected function getDefaultCommand(): string
     {
         return 'showGeneralConfiguration';
     }
@@ -29,13 +31,15 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
         $nextClass = $this->ctrl->getNextClass();
         switch (strtolower($nextClass)) {
             case strtolower('ilGpgFingerPrintInputGUI'):
-                $this->getPluginObject()->includeClass('class.ilGpgHomeDirInputGUI.php');
-                $this->getPluginObject()->includeClass('class.ilGpgFingerPrintInputGUI.php');
+                /**
+                 * @var ilElectronicCourseReservePlugin $pluginObject
+                 */
+                $pluginObject = $this->getPluginObject();
                 $gpgHomeDir = new ilGpgFingerPrintInputGUI(
-                    $this->getPluginObject(),
-                    new ilGpgHomeDirInputGUI($this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir'),
+                    $pluginObject,
+                    new ilGpgHomeDirInputGUI($pluginObject->txt('ecr_gpg_homedir'), 'gpg_homedir'),
                     $this->ctrl, $this->log, $this->uiFactory, $this->uiRenderer,
-                    $this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir'
+                    $pluginObject->txt('ecr_gpg_homedir'), 'gpg_homedir'
                 );
                 $this->ctrl->forwardCommand($gpgHomeDir);
                 break;
@@ -58,22 +62,17 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 $this->showTabs();
                 $this->tabs->setSubTabActive('import_directory');
 
-                $importDirectory = ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory');
+                $importDirectory = CLIENT_DATA_DIR . '/' . $this->getPluginObject()->getSetting('import_directory');
                 if ($this->isValidDirectory($importDirectory) && is_dir($importDirectory)) {
-                    $gui = new ilFileSystemGUI(ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory'));
+                    $gui = new ilFileSystemGUI(CLIENT_DATA_DIR . '/' . $this->getPluginObject()->getSetting('import_directory'));
                     $gui->setAllowFileCreation(true);
                     $gui->setAllowDirectoryCreation(false);
                     $gui->setAllowedSuffixes(array('xml', 'jpeg', 'jpg', 'svg', 'png', 'pdf'));
-                    if (version_compare(ILIAS_VERSION_NUMERIC, '5.3.0', '<')) {
-                        $reflGui = new ReflectionObject($gui);
-                        $refProp = $reflGui->getProperty('commands');
-                        $refProp->setAccessible(true);
-                        $commands = (array) $refProp->getValue($gui);
-                    } else {
-                        $commands = $gui->getActionCommands();
-                    }
-                    $commands = array_filter($commands, function ($cmd) {
-                        return $cmd['method'] != 'renameFileForm';
+
+                    $commands = $gui->getActionCommands();
+
+                    $commands = array_filter($commands, static function (array $cmd) {
+                        return $cmd['method'] !== 'renameFileForm';
                     });
                     $gui->clearCommands();
                     foreach ($commands as $cmd) {
@@ -88,17 +87,14 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 break;
 
             case strtolower('ilElectronicCourseReserveAgreementConfigGUI'):
-                ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveAgreementConfigGUI.php');
                 $this->ctrl->forwardCommand(new ilElectronicCourseReserveAgreementConfigGUI(ilElectronicCourseReservePlugin::getInstance()));
                 break;
 
             case strtolower('ilElectronicCourseReserveDeletionProtocolGUI'):
-                ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveDeletionProtocolGUI.php');
                 $this->ctrl->forwardCommand(new ilElectronicCourseReserveDeletionProtocolGUI(ilElectronicCourseReservePlugin::getInstance()));
                 break;
 
             case strtolower('ilElectronicCourseReserveContentConfigGUI'):
-                ilElectronicCourseReservePlugin::getInstance()->includeClass('class.ilElectronicCourseReserveContentConfigGUI.php');
                 $this->ctrl->forwardCommand(new ilElectronicCourseReserveContentConfigGUI(ilElectronicCourseReservePlugin::getInstance()));
                 break;
 
@@ -112,7 +108,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
     /**
      * @inheritdoc
      */
-    protected function showTabs()
+    protected function showTabs(): void
     {
         parent::showTabs();
 
@@ -122,7 +118,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             $this->ctrl->getLinkTarget($this, 'configure')
         );
 
-        $importDirectory = ilUtil::getDataDir() . '/' . $this->getPluginObject()->getSetting('import_directory');
+        $importDirectory = CLIENT_DATA_DIR . '/' . $this->getPluginObject()->getSetting('import_directory');
         if ($this->isValidDirectory($importDirectory) && is_dir($importDirectory)) {
             $this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
             $this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $_GET['cname']);
@@ -137,8 +133,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             );
         }
 
-        if (in_array(strtolower($this->ctrl->getCmd()),
-                ['listfiles']) || strtolower($_GET['cmdClass']) === 'ilfilesystemgui') {
+        if (strtolower($this->ctrl->getCmd()) === 'listfiles' || strtolower($_GET['cmdClass']) === 'ilfilesystemgui') {
             $this->tabs->activateSubTab('import_directory');
         } else {
             $this->tabs->activateSubTab('configure');
@@ -150,10 +145,10 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
      * @param string $a_directory
      * @return bool
      */
-    protected function isValidDirectory($a_directory)
+    protected function isValidDirectory(string $a_directory): bool
     {
         $a_directory = basename($a_directory);
-        if (substr($a_directory, 0, 1) === '/' || substr($a_directory, 0, 1) === '.' || $a_directory === '') {
+        if (str_starts_with($a_directory, '/') || str_starts_with($a_directory, '.') || $a_directory === '') {
             return false;
         }
 
@@ -162,8 +157,11 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
     /**
      * @param ilPropertyFormGUI|null $form
+     * @throws ilCtrlException
+     * @throws ilException
+     * @throws ilFormException
      */
-    protected function showGeneralConfiguration(ilPropertyFormGUI $form = null)
+    protected function showGeneralConfiguration(ilPropertyFormGUI $form = null): void
     {
         if (!$this->settings->get('soap_user_administration')) {
             $ids = ilObject::_getIdsForTitle('System Settings', 'adm');
@@ -181,7 +179,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 ),
                 'showWebServices'
             );
-            ilUtil::sendFailure(sprintf($this->getPluginObject()->txt('ecr_soap_activation_required'), $url));
+            $this->tpl->setOnScreenMessage("failure", sprintf($this->getPluginObject()->txt('ecr_soap_activation_required'), $url));
         }
 
         if (null === $form) {
@@ -197,7 +195,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
     /**
      * @param ilPropertyFormGUI $form
      */
-    protected function populateValues(ilPropertyFormGUI $form)
+    protected function populateValues(ilPropertyFormGUI $form): void
     {
         $form->setValuesByArray([
             'gpg_homedir' => $this->getPluginObject()->getSetting('gpg_homedir'),
@@ -218,8 +216,11 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
     /**
      *
+     * @throws ilCtrlException
+     * @throws ilFormException
+     * @throws ilException
      */
-    protected function getGeneralSettingsForm()
+    protected function getGeneralSettingsForm(): ilPropertyFormGUI
     {
         $disabled = false;
         if ($this->lock->isLocked()) {
@@ -230,16 +231,18 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
         $form->setFormAction($this->ctrl->getFormAction($this, 'saveSettings'));
         $form->setTitle($this->lng->txt('settings'));
 
-        $this->getPluginObject()->includeClass('class.ilGpgHomeDirInputGUI.php');
         $gpgHomeDir = new ilGpgHomeDirInputGUI($this->getPluginObject()->txt('ecr_gpg_homedir'), 'gpg_homedir');
         $gpgHomeDir->setDisabled($disabled);
         $gpgHomeDir->setRequired(true);
         $gpgHomeDir->setInfo($this->getPluginObject()->txt('ecr_gpg_homedir_info'));
 
-        $this->getPluginObject()->includeClass('class.ilGpgFingerPrintInputGUI.php');
+        /**
+         * @var ilElectronicCourseReservePlugin $pluginObject
+         */
+        $pluginObject = $this->getPluginObject();
         $keyFingerprint = new ilGpgFingerPrintInputGUI(
-            $this->getPluginObject(), $gpgHomeDir, $this->ctrl, $this->log, $this->uiFactory, $this->uiRenderer,
-            $this->getPluginObject()->txt('ecr_sign_key_fingerprint'), 'sign_key_fingerprint'
+            $pluginObject, $gpgHomeDir, $this->ctrl, $this->log, $this->uiFactory, $this->uiRenderer,
+            $pluginObject->txt('ecr_sign_key_fingerprint'), 'sign_key_fingerprint'
         );
         $keyFingerprint->setDisabled($disabled);
         $keyFingerprint->setRequired(true);
@@ -273,7 +276,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 $dummyCrs->setRefId(-1);
                 $dummyCrs->setTitle('Example');
 
-                $exampleUrlTpl = $this->getPluginObject()->getTemplate('tpl.example_url.html', true, true);
+                $exampleUrlTpl = $this->getPluginObject()->getTemplate('tpl.example_url.html');
                 /** @var ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder $linkBuilder */
                 $linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
                 $exampleUrlTpl->setVariable('URL', $linkBuilder->getLibraryOrderLink($dummyCrs));
@@ -283,8 +286,6 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 $exampleLink->setValue($exampleUrlTpl->get());
                 $searchSystemUrl->addSubItem($exampleLink);
             } catch (Throwable $e) {
-                $searchSystemUrl->setAlert($e->getMessage());
-            } catch (Exception $e) {
                 $searchSystemUrl->setAlert($e->getMessage());
             }
         }
@@ -368,7 +369,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
         $deletionRecipients->setDisabled($disabled);
 
         $importDirectory = new ilTextInputGUI($this->getPluginObject()->txt('import_directory'), 'import_directory');
-        $dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $this->getPluginObject()->getSetting('import_directory');
+        $dir = CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $this->getPluginObject()->getSetting('import_directory');
         $importDirectory->setInfo(sprintf($this->getPluginObject()->txt('import_directory_info'), $dir));
         $importDirectory->setRequired(true);
         $importDirectory->setSize(120);
@@ -424,11 +425,14 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
     /**
      *
+     * @throws ilCtrlException
+     * @throws ilException
+     * @throws ilFormException
      */
-    protected function saveSettings()
+    protected function saveSettings(): void
     {
         if ($this->lock->isLocked()) {
-            ilUtil::sendInfo($this->lng->txt('could_not_save_job_prob_runs'), true);
+            $this->tpl->setOnScreenMessage("info", $this->lng->txt('could_not_save_job_prob_runs'), true);
             $this->ctrl->redirect($this);
         }
 
@@ -463,11 +467,11 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 (int) $form->getInput('token_append_obj_title'));
             $this->getPluginObject()->setSetting('token_append_to_bibl', (int) $form->getInput('token_append_to_bibl'));
 
-            if (strlen($import_path) > 0 && !is_dir(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $import_path)) {
-                ilUtil::makeDirParents(ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $import_path);
+            if (strlen($import_path) > 0 && !is_dir(CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $import_path)) {
+                ilUtil::makeDirParents(CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $import_path);
             }
 
-            ilUtil::sendSuccess($this->lng->txt('saved_successfully'), true);
+            $this->tpl->setOnScreenMessage("success", $this->lng->txt('saved_successfully'), true);
             $this->ctrl->redirect($this);
         }
 
@@ -478,8 +482,9 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
     /**
      *
+     * @throws JsonException
      */
-    protected function doUserAutoComplete()
+    #[NoReturn] protected function doUserAutoComplete(): void
     {
         if (!isset($_GET['autoCompleteField'])) {
             $a_fields = array('login', 'firstname', 'lastname', 'email', 'recipients');
@@ -499,8 +504,9 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
     /**
      *
+     * @throws ilCtrlException
      */
-    protected function confirmReleaseLock()
+    protected function confirmReleaseLock(): void
     {
         $confirmation = new ilConfirmationGUI();
         $confirmation->setFormAction($this->ctrl->getFormAction($this, 'showConfigurationForm'));
@@ -513,28 +519,29 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
     /**
      *
+     * @throws ilCtrlException
      */
-    protected function performReleaseLock()
+    protected function performReleaseLock(): void
     {
         $this->lock->releaseLock();
 
-        ilUtil::sendSuccess($this->getPluginObject()->txt('released_lock'), true);
+        $this->tpl->setOnScreenMessage("success", $this->getPluginObject()->txt('released_lock'), true);
         $this->ctrl->redirect($this, 'showConfigurationForm');
     }
 
     /**
      *
      */
-    protected function renderPossibleImportDirectoryIssues()
+    protected function renderPossibleImportDirectoryIssues(): void
     {
         if (strlen($this->getPluginObject()->getSetting('import_directory')) > 0) {
-            $dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $this->getPluginObject()->getSetting('import_directory');
+            $dir = CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $this->getPluginObject()->getSetting('import_directory');
 
             if (
                 !is_dir($dir) ||
                 !is_readable($dir) ||
                 !is_writeable($dir)) {
-                ilUtil::sendInfo($this->getPluginObject()->txt('import_directory_info_perms'));
+                $this->tpl->setOnScreenMessage("info", $this->getPluginObject()->txt('import_directory_info_perms'));
             }
         }
     }
@@ -563,7 +570,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 implode(', ', $invalidRecipients)
             ));
 
-            ilUtil::sendFailure($this->lng->txt('form_input_not_valid'));
+            $this->tpl->setOnScreenMessage("failure", $this->lng->txt('form_input_not_valid'));
             $this->tpl->setContent($form->getHTML());
             return false;
         }

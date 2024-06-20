@@ -3,6 +3,7 @@
 namespace ILIAS\Plugin\ElectronicCourseReserve\Library;
 
 use GnuPG;
+use GpgListKeysResult;
 use GpgSignResult;
 
 /**
@@ -12,8 +13,7 @@ use GpgSignResult;
  */
 class LatestVersionGpgWrapper implements GpgWrapper
 {
-    /** @var GnuPG */
-    private $coreLibrary;
+    private GnuPG $coreLibrary;
 
     /**
      * LatestVersionGpgWrapper constructor.
@@ -31,9 +31,9 @@ class LatestVersionGpgWrapper implements GpgWrapper
         $message,
         $keyId = null,
         $passphrase = null,
-        $learsign = true,
-        $detach = false,
-        $binary = false
+        bool $learsign = true,
+        bool $detach = false,
+        bool $binary = false
     ) {
         // See: https://d.sb/2016/11/gpg-inappropriate-ioctl-for-device-errors
         $result = $this->coreLibrary->sign($message, $keyId, $passphrase, $learsign, $detach, $binary);
@@ -46,8 +46,8 @@ class LatestVersionGpgWrapper implements GpgWrapper
                 $result->data !== ''
             ) {
                 if (
-                    strpos($result->err, 'wird als voreingestellter geheimer Signaturschlüssel benutzt') !== false ||
-                    strpos($result->err, 'as default secret key for signing') !== false
+                    str_contains($result->err, 'wird als voreingestellter geheimer Signaturschlüssel benutzt') ||
+                    str_contains($result->err, 'as default secret key for signing')
                 ) {
                     $result->err = '';
                 }
@@ -60,7 +60,7 @@ class LatestVersionGpgWrapper implements GpgWrapper
     /**
      * @inheritDoc
      */
-    public function listKeys($secret = false)
+    public function listKeys(bool $secret = false): GpgListKeysResult
     {
         return $this->coreLibrary->listKeys($secret);
     }

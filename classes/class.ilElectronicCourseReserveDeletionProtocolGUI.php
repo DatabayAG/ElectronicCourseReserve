@@ -1,6 +1,8 @@
 <?php
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use JetBrains\PhpStorm\NoReturn;
+
 require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
@@ -8,36 +10,30 @@ require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseReserveBaseGUI
 {
-    /**
-     * @inheritDoc
-     */
-    public function performCommand($cmd): void
-    {
-        $this->plugin_object->includeClass('UI/Table/Base.php');
-        $this->plugin_object->includeClass('UI/Table/Data/Provider.php');
-        $this->plugin_object->includeClass('UI/Table/Data/DatabaseProvider.php');
-        parent::performCommand($cmd);
-    }
 
     /**
      * @inheritdoc
      */
-    protected function getDefaultCommand()
+    protected function getDefaultCommand(): string
     {
         return 'showProtocol';
     }
 
     /**
      * @return ilElectronicCourseReserveDeletionProtocolTableGUI
+     * @throws ilCtrlException
+     * @throws ilException
      */
     private function getProtocolTable() : ilElectronicCourseReserveDeletionProtocolTableGUI
     {
-        $this->plugin_object->includeClass('tables/class.ilElectronicCourseReserveDeletionProtocolTableGUI.php');
-        $this->plugin_object->includeClass('tables/provider/DeletionLogTableProvider.php');
         return new ilElectronicCourseReserveDeletionProtocolTableGUI($this, 'showProtocol');
     }
 
-    public function resetFilter()
+    /**
+     * @throws ilException
+     * @throws ilCtrlException
+     */
+    public function resetFilter(): void
     {
         $table = $this->getProtocolTable();
         $table->resetOffset();
@@ -46,7 +42,11 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
         $this->showProtocol();
     }
 
-    public function applyFilter()
+    /**
+     * @throws ilException
+     * @throws ilCtrlException
+     */
+    public function applyFilter(): void
     {
         $table = $this->getProtocolTable();
         $table->resetOffset();
@@ -55,12 +55,9 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
         $this->showProtocol();
     }
 
-    /**
-     * @return string
-     */
-    protected function fetchCourseTitleAutocompletionResults()
+
+    #[NoReturn] protected function fetchCourseTitleAutocompletionResults(): void
     {
-        $this->plugin_object->includeClass('tables/provider/DeletionLogTableProvider.php');
         $p = new DeletionLogTableProvider($GLOBALS['DIC']->database());
         $crsTitles = $p->getListOfLoggedObjectTitles(
             ilUtil::stripSlashes($_GET['term'] ?? ''),
@@ -71,12 +68,9 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
         exit();
     }
 
-    /**
-     * @return string
-     */
-    protected function fetchFolderTitleAutocompletionResults()
+
+    #[NoReturn] protected function fetchFolderTitleAutocompletionResults(): void
     {
-        $this->plugin_object->includeClass('tables/provider/DeletionLogTableProvider.php');
         $p = new DeletionLogTableProvider($GLOBALS['DIC']->database());
         $crsTitles = $p->getListOfLoggedObjectTitles(
             ilUtil::stripSlashes($_GET['term'] ?? ''),
@@ -87,9 +81,12 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
         exit();
     }
 
-    protected function showProtocol()
+    /**
+     * @throws ilException
+     * @throws ilCtrlException
+     */
+    protected function showProtocol(): void
     {
-        $this->plugin_object->includeClass('tables/provider/DeletionLogTableProvider.php');
         $table = $this->getProtocolTable();
         $table = $table
             ->withProvider(new DeletionLogTableProvider($GLOBALS['DIC']->database()));

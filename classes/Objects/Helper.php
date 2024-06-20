@@ -3,33 +3,33 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Objects;
 
+use Exception;
+use ilException;
+use ilObject;
+use ilObjectFactory;
+
 /**
  * Class Helper
  * @package ILIAS\Plugin\ElectronicCourseReserve\Objects
  */
 class Helper
 {
-    /**
-     * @var \ilObject[]|\ilException
-     */
-    protected static $instanceByRefIdCache = array();
+    protected static array|ilException $instanceByRefIdCache = array();
 
-    /**
-     * @var boolean[]
-     */
-    protected static $trashedRefIds = array();
+    protected static array $trashedRefIds = array();
 
     /**
      * @param int $ref_id
-     * @return \ilObject
-     * @throws \ilException
+     * @return ilObject
+     * @throws ilException
+     * @throws Exception
      */
-    public function getInstanceByRefId($ref_id)
+    public function getInstanceByRefId(int $ref_id): ilObject
     {
         if (!array_key_exists($ref_id, self::$instanceByRefIdCache)) {
-            $instance = \ilObjectFactory::getInstanceByRefId($ref_id, false);
+            $instance = ilObjectFactory::getInstanceByRefId($ref_id, false);
             if (!$instance) {
-                $e = new \ilException(sprintf("Could not find object by ref_id %s!", $ref_id));
+                $e = new ilException(sprintf("Could not find object by ref_id %s!", $ref_id));
 
                 self::$instanceByRefIdCache[$ref_id] = $e;
                 throw $e;
@@ -38,7 +38,7 @@ class Helper
             self::$instanceByRefIdCache[$ref_id] = $instance;
         }
 
-        if (self::$instanceByRefIdCache[$ref_id] instanceof \Exception) {
+        if (self::$instanceByRefIdCache[$ref_id] instanceof Exception) {
             throw self::$instanceByRefIdCache[$ref_id];
         }
 
@@ -49,7 +49,7 @@ class Helper
      * @param int $ref_id
      * @return boolean
      */
-    public function isRefIdTrashed($ref_id)
+    public function isRefIdTrashed(int $ref_id): bool
     {
         if (!array_key_exists($ref_id, self::$trashedRefIds)) {
             self::$trashedRefIds[$ref_id] = $GLOBALS['tree']->isDeleted($ref_id);

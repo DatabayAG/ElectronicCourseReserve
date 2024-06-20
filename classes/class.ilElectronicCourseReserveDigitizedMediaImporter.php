@@ -2,11 +2,14 @@
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\Data\Factory as DataTypeFactory;
+use ILIAS\Filesystem\Filesystem;
+use ILIAS\Filesystem\Stream\Streams;
 use ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Purger;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\PathResolver;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\ErrorFormatter;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation\SchemaValidator;
+use ILIAS\ResourceStorage\Policy\FileNamePolicyException;
 
 require_once __DIR__ . '/class.ilElectronicCourseReserveHistoryEntity.php';
 require_once 'Customizing/global/plugins/Services/Cron/CronHook/CronElectronicCourseReserve/classes/class.ilElectronicCourseReserveParser.php';
@@ -59,39 +62,23 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      */
     const ESA_FOLDER_IMPORT_PREFIX = 'esa_';
 
-    /**
-     * @var $logger Log
-     */
-    protected $logger;
 
-    /**
-     * @var $user ilObjUser
-     */
-    protected $user;
+    protected Log $logger;
 
-    /**
-     * @var ilMailMimeSender|string
-     */
-    protected $from;
 
-    /**
-     * @var array
-     */
-    protected $valid_items = array(self::ITEM_TYPE_FILE, self::ITEM_TYPE_URL);
+    protected ilObjUser $user;
 
-    /**
-     * @var ilElectronicCourseReservePlugin
-     */
-    public $pluginObj = null;
+    protected string|ilMailMimeSender $from;
 
-    /**
-     * @var ILIAS\Plugin\ElectronicCourseReserve\Locker\LockerInterface
-     */
-    protected $lock;
+    protected array $valid_items = array(self::ITEM_TYPE_FILE, self::ITEM_TYPE_URL);
 
-    /**
-     *
-     */
+    public ?ilElectronicCourseReservePlugin $pluginObj = null;
+
+    protected ILIAS\Plugin\ElectronicCourseReserve\Locker\LockerInterface $lock;
+    private Filesystem $filesystem;
+    private ilCronManager $cronManager;
+
+
     public function __construct()
     {
         global $DIC;
@@ -103,31 +90,32 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $factory = $GLOBALS['mail.mime.sender.factory'];
         }
 
-        if ($factory !== null && $factory instanceof ilMailMimeSenderFactory) {
-            $this->from = $factory->system();
-        } else {
-            $this->from = ilMail::getIliasMailerAddress();
-        }
+        $this->from = $factory->system();
 
-        $this->pluginObj = ilPlugin::getPluginObject('Services', 'UIComponent', 'uihk', 'ElectronicCourseReserve');
+
+        $this->pluginObj = ilElectronicCourseReservePlugin::getInstance();
         $this->lock = $DIC['plugin.esa.locker'];
         $this->user = $DIC->user();
+        $this->filesystem = $DIC->filesystem()->storage();
+        $this->cronManager = $DIC->cron()->manager();
 
         $this->logger = $DIC['plugin.esa.cronjob.logger'];
     }
 
     /**
      * @param string $job_id
+     * @throws Exception
      */
-    public function run($job_id)
+    public function run(string $job_id): void
     {
         $this->perform($job_id);
     }
 
     /**
      * @param string $job_id
+     * @throws Exception
      */
-    protected function perform($job_id)
+    protected function perform(string $job_id): void
     {
         global $DIC;
 
@@ -148,14 +136,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $this->logger->info('Started determination with file pattern.');
 
             $dir = $this->getImportDir();
-            ilUtil::makeDirParents($dir);
+            $this->filesystem->createDir($dir);
 
             $iter = new RegexIterator(
                 new DirectoryIterator($dir),
                 '/(\d+)\-delete\-(.*?)\-manifest\.xml$/'
             );
             foreach ($iter as $file_info) {
-                ilCronManager::ping($job_id);
+                $this->cronManager->ping($job_id);
 
                 /** @var $file_info SplFileInfo */
                 if ($file_info->isDir()) {
@@ -176,7 +164,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     $this->logger->info('SHA1 checksum: ' . sha1($content));
 
                     $this->logger->info('Starting item deletion...');
- 
+
                     $deletionDocument = new SimpleXMLElement($content);
                     $esaCrsRefId = trim((string) $deletionDocument['iliasID']);
                     $deletionMode = trim((string) $deletionDocument->delete['type']);
@@ -199,11 +187,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
                             $referenceExists = ilObject::_exists($folderRefId, true);
                             if (!$referenceExists) {
-                                $this->logger->info(sprintf('Folder is already deleted'));
+                                $this->logger->info('Folder is already deleted');
                                 continue;
                             }
                             if ($DIC->repositoryTree()->isDeleted($folderRefId)) {
-                                $this->logger->info(sprintf('Folder is already deleted'));
+                                $this->logger->info('Folder is already deleted');
                                 continue;
                             }
 
@@ -218,7 +206,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                             $folderNode = $DIC->repositoryTree()->getNodeData($folderRefId);
                             $partialSuccesses[$folderRefId]->itemsBeforeDeletion = $DIC->repositoryTree()->getSubTree($folderNode);
                             if ('all' === $deletionMode) {
-                                $this->deleteFolder($folderRefId, null);
+                                $this->deleteFolder($folderRefId);
                             } else {
                                 $items = $this->pluginObj->getImportedFolderItems($folderRefId);
                                 $itemRefIds = array_map(static function (array $item) : int {
@@ -280,7 +268,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                 '/(.*)\.xml$/'
             );
             foreach ($iter as $file_info) {
-                ilCronManager::ping($job_id);
+                $this->cronManager->ping($job_id);
 
                 /** @var $file_info SplFileInfo */
                 if ($file_info->isDir()) {
@@ -354,7 +342,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         try {
             $this->lock->releaseLock();
             $this->logger->info('Released lock.');
-        } catch (ilException $e) {
+        } catch (Exception $e) {
             $this->logger->info($e->getMessage());
         }
 
@@ -366,8 +354,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param string $xml_string
      * @param string $path_to_schema
      * @return bool|string
+     * @throws ilException
      */
-    protected function validateXmlAgainstXsd($filename, $xml_string, $path_to_schema = '')
+    protected function validateXmlAgainstXsd(string $filename, string $xml_string, string $path_to_schema = ''): bool|string
     {
         $this->logger->info(sprintf('Started XML validation of %s', $filename));
 
@@ -398,13 +387,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         return true;
     }
 
-    /**
-     *
-     */
-    protected function cleanUpFileSystem()
+    protected function cleanUpFileSystem(): void
     {
         $purger = new Purger(
-            $this->logger, ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::BACKUP_DIR
+            $this->logger, CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . self::BACKUP_DIR
         );
         $purger->purge();
     }
@@ -412,13 +398,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @param string $path_to_file
      * @return bool
+     * @throws ilException
      */
-    protected function moveXmlToBackupFolder($path_to_file)
+    protected function moveXmlToBackupFolder(string $path_to_file): bool
     {
         if (file_exists($path_to_file)) {
-            $dir = ilUtil::getDataDir() . DIRECTORY_SEPARATOR . self::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
+            $dir = CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . self::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
             if (!is_dir($dir)) {
-                ilUtil::makeDirParents($dir);
+                $this->filesystem->createDir($dir);
             }
             try {
                 if (file_exists($path_to_file)) {
@@ -430,7 +417,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                     }
                 }
                 return true;
-            } catch (ilException $e) {
+            } catch (Exception $e) {
                 $this->logger->info($e->getMessage());
                 return false;
             }
@@ -446,7 +433,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param $crs_ref_id
      * @return int
      */
-    protected function createFolder($parsed_item, $folder_import_id, $crs_ref_id)
+    protected function createFolder(ilElectronicCourseReserveContainer $parsed_item, $folder_import_id, $crs_ref_id): int
     {
         $fold = new ilObjFolder();
         $fold->setTitle($parsed_item->getLabel());
@@ -463,8 +450,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @param ilElectronicCourseReserveContainer $parsed_item
      * @param $ref_id
+     * @throws ilException
      */
-    protected function updateFolderTitle($parsed_item, $ref_id)
+    protected function updateFolderTitle(ilElectronicCourseReserveContainer $parsed_item, $ref_id): void
     {
         if ($parsed_item->getOverwrite() == 1) {
             $fold = new ilObjFolder($ref_id);
@@ -481,16 +469,13 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     }
 
     /**
-     * @param ilElectronicCourseReserveContainer $parsed_item
-     * @param $raw_xml
-     * @return bool
-     * @throws ilFileUtilsException
+     * @throws ilFileUtilsException|FileNamePolicyException|ilException
      */
     protected function createFileItem(ilElectronicCourseReserveContainer $parsed_item, string $raw_xml) : bool
     {
         global $DIC;
 
-        $folder_ref_id = (int) $this->ensureCorrectCourseAndFolderStructure($parsed_item);
+        $folder_ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
         $file_path = $this->getResolvedFilePath($parsed_item->getItem()->getFile());
 
         if ($folder_ref_id !== 0 && file_exists($file_path)) {
@@ -499,54 +484,26 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $new_file = new ilObjFile();
 
             $file_type = pathinfo($parsed_item->getItem()->getFile(), PATHINFO_EXTENSION);
-            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '<')) {
-                $new_file->setTitle($parsed_item->getItem()->getLabel() . '.' . $file_type);
-                $new_file->setFileType($file_type);
-                $new_file->setFileName($filename);
-                $new_file->setVersion(1);
-            }
+
             $new_file->create();
-            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '<')) {
-                $new_file->setFilename($new_file->getFileName());
-                $new_file->addNewsNotification("file_updated");
-            }
 
             $new_file->createReference();
             $new_file->putInTree($folder_ref_id);
             $new_file->setPermissions($folder_ref_id);
 
-            $rbac_log_roles = $DIC->rbac()->review()->getParentRoleIds($new_file->getRefId(), false);
+            $rbac_log_roles = $DIC->rbac()->review()->getParentRoleIds($new_file->getRefId());
             $rbac_log = ilRbacLog::gatherFaPa($new_file->getRefId(), array_keys($rbac_log_roles), true);
             ilRbacLog::add(ilRbacLog::CREATE_OBJECT, $new_file->getRefId(), $rbac_log);
 
-            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '>=')) {
-                $fileHandle = fopen($file_path, 'rb');
-                $stream = \ILIAS\Filesystem\Stream\Streams::ofResource($fileHandle);
-                $new_file->appendStream($stream, $parsed_item->getItem()->getLabel() . '.' . $file_type);
-            }
+            $fileHandle = fopen($file_path, 'rb');
+            $stream = Streams::ofResource($fileHandle);
+            $new_file->appendStream($stream, $parsed_item->getItem()->getLabel() . '.' . $file_type);
+
 
             $new_file->update();
 
-            if (version_compare(ILIAS_VERSION_NUMERIC, '7.0', '<')) {
-                $dir = $new_file->getDirectory(1);
-                if (!is_dir($dir)) {
-                    ilUtil::makeDirParents($dir);
-                }
-
-                if (file_exists($file_path)) {
-                    copy($file_path, $dir . '/' . $filename);
-                    if (file_exists($dir . '/' . $filename)) {
-                        if (self::DELETE_FILES) {
-                            unlink($file_path);
-                        }
-                    }
-                }
-
-                $new_file->determineFileSize();
-            } else {
-                if (self::DELETE_FILES) {
-                    unlink($file_path);
-                }
+            if (self::DELETE_FILES) {
+                unlink($file_path);
             }
 
             $new_file->update();
@@ -556,12 +513,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         } else {
             if ($folder_ref_id === 0) {
                 $this->logger->info('Could not find/create course/folder structure, skipping item.');
-                return false;
             } else {
                 $this->logger->info(sprintf('File %s not found for item %s, skipping item creation.',
                     $parsed_item->getItem()->getFile(), $parsed_item->getLabel()));
-                return false;
             }
+            return false;
         }
     }
 
@@ -570,8 +526,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param $raw_xml
      * @return bool
      * @throws ilFileUtilsException
+     * @throws ilException
      */
-    protected function createWebResourceItem($parsed_item, $raw_xml)
+    protected function createWebResourceItem(ilElectronicCourseReserveContainer $parsed_item, $raw_xml): bool
     {
         $folder_ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
         if (strlen($parsed_item->getItem()->getUrl()) > 0 &&
@@ -582,13 +539,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $new_link->createReference();
             $new_link->putInTree($folder_ref_id);
             $new_link->setPermissions($folder_ref_id);
-            $link_item = new ilLinkResourceItems($new_link->getId());
-            $link_item->setTitle($parsed_item->getItem()->getLabel());
-            $link_item->setActiveStatus(1);
-            $link_item->setValidStatus(1);
-            $link_item->setTarget($parsed_item->getItem()->getUrl());
-            $link_item->setInternal(false);
-            $link_item->add();
+            $link_repo = new ilWebLinkDatabaseRepository($new_link->getId());
+            $link_item = new ilWebLinkDraftItem(false, $parsed_item->getItem()->getLabel(), null, $parsed_item->getItem()->getUrl(), true, []);
+            $link_repo->createItem($link_item);
             $this->writeDescriptionToDB($parsed_item, $new_link->getRefId(), $raw_xml, $folder_ref_id);
             return true;
         } else {
@@ -602,9 +555,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param $new_obj_ref_id
      * @param $raw_xml
      * @param $folder_ref_id
-     * @throws ilFileUtilsException
+     * @throws ilFileUtilsException|ilException
      */
-    protected function writeDescriptionToDB($parsed_item, $new_obj_ref_id, $raw_xml, $folder_ref_id)
+    protected function writeDescriptionToDB(ilElectronicCourseReserveContainer $parsed_item, $new_obj_ref_id, $raw_xml, $folder_ref_id): void
     {
         global $DIC;
         $version = 1;
@@ -640,9 +593,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param ilElectronicCourseReserveContainer $parsed_item
      * @param int $new_obj_ref_id
      * @return array
-     * @throws ilFileUtilsException
+     * @throws ilException
      */
-    protected function getIcon($parsed_item, $new_obj_ref_id)
+    protected function getIcon(ilElectronicCourseReserveContainer $parsed_item, int $new_obj_ref_id): array
     {
         $icon_type = $this->evaluateIconType($parsed_item->getItem()->getIcon());
         $pl = $this->pluginObj;
@@ -689,7 +642,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param string $given_file_path
      * @return string
      */
-    protected function getResolvedFilePath($given_file_path)
+    protected function getResolvedFilePath(string $given_file_path): string
     {
         $resolved_file_path = realpath(implode(DIRECTORY_SEPARATOR, [
             rtrim($this->getImportDir(), DIRECTORY_SEPARATOR),
@@ -707,10 +660,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param int $new_obj_ref_id
      * @return string
      */
-    protected function getImageFolder($new_obj_ref_id)
+    protected function getImageFolder(int $new_obj_ref_id): string
     {
         $dir = CLIENT_WEB_DIR . DIRECTORY_SEPARATOR . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR;
-        ilUtil::makeDirParents($dir);
+        $this->filesystem->createDir($dir);
         return $dir;
     }
 
@@ -718,7 +671,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param $icon
      * @return bool
      */
-    protected function evaluateIconType($icon)
+    protected function evaluateIconType($icon): bool
     {
         if (strlen($icon) === 0) {
             return false;
@@ -738,7 +691,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param $import_id
      * @param $crs_ref_id
      */
-    protected function writeFolderCreationToDB($ref_id, $import_id, $crs_ref_id)
+    protected function writeFolderCreationToDB($ref_id, $import_id, $crs_ref_id): void
     {
         global $DIC;
 
@@ -752,7 +705,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @throws ilException
      */
-    protected function ensureSystemPreconditions()
+    protected function ensureSystemPreconditions(): void
     {
         global $DIC;
         $ilSetting = $DIC['ilSetting'];
@@ -763,8 +716,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     }
 
     /**
+     * @throws ilException
      */
-    protected function cleanUpDeletedObjects()
+    protected function cleanUpDeletedObjects(): void
     {
         global $DIC;
         $DIC->database()->manipulate(
@@ -775,7 +729,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @throws ilException
      */
-    protected function ensureUserRelatedPreconditions()
+    protected function ensureUserRelatedPreconditions(): void
     {
         if ($this->user->hasToAcceptTermsOfService()) {
             throw new ilException('The passed ILIAS user has to accept the user agreement.');
@@ -785,11 +739,12 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @param ilElectronicCourseReserveContainer $parsed_item
      * @return int
+     * @throws ilException
      */
     protected function ensureCorrectCourseAndFolderStructure(ilElectronicCourseReserveContainer $parsed_item) : int
     {
-        $crs_ref_id = (int) $parsed_item->getCrsRefId();
-        $folder_import_id = (int) $parsed_item->getFolderImportId();
+        $crs_ref_id = $parsed_item->getCrsRefId();
+        $folder_import_id = $parsed_item->getFolderImportId();
         $folder_import_id_prefix = self::ESA_FOLDER_IMPORT_PREFIX . $folder_import_id;
 
         if ($crs_ref_id === null || $crs_ref_id === 0 || $folder_import_id === null || $folder_import_id === 0) {
@@ -804,7 +759,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
          */
         global $ilObjDataCache, $tree;
 
-        $crs_obj_id = (int) $ilObjDataCache->lookupObjId($crs_ref_id);
+        $crs_obj_id = $ilObjDataCache->lookupObjId($crs_ref_id);
         if ($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) === 'crs' && !ilObject::_isInTrash($crs_ref_id)) {
             $this->logger->info(sprintf('Found course for ref_id %s, looking for folder.', $crs_ref_id));
             $folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id_prefix);
@@ -853,14 +808,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         return 0;
     }
 
-    protected function sendMailOnDeletionError(string $msg,  ?array $deletionProtocols = null, string $attachment = null)
+    protected function sendMailOnDeletionError(string $msg,  ?array $deletionProtocols = null, string $attachment = null): void
     {
         if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
             $mail = new ilMimeMail();
             $mail->From($this->from);
             $recipients = $this->pluginObj->getSetting('mail_del_recipients');
             $mail->To($this->getEmailsForRecipients($recipients));
-            $mail->Subject($this->pluginObj->txt(sprintf('error_with_deletion_item')));
+            $mail->Subject($this->pluginObj->txt('error_with_deletion_item'));
             $mail_text = str_replace(
                 '[BR]',
                 "\n",
@@ -875,18 +830,18 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         }
     }
 
-    protected function sendMailOnDeletionSuccess(string $msg, array $deletionProtocols)
+    protected function sendMailOnDeletionSuccess(string $msg, array $deletionProtocols): void
     {
         if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
             $mail = new ilMimeMail();
             $mail->From($this->from);
             $recipients = $this->pluginObj->getSetting('mail_del_recipients');
             $mail->To($this->getEmailsForRecipients($recipients));
-            $mail->Subject($this->pluginObj->txt(sprintf('success_with_deletion_item')));
+            $mail->Subject($this->pluginObj->txt('success_with_deletion_item'));
             $mail_text = str_replace(
                 '[BR]',
                 "\n",
-                $this->pluginObj->txt('error_mail_greeting') . $msg 
+                $this->pluginObj->txt('error_mail_greeting') . $msg
             );
             $this->renderMailDeletionProtocol($deletionProtocols, $mail_text);
             $mail->Body($mail_text . ilMail::_getInstallationSignature());
@@ -894,7 +849,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         }
     }
 
-    protected function renderMailDeletionProtocol(array $deletionProtocols, string &$mail_text)
+    protected function renderMailDeletionProtocol(array $deletionProtocols, string &$mail_text): void
     {
         if ($deletionProtocols !== []) {
             $mail_text .= "\n";
@@ -927,7 +882,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param string $msg
      * @param string|null $attachment
      */
-    protected function sendMailOnError($msg, $attachment = null)
+    protected function sendMailOnError(string $msg, string $attachment = null): void
     {
         if ((int) $this->pluginObj->getSetting('is_mail_enabled') === 1) {
             $mail = new ilMimeMail();
@@ -952,14 +907,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param string $recipients
      * @return array
      */
-    protected function getEmailsForRecipients($recipients)
+    protected function getEmailsForRecipients(string $recipients): array
     {
         $emails = [];
         $recipients = explode(',', $recipients);
         if (is_array($recipients) && sizeof($recipients) > 0) {
             foreach ($recipients as $value) {
                 $user_id = ilObjUser::_loginExists($value);
-                if ($user_id != false) {
+                if ($user_id) {
                     $emails [] = ilObjUser::_lookupEmail($user_id);
                 }
             }
@@ -970,13 +925,13 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @return string
      */
-    protected function getImportDir()
+    protected function getImportDir(): string
     {
         $dir = $this->pluginObj->getSetting('import_directory');
         if (strlen($dir) === 0) {
             $dir = self::IMPORT_DIR;
         }
-        return ilUtil::getDataDir() . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
+        return CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
     }
 
     /**

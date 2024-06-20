@@ -4,6 +4,8 @@
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer;
 
 use ILIAS\Plugin\ElectronicCourseReserve\Logging;
+use ilLogger;
+use ilLogLevel;
 
 /**
  * Class Ilias
@@ -11,70 +13,37 @@ use ILIAS\Plugin\ElectronicCourseReserve\Logging;
  */
 class Ilias extends Base
 {
-    /** @var \ilLogger */
-    protected $aggregated_logger;
+    protected ilLogger $aggregated_logger;
 
-    /** @var string */
-    private $logLevel;
+    protected Logging\TraceProcessor $processor;
 
-    /** @var Logging\TraceProcessor */
-    protected $processor;
+    protected bool $shutdown_handled = false;
 
-    /**
-     * @var bool
-     */
-    protected $shutdown_handled = false;
-
-    public function __construct(\ilLogger $log, $logLevel)
+    public function __construct(ilLogger $log, $logLevel)
     {
         $this->aggregated_logger = $log;
-        $this->logLevel = $logLevel;
 
-        $this->processor = new Logging\TraceProcessor(\ilLogLevel::DEBUG);
+        $this->processor = new Logging\TraceProcessor(ilLogLevel::DEBUG);
     }
 
     /**
      * @param array $message
      * @return void
      */
-    protected function doWrite(array $message)
+    protected function doWrite(array $message): void
     {
         $line = $message['message'];
 
-        switch ($message['priority']) {
-            case Logging\Logger::EMERG:
-                $method = 'emergency';
-                break;
-
-            case Logging\Logger::ALERT:
-                $method = 'alert';
-                break;
-
-            case Logging\Logger::CRIT:
-                $method = 'critical';
-                break;
-
-            case Logging\Logger::ERR:
-                $method = 'error';
-                break;
-
-            case Logging\Logger::WARN:
-                $method = 'warning';
-                break;
-
-            case Logging\Logger::INFO:
-                $method = 'info';
-                break;
-
-            case Logging\Logger::NOTICE:
-                $method = 'notice';
-                break;
-
-            case Logging\Logger::DEBUG:
-            default:
-                $method = 'debug';
-                break;
-        }
+        $method = match ($message['priority']) {
+            Logging\Logger::EMERG => 'emergency',
+            Logging\Logger::ALERT => 'alert',
+            Logging\Logger::CRIT => 'critical',
+            Logging\Logger::ERR => 'error',
+            Logging\Logger::WARN => 'warning',
+            Logging\Logger::INFO => 'info',
+            Logging\Logger::NOTICE => 'notice',
+            default => 'debug',
+        };
 
         $poppedProcessors = [];
         while ($this->aggregated_logger->getLogger()->getProcessors() !== array()) {
@@ -92,7 +61,7 @@ class Ilias extends Base
     /**
      * @return void
      */
-    public function shutdown()
+    public function shutdown(): void
     {
         unset($this->aggregated_logger);
 

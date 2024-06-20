@@ -14,8 +14,9 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
 {
     /**
      * @inheritdoc
+     * @throws ilException
      */
-    public function shouldModifyHtml($a_comp, $a_part, $a_par)
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         if (!$this->isListView() && !$this->isDetailView()) {
             return false;
@@ -55,14 +56,8 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
     protected function isDetailView() : bool
     {
         return (
-            in_array(
-                strtolower($_GET['cmdClass']),
-                ['ilobjbibliographicgui',]
-            ) &&
-            in_array(
-                strtolower($_GET['cmd']),
-                ['showdetails']
-            )
+            strtolower($_GET['cmdClass']) === strtolower(ilObjBibliographicGUI::class) &&
+            strtolower($_GET['cmd']) === 'showdetails'
         );
     }
 
@@ -72,32 +67,17 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
     protected function isListView() : bool
     {
         return (
-                in_array(
-                    strtolower($_GET['cmdClass']),
-                    ['ilobjbibliographicgui',]
-                ) &&
+                strtolower($_GET['cmdClass']) === strtolower(ilObjBibliographicGUI::class) &&
                 in_array(
                     strtolower($_GET['cmd']),
                     ['showcontent', 'render', 'view']
                 )
             ) || (
-                in_array(
-                    strtolower($_GET['cmdClass']),
-                    ['ilrepositorygui',]
-                ) &&
-                in_array(
-                    strtolower($_GET['cmd']),
-                    ['render',]
-                )
+                strtolower($_GET['cmdClass']) === strtolower(ilRepositoryGUI::class) &&
+                strtolower($_GET['cmd']) === 'render'
             ) || (
-                in_array(
-                    strtolower($_GET['cmdClass']),
-                    ['ilbibliographicdetailsgui',]
-                ) &&
-                in_array(
-                    strtolower($_GET['cmd']),
-                    ['showcontent',]
-                )
+                strtolower($_GET['cmdClass']) === 'ilbibliographicdetailsgui' &&
+                strtolower($_GET['cmd']) === 'showcontent'
             );
     }
 
@@ -108,17 +88,12 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      */
     protected function manipulateListView(ilObjCourse $crs, array $a_par) : array
     {
-        if (version_compare(ILIAS_VERSION_NUMERIC, '5.4.0', '>=')) {
-            $libs = ilBiblLibrary::get();
-            $libsShownInList = array_filter($libs, function (ilBiblLibrary $lib) {
-                return $lib->getShowInList();
-            });
-        } else {
-            $libs = ilBibliographicSetting::getAll();
-            $libsShownInList = array_filter($libs, function (ilBibliographicSetting $lib) {
-                return $lib->getShowInList();
-            });
-        }
+
+        $libs = ilBiblLibrary::get();
+        $libsShownInList = array_filter($libs, function (ilBiblLibrary $lib) {
+            return $lib->isShownInList();
+        });
+
 
         if (0 === count($libsShownInList)) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
@@ -217,8 +192,9 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
 
     /**
      * @inheritdoc
+     * @throws ilException
      */
-    public function modifyHtml($a_comp, $a_part, $a_par)
+    public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         global $DIC;
 

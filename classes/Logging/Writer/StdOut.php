@@ -3,6 +3,8 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer;
 
+use ilException;
+
 /**
  * Class StdOut
  * @author Michael Jansen <mjansen@databay.de>
@@ -14,19 +16,17 @@ class StdOut extends Base
      */
     protected $stream;
 
-    /**
-     * @var string
-     */
-    protected $logSeparator = PHP_EOL;
+
+    protected string $logSeparator = PHP_EOL;
 
     /**
-     * @throws \ilException
+     * @throws ilException
      */
     public function __construct()
     {
-        $this->stream = fopen('php://stdout', 'w', false);
+        $this->stream = fopen('php://stdout', 'w');
         if (!$this->stream || !is_resource($this->stream)) {
-            throw new \ilException(sprintf(
+            throw new ilException(sprintf(
                 '"%s" cannot be opened with mode "%s"',
                 'php://stdout',
                 'w'
@@ -37,7 +37,7 @@ class StdOut extends Base
     /**
      * @param string $logSeparator
      */
-    public function setLogSeparator($logSeparator)
+    public function setLogSeparator(string $logSeparator): void
     {
         $this->logSeparator = $logSeparator;
     }
@@ -45,7 +45,7 @@ class StdOut extends Base
     /**
      * @return string
      */
-    public function getLogSeparator()
+    public function getLogSeparator(): string
     {
         return $this->logSeparator;
     }
@@ -54,7 +54,7 @@ class StdOut extends Base
      * @param array $message
      * @return void
      */
-    protected function doWrite(array $message)
+    protected function doWrite(array $message): void
     {
         $line = $this->format($message) . $this->getLogSeparator();
         fwrite($this->stream, $line);
@@ -63,7 +63,7 @@ class StdOut extends Base
     /**
      * @return void
      */
-    public function shutdown()
+    public function shutdown(): void
     {
         if (is_resource($this->stream)) {
             fclose($this->stream);

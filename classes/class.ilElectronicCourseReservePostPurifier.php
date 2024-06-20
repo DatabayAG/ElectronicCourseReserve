@@ -15,7 +15,7 @@ class ilElectronicCourseReservePostPurifier extends ilHtmlPurifierAbstractLibWra
      * @static
      *
      */
-    public static $_type = 'textarea';
+    public static string $_type = 'textarea';
 
     /**
      * Constructor
@@ -57,4 +57,3 @@ class ilElectronicCourseReservePostPurifier extends ilHtmlPurifierAbstractLibWra
     }
 }
 
-?>

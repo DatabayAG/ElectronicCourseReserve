@@ -8,7 +8,6 @@ use Exception;
 use ILIAS\Data\Factory as DataTypeFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\DomDocumentFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\PathResolver as SchemaPathResolver;
-use ILIAS\Plugin\VistisSoapApi\Xml\Exceptions\UnparseableXmlException;
 use InvalidArgumentException;
 use LibXMLError;
 use RuntimeException;
@@ -23,17 +22,15 @@ final class SchemaValidator
     /** @var int */
     private const DOM_MISSING_NS_CODE = 1845;
 
-    /** @var DataTypeFactory */
-    private $dataFactory;
-    /** @var SchemaPathResolver */
-    private $pathResolver;
-    /** @var ErrorFormatter */
-    private $errorFormatter;
+    private DataTypeFactory $dataFactory;
+    private SchemaPathResolver $pathResolver;
+    private ErrorFormatter $errorFormatter;
 
     /** @var array This is an stack of error logs. The topmost element is the one we are currently working on. */
-    private $errorStack = [];
+    private array $errorStack = [];
+
     /** @var bool This is the xml error state we had before we began logging. */
-    private $xmlErrorState;
+    private bool $xmlErrorState;
 
     /**
      * SchemaValidator constructor.
@@ -126,7 +123,8 @@ final class SchemaValidator
         string $pathToSchema,
         bool $addedFallbackNamespace = false,
         string $fallbackNamespaceUri = ''
-    ) {
+    ): ValidationResult
+    {
         $this->beginLogging();
 
         libxml_set_external_entity_loader(
@@ -189,21 +187,17 @@ final class SchemaValidator
     }
 
     /**
-     * @param string|DOMDocument $xml The XML string or document which should be validated.
+     * @param DOMDocument|string $xml The XML string or document which should be validated.
      * @param string $schemaFile The filename of the schema that should be used to validate the document.
      * @param string $fallbackNamespaceUri A fallback namespace URI to be used if validation failed
      *      because of a missing namespace in the XML file, e.g. 'http://www.ilias.de/Modules/StudyProgramme/prg/5_1'
      * @return ValidationResult
      * @throws InvalidArgumentException
      */
-    public function validate($xml, string $schemaFile, string $fallbackNamespaceUri = '') : ValidationResult
+    public function validate(DOMDocument|string $xml, string $schemaFile, string $fallbackNamespaceUri = '') : ValidationResult
     {
         if (!is_string($xml) && !($xml instanceof DOMDocument)) {
             throw new InvalidArgumentException('Invalid XML input.');
-        }
-
-        if (!is_string($schemaFile)) {
-            throw new InvalidArgumentException('Invalid path to XSD schema.');
         }
 
         $pathToSchema = $this->pathResolver->resolvePath($schemaFile);
@@ -213,7 +207,6 @@ final class SchemaValidator
 
         $this->beginLogging();
 
-        $isValidXml = true;
         $exceptionMessage = '';
         if ($xml instanceof DOMDocument) {
             $dom = $xml;
@@ -223,27 +216,23 @@ final class SchemaValidator
                 $documentFactory = new DomDocumentFactory();
                 $dom = $documentFactory->fromString($xml);
             } catch (Exception $e) {
-                $isValidXml = false;
                 $exceptionMessage = $e->getMessage();
-            }
-        }
+                $errors = $this->endLogging();
+                if ($errors !== []) {
+                    $errorResult = $this->dataFactory->error(implode("\n", [
+                        'Failed to parse XML string for schema validation:',
+                        $this->errorFormatter->formatErrors($errors)
+                    ]));
+                } else {
+                    $errorResult = $this->dataFactory->error(implode("\n", [
+                        'Failed to parse XML string for schema validation:',
+                        $exceptionMessage ?: 'Unparseable XML'
+                    ]));
+                }
 
-        if (false === $isValidXml) {
-            $errors = $this->endLogging();
-            if ($errors !== []) {
-                $errorResult = $this->dataFactory->error(implode("\n", [
-                    'Failed to parse XML string for schema validation:',
-                    $this->errorFormatter->formatErrors($errors)
-                ]));
-            } else {
-                $errorResult = $this->dataFactory->error(implode("\n", [
-                    'Failed to parse XML string for schema validation:',
-                    $exceptionMessage ? $exceptionMessage : 'Unparseable XML'
-                ]));
+                require_once __DIR__ . '/ValidationResult.php';
+                return new ValidationResult($errorResult);
             }
-
-            require_once __DIR__ . '/ValidationResult.php';
-            return new ValidationResult($errorResult);
         }
 
         $this->endLogging();

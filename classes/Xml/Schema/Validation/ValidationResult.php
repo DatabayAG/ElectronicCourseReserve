@@ -12,8 +12,7 @@ use ILIAS\Data\Result;
  */
 final class ValidationResult
 {
-    /** @var Result */
-    private $result;
+    private Result $result;
 
     /**
      * ValidationResult constructor.

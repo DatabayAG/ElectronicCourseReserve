@@ -8,28 +8,22 @@ use ILIAS\DI\LoggingServices;
  */
 class ilElectronicCourseReserveAgreement
 {
-    /**
-     * @var ilDB|ilDBInterface
-     */
-    public $db;
-    /**
-     * @var LoggingServices
-     */
-    public $log;
-    /**
-     * @var ilObjUser
-     */
-    public $user;
 
-    protected $agreement_id;
+    public ilDBInterface $db;
 
-    protected $agreement;
+    public ilLogger|LoggingServices $log;
 
-    protected $lang;
+    public ilObjUser $user;
 
-    protected $time_created;
+    protected int $agreement_id;
 
-    protected $is_active;
+    protected string $agreement;
+
+    protected string $lang;
+
+    protected int $time_created;
+
+    protected int $is_active;
 
     public function __construct()
     {
@@ -43,7 +37,7 @@ class ilElectronicCourseReserveAgreement
     /**
      * @param $lang
      */
-    public function loadByLang($lang)
+    public function loadByLang($lang): void
     {
         $this->db->setLimit(1);
         $res = $this->db->queryF(
@@ -61,7 +55,7 @@ class ilElectronicCourseReserveAgreement
         }
     }
 
-    public function saveAgreement()
+    public function saveAgreement(): void
     {
         $this->deactivateAgreements();
 
@@ -80,7 +74,7 @@ class ilElectronicCourseReserveAgreement
         $this->log->info('ecr_lang_agreements: User-id (' . $this->user->getId() . ') created agreement_id (' . $this->getAgreementId() . ')');
     }
 
-    private function deactivateAgreements()
+    private function deactivateAgreements(): void
     {
         $this->db->update(
             'ecr_lang_agreements',
@@ -92,10 +86,8 @@ class ilElectronicCourseReserveAgreement
         );
     }
 
-    /**
-     * @return mixed
-     */
-    public function getAgreementId()
+
+    public function getAgreementId(): int
     {
         return $this->agreement_id;
     }
@@ -103,15 +95,12 @@ class ilElectronicCourseReserveAgreement
     /**
      * @param int $agreement_id
      */
-    public function setAgreementId($agreement_id)
+    public function setAgreementId(int $agreement_id): void
     {
         $this->agreement_id = $agreement_id;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getLang()
+    public function getLang(): string
     {
         return $this->lang;
     }
@@ -119,15 +108,12 @@ class ilElectronicCourseReserveAgreement
     /**
      * @param string $lang ISO 639-1 two-letter code
      */
-    public function setLang($lang)
+    public function setLang(string $lang): void
     {
         $this->lang = $lang;
     }
 
-    /**
-     * @return string
-     */
-    public function getAgreement()
+    public function getAgreement(): string
     {
         return $this->agreement;
     }
@@ -135,15 +121,12 @@ class ilElectronicCourseReserveAgreement
     /**
      * @param string $agreement
      */
-    public function setAgreement($agreement)
+    public function setAgreement(string $agreement): void
     {
         $this->agreement = $agreement;
     }
 
-    /**
-     * @return int
-     */
-    public function getTimeCreated()
+    public function getTimeCreated(): int
     {
         return $this->time_created;
     }
@@ -151,7 +134,7 @@ class ilElectronicCourseReserveAgreement
     /**
      * @return int
      */
-    public function isActive()
+    public function isActive(): int
     {
         return $this->is_active;
     }
@@ -159,7 +142,7 @@ class ilElectronicCourseReserveAgreement
     /**
      * @param int $is_active
      */
-    public function setIsActive($is_active)
+    public function setIsActive(int $is_active): void
     {
         $this->is_active = $is_active;
     }

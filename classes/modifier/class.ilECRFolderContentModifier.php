@@ -9,34 +9,23 @@ require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
 /**
  * Class ilECRFolderContentModifier
  */
-class ilECRFolderContentModifier extends Base implements ilECRBaseModifier
+class ilECRFolderContentModifier extends Base
 {
-    /** @var ilObjFolder */
-    private $folder;
-    /** @var ilObjFolderGUI */
-    private $folderGui;
-    /** @var string */
-    private $viewMode;
-    /** @var bool */
-    private static $contentModified = false;
+    private ilContainerGUI $folderGui;
+    private static bool $contentModified = false;
 
     /**
      * @param int $refId
-     * @throws ilDatabaseException
-     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
      */
     private function initRendering(int $refId) : void
     {
-        $this->folder = ilObjectFactory::getInstanceByRefId($refId);
         $this->folderGui = new ilObjCategoryGUI([], $refId);
-        $this->viewMode = (
-            ilContainer::_lookupContainerSetting($this->folder->getId(), 'list_presentation') === 'tile' &&
-            !$this->folderGui ->isActiveAdministrationPanel()
-        ) ? ilContainerContentGUI::VIEW_MODE_TILE : ilContainerContentGUI::VIEW_MODE_LIST;
     }
 
     /**
      * @inheritDoc
+     * @throws ilDatabaseException|ilCtrlException|ilObjectNotFoundException
      */
     public function shouldModifyHtml($a_comp, $a_part, $a_par) : bool
     {
@@ -64,7 +53,7 @@ class ilECRFolderContentModifier extends Base implements ilECRBaseModifier
             isset($a_par['tpl_id']) &&
             $a_par['tpl_id'] === 'Services/Container/tpl.container_page.html'
         );
-        
+
         if (!$isRelevantTemplate && !$isMainTemplate) {
             return false;
         }
@@ -113,7 +102,7 @@ class ilECRFolderContentModifier extends Base implements ilECRBaseModifier
         // There is no content in the folder, so appending the message is more difficult
         $uploadScriptsById = [];
         $a_par['html'] = preg_replace_callback(
-            '#<script type="text/x-tmpl"[\s\S]*?</script>#is',
+            '#<script type="text/x-tmpl"[\s\S]*?</script>#i',
             static function ($matches) use (&$uploadScriptsById) {
                 $id = '###' . md5(uniqid((string) rand(), true)) . '###';
 
@@ -134,7 +123,7 @@ class ilECRFolderContentModifier extends Base implements ilECRBaseModifier
             $messageDoc->encoding = 'UTF-8';
             foreach ($messageDoc->getElementsByTagName('body')->item(0)->childNodes as $child) {
                 $newSectionNode = $document->importNode($child, true);
-                
+
                 $document->getElementById('il_center_col')->appendChild($newSectionNode);
             }
         }

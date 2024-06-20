@@ -1,6 +1,8 @@
 <?php
 
 use ILIAS\Plugin\ElectronicCourseReserve\UI\Table\Data\Provider;
+use ILIAS\UI\Factory;
+use ILIAS\UI\Renderer;
 
 include_once 'Services/Table/classes/class.ilTable2GUI.php';
 require_once 'Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php';
@@ -11,26 +13,21 @@ require_once 'Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvance
 class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\ElectronicCourseReserve\UI\Table\Base
 {
     /** @var array<int, array> */
-    private $cachedColumnDefinition = [];
-    /** @var Provider|null */
-    protected $provider;
-    /** @var array */
-    protected $visibleOptionalColumns = [];
-    /** @var array */
-    protected $optionalColumns = [];
-    /** @var array */
-    protected $filter = [];
-    /** @var array */
-    protected $optional_filter = [];
-    /** @var \ILIAS\UI\Renderer */
-    private $uiRenderer;
-    /** @var \ILIAS\UI\Factory */
-    private $uiFactory;
+    private array $cachedColumnDefinition = [];
+    protected ?Provider $provider;
+    protected array $visibleOptionalColumns = [];
+    protected array $optionalColumns = [];
+    protected array $filter = [];
+    protected array $optional_filter = [];
+    private Renderer $uiRenderer;
+    private Factory $uiFactory;
 
     /**
      * ilElectronicCourseReserveDeletionProtocolTableGUI constructor.
      * @param $a_parent_obj
      * @param string $a_parent_cmd
+     * @throws ilCtrlException
+     * @throws ilException
      */
     public function __construct($a_parent_obj, string $a_parent_cmd)
     {
@@ -127,7 +124,9 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
     }
 
     /**
-     * @inheritDoc
+     * @throws ilCtrlException
+     * @throws ilDateTimeException
+     * @throws Exception
      */
     public function initFilter(): void
     {
@@ -173,8 +172,9 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
     /**
      * Define a final formatting for a cell value
      * @param string $column
-     * @param array  $row
+     * @param array $row
      * @return string
+     * @throws ilDateTimeException
      */
     protected function formatCellValue(string $column, array $row) : string
     {
@@ -212,7 +212,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
                 ));
             }
         } elseif ('result' === $column) {
-            if ((string) $value !== '') {
+            if ($value !== '') {
                 global $DIC;
 
                 $result = json_decode($value);

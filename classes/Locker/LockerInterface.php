@@ -13,15 +13,15 @@ interface LockerInterface
      * @return bool
      */
 
-    public function acquireLock();
+    public function acquireLock(): bool;
 
     /**
      * @return bool
      */
-    public function isLocked();
+    public function isLocked(): bool;
 
     /**
      * @return void
      */
-    public function releaseLock();
+    public function releaseLock(): void;
 }

@@ -3,7 +3,13 @@
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Library;
 
-use Zend\Crypt\BlockCipher;
+use GnuPG;
+use ilAuthUtils;
+use ilElectronicCourseReservePlugin;
+use ilObjCourse;
+use ilObjUser;
+use ilSetting;
+use Laminas\Crypt\BlockCipher;
 
 /**
  * Class LinkBuilder
@@ -11,51 +17,33 @@ use Zend\Crypt\BlockCipher;
  */
 class LinkBuilder
 {
-    /**
-     * @var \ilElectronicCourseReservePlugin
-     */
-    protected $plugin;
+    protected ilElectronicCourseReservePlugin $plugin;
 
-    /**
-     * @var \ilObjUser
-     */
-    protected $user;
+    protected ilObjUser $user;
 
-    /**
-     * @var \ilSetting
-     */
-    protected $settings;
+    protected ilSetting $settings;
 
-    /**
-     * @var BlockCipher
-     */
-    protected $blockCipher;
+    protected BlockCipher $blockCipher;
 
-    /**
-     * @var \GnuPG
-     */
-    protected $gpg;
+    protected GnuPG $gpg;
 
-    /**
-     * @var LatestVersionGpgWrapper
-     */
-    private $gpgLatest;
+    private LatestVersionGpgWrapper $gpgLatest;
 
     /**
      * LinkBuilder constructor.
-     * @param \ilElectronicCourseReservePlugin $plugin
-     * @param \GnuPG $gpg
+     * @param ilElectronicCourseReservePlugin $plugin
+     * @param GnuPG $gpg
      * @param LatestVersionGpgWrapper $gpgLatest
-     * @param \ilObjUser $user
-     * @param \ilSetting $settings
+     * @param ilObjUser $user
+     * @param ilSetting $settings
      * @param BlockCipher $blockCipher
      */
     public function __construct(
-        \ilElectronicCourseReservePlugin $plugin,
-        \GnuPG $gpg,
+        ilElectronicCourseReservePlugin $plugin,
+        GnuPG $gpg,
         LatestVersionGpgWrapper $gpgLatest,
-        \ilObjUser $user,
-        \ilSetting $settings,
+        ilObjUser $user,
+        ilSetting $settings,
         BlockCipher $blockCipher
     ) {
         $this->plugin = $plugin;
@@ -66,16 +54,12 @@ class LinkBuilder
         $this->gpgLatest = $gpgLatest;
     }
 
-    /**
-     * @param \ilObjCourse $container
-     * @return string
-     */
-    public function getLibraryOrderLink(\ilObjCourse $container)
+    public function getLibraryOrderLink(ilObjCourse $container): string
     {
         $params = $this->getLibraryUrlParameters($container);
 
         $url = $this->plugin->getSetting('url_search_system');
-        if (strpos($url, '?') === false) {
+        if (!str_contains($url, '?')) {
             $separator = '?';
         } else {
             $separator = '&';
@@ -84,13 +68,9 @@ class LinkBuilder
         return $url . $separator . http_build_query($params);
     }
 
-    /**
-     * @param \ilObjCourse $container
-     * @return array
-     */
-    public function getLibraryUrlParameters(\ilObjCourse $container)
+    public function getLibraryUrlParameters(ilObjCourse $container): array
     {
-        $default_auth = $this->settings->get('auth_mode') ? $this->settings->get('auth_mode') : AUTH_LOCAL;
+        $default_auth = $this->settings->get('auth_mode') ? $this->settings->get('auth_mode') : ilAuthUtils::AUTH_LOCAL;
         $usr_id = $this->user->getLogin();
 
         if (
@@ -98,9 +78,9 @@ class LinkBuilder
             !(
                 (
                     $this->user->getAuthMode() == 'default' &&
-                    $default_auth == AUTH_LOCAL
+                    $default_auth == ilAuthUtils::AUTH_LOCAL
                 ) ||
-                $this->user->getAuthMode(true) == AUTH_LOCAL
+                $this->user->getAuthMode(true) == ilAuthUtils::AUTH_LOCAL
             )
         ) {
             $usr_id = $this->user->getExternalAccount();
@@ -137,7 +117,6 @@ class LinkBuilder
                     $signedError = $signResult->err;
 
                     if ($signature && !$signedError) {
-                        $signature = $signResult->data;
                         $params['iltoken'] = base64_encode($signature);
                         break 2;
                     }

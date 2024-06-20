@@ -5,6 +5,7 @@ namespace ILIAS\Plugin\ElectronicCourseReserve\UI\Table;
 
 use ILIAS\Plugin\ElectronicCourseReserve\UI\Table\Data\Provider;
 use ilTable2GUI;
+use ilTemplateException;
 
 /**
  * Class Base
@@ -14,34 +15,30 @@ use ilTable2GUI;
 abstract class Base extends ilTable2GUI
 {
     /** @var Provider|null */
-    protected $provider;
-    /** @var array */
-    protected $visibleOptionalColumns = [];
-    /** @var array */
-    protected $optionalColumns = [];
-    /** @var array */
-    protected $filter = [];
-    /** @var array */
-    protected $optional_filter = [];
+    protected ?Provider $provider;
+    protected array $visibleOptionalColumns = [];
+    protected array $optionalColumns = [];
+    protected array $filter = [];
+    protected array $optional_filter = [];
 
     /**
      * @inheritdoc
      */
     public function __construct($a_parent_obj, $command = '')
     {
-        parent::__construct($a_parent_obj, $command, '');
+        parent::__construct($a_parent_obj, $command);
 
         $columns = $this->getColumnDefinition();
-        $this->optionalColumns = (array) $this->getSelectableColumns();
-        $this->visibleOptionalColumns = (array) $this->getSelectedColumns();
+        $this->optionalColumns = $this->getSelectableColumns();
+        $this->visibleOptionalColumns = $this->getSelectedColumns();
 
         foreach ($columns as $index => $column) {
             if ($this->isColumnVisible($index)) {
                 $this->addColumn(
                     $column['txt'],
                     isset($column['sortable']) && $column['sortable'] ? $column['field'] : '',
-                    isset($column['width']) ? $column['width'] : '',
-                    isset($column['is_checkbox']) ? (bool) $column['is_checkbox'] : false
+                    $column['width'] ?? '',
+                    isset($column['is_checkbox']) && $column['is_checkbox']
                 );
             }
         }
@@ -136,7 +133,6 @@ abstract class Base extends ilTable2GUI
             }
 
             if (
-                is_array($this->visibleOptionalColumns) &&
                 array_key_exists($column['field'], $this->visibleOptionalColumns)
             ) {
                 return true;
@@ -147,11 +143,12 @@ abstract class Base extends ilTable2GUI
     }
 
     /**
-     * @param array $row
+     * @param array $a_set
+     * @throws ilTemplateException
      */
-    final protected function fillRow($row): void
+    final protected function fillRow(array $a_set): void
     {
-        $this->prepareRow($row);
+        $this->prepareRow($a_set);
 
         foreach ($this->getColumnDefinition() as $index => $column) {
             if (!$this->isColumnVisible($index)) {
@@ -159,8 +156,8 @@ abstract class Base extends ilTable2GUI
             }
 
             $this->tpl->setCurrentBlock('column');
-            $value = $this->formatCellValue($column['field'], $row);
-            if ((string) $value === '') {
+            $value = $this->formatCellValue($column['field'], $a_set);
+            if ($value === '') {
                 $this->tpl->touchBlock('column');
             } else {
                 $this->tpl->setVariable('COLUMN_VALUE', $value);
@@ -199,7 +196,7 @@ abstract class Base extends ilTable2GUI
         }
 
         $this->determineSelectedFilters();
-        $filter = (array) $this->filter;
+        $filter = $this->filter;
 
         foreach ($this->optional_filter as $key => $value) {
             if ($this->isFilterSelected($key)) {

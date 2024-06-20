@@ -13,10 +13,10 @@ interface Writer
      * @param array $message
      * @return void
      */
-    public function write(array $message);
+    public function write(array $message): void;
 
     /**
      * @return void
      */
-    public function shutdown();
+    public function shutdown(): void;
 }

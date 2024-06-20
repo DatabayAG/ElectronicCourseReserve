@@ -8,7 +8,7 @@ use ILIAS\Plugin\ElectronicCourseReserve\Locker\PidBased;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer\StdOut;
 use ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper;
-use Zend\Crypt;
+use Laminas\Crypt;
 
 class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 {
@@ -42,48 +42,26 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      */
     const ICON_FILE = 'file';
 
-    /**
-     * @var ilElectronicCourseReservePlugin
-     */
-    private static $instance = null;
 
-    /**
-     * @var array
-     */
-    protected $relevant_folder_cache = array();
+    private static ?ilElectronicCourseReservePlugin $instance = null;
 
-    /**
-     * @var array
-     */
-    protected $relevant_course_cache = array();
+    protected array $relevant_folder_cache = array();
 
-    /**
-     * @var array
-     */
-    protected $already_queried_folders = array();
+    protected array $relevant_course_cache = array();
 
-    /**
-     * @var array
-     */
-    protected $already_queried_items = array();
+    protected array $already_queried_folders = array();
 
-    /**
-     * @var array
-     */
-    protected $item_data = array();
+    protected array $already_queried_items = array();
 
-    /** @var bool */
-    protected static $initialized = false;
 
-    /** @var array */
-    protected static $active_plugins_check_cache = array();
+    protected array $item_data = array();
 
-    /** @var array */
-    protected static $active_plugins_cache = array();
+    protected static bool $initialized = false;
 
-    /**
-     * @inheritdoc
-     */
+    protected static array $active_plugins_check_cache = array();
+
+    protected static array $active_plugins_cache = array();
+
     public function getPluginName(): string
     {
         return self::PNAME;
@@ -116,7 +94,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
             };
 
             $GLOBALS['DIC']['plugin.esa.library.linkbuilder'] = function (Container $c) use ($that) {
-                $linkBuilder = new LinkBuilder(
+                return new LinkBuilder(
                     $that,
                     $c['plugin.esa.crypt.gpg'],
                     $c['plugin.esa.crypt.gpg-latest'],
@@ -124,8 +102,6 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
                     $c['ilSetting'],
                     $c['plugin.esa.crypt.blockcipher']
                 );
-
-                return $linkBuilder;
             };
 
             $GLOBALS['DIC']['plugin.esa.crypt.gpg'] = function (Container $c) use ($that) {
@@ -141,9 +117,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
             $GLOBALS['DIC']['plugin.esa.crypt.gpg.factory'] = function (Container $c) use ($that) {
                 return function ($homeDirectory) use ($that) {
                     require_once $that->getDirectory() . '/libs/php-gnupg/gpg.php';
-                    $gpg = new GnuPG($homeDirectory);
-
-                    return $gpg;
+                    return new GnuPG($homeDirectory);
                 };
             };
 
@@ -183,7 +157,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param string $keyword
      * @param mixed $value
      */
-    public function setSetting($keyword, $value)
+    public function setSetting(string $keyword, mixed $value): void
     {
         global $DIC;
 
@@ -196,7 +170,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param string $keyword
      * @return mixed
      */
-    public function getSetting($keyword)
+    public function getSetting(string $keyword): mixed
     {
         global $DIC;
 
@@ -211,7 +185,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param $cmd
      * @return string
      */
-    public function getLinkTarget(array $path, array $params = array(), $cmd)
+    public function getLinkTarget(array $path, array $params, $cmd): string
     {
         global $DIC;
 
@@ -249,7 +223,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         $target = 'ilias.php';
 
         foreach ($params as $paramName => $paramValue) {
-            $target = ilUtil::appendUrlParameterString($target, "$paramName=$paramValue", false);
+            $target = ilUtil::appendUrlParameterString($target, "$paramName=$paramValue");
         }
 
         return $target;
@@ -258,7 +232,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * @return ilElectronicCourseReservePlugin
      */
-    public static function getInstance()
+    public static function getInstance(): ilElectronicCourseReservePlugin
     {
         if (null === self::$instance) {
             return self::$instance = ilPluginAdmin::getPluginObject(
@@ -276,7 +250,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param int $usr_id
      * @return bool
      */
-    public function isAssignedToRequiredRole($usr_id)
+    public function isAssignedToRequiredRole(int $usr_id): bool
     {
         global $DIC;
         $rbacreview = $DIC->rbac()->review();
@@ -307,9 +281,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param string $identifier
      * @return string
      */
-    public function ecr_txt($identifier)
+    public function ecr_txt(string $identifier): string
     {
-        $this->includeClass('class.ilElectronicCourseReserveLangData.php');
         $ecr_lang_data = new ilElectronicCourseReserveLangData();
 
         $translation = $ecr_lang_data->txt($identifier);
@@ -326,7 +299,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param $folder_ref_id
      * @return bool
      */
-    public function isFolderRelevant($folder_ref_id)
+    public function isFolderRelevant($folder_ref_id): bool
     {
         if (!array_key_exists($folder_ref_id, $this->relevant_folder_cache)) {
             global $DIC;
@@ -348,7 +321,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param int $crs_ref_id
      * @return array
      */
-    public function getRelevantCourseAndFolderData($crs_ref_id)
+    public function getRelevantCourseAndFolderData(int $crs_ref_id): array
     {
         global $DIC;
         $res = $DIC->database()->queryF(
@@ -366,7 +339,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * @return array
      */
-    public function getAllRefIds()
+    public function getAllRefIds(): array
     {
         global $DIC;
         $res = $DIC->database()->query(
@@ -383,7 +356,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * @param $folder_ref_id
      */
-    public function queryFolderData($folder_ref_id)
+    public function queryFolderData($folder_ref_id): void
     {
         if (!array_key_exists($folder_ref_id, $this->already_queried_folders)) {
             global $DIC;
@@ -412,7 +385,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         return $this->already_queried_folders[$folderRefId];
     }
 
-    public function deleteFolderImportRecord(int $folderRefId)
+    public function deleteFolderImportRecord(int $folderRefId): void
     {
         global $DIC;
 
@@ -423,7 +396,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         );
     }
 
-    public function deleteFolderItemImportRecords(int $folderRefId, ?array $itemRefIds)
+    public function deleteFolderItemImportRecords(int $folderRefId, ?array $itemRefIds): void
     {
         global $DIC;
 
@@ -448,7 +421,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         string $mode,
         ?string $message,
         ?string $metadata
-    ) {
+    ): void
+    {
         global $DIC;
 
         $uuid = static function() {
@@ -536,7 +510,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param $item_ref_id
      * @return mixed
      */
-    public function queryItemData($item_ref_id)
+    public function queryItemData($item_ref_id): mixed
     {
         if (!array_key_exists($item_ref_id, $this->already_queried_items)) {
             global $DIC;
@@ -562,7 +536,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param int $show_description
      * @param int $show_image
      */
-    public function updateItemData($ref_id, $show_description, $show_image)
+    public function updateItemData(int $ref_id, int $show_description, int $show_image): void
     {
         global $DIC;
         $DIC->database()->update("ecr_description", array(
@@ -578,7 +552,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param $ref_id
      * @return bool
      */
-    public function isCourseRelevant($ref_id)
+    public function isCourseRelevant($ref_id): bool
     {
         if (!array_key_exists($ref_id, $this->relevant_course_cache)) {
             global $DIC;
@@ -599,7 +573,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * @return array
      */
-    public function getItemData()
+    public function getItemData(): array
     {
         return $this->item_data;
     }
@@ -611,17 +585,17 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      *
      * @return bool
      */
-    public function isPluginInstalled($component, $slot, $plugin_class)
+    public function isPluginInstalled(string $component, string $slot, string $plugin_class): bool
     {
         if (isset(self::$active_plugins_check_cache[$component][$slot][$plugin_class])) {
             return self::$active_plugins_check_cache[$component][$slot][$plugin_class];
         }
 
         foreach (
-            $GLOBALS['ilPluginAdmin']->getActivePluginsForSlot(IL_COMP_SERVICE, $component,
+            $GLOBALS['ilPluginAdmin']->getActivePluginsForSlot("Services", $component,
                 $slot) as $plugin_name
         ) {
-            $plugin = ilPluginAdmin::getPluginObject(IL_COMP_SERVICE, $component, $slot, $plugin_name);
+            $plugin = ilPluginAdmin::getPluginObject("Services", $component, $slot, $plugin_name);
             if (class_exists($plugin_class) && $plugin instanceof $plugin_class) {
                 return (self::$active_plugins_check_cache[$component][$slot][$plugin_class] = true);
             }
@@ -638,17 +612,17 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @return ilPlugin
      * @throws ilException
      */
-    public function getPlugin($component, $slot, $plugin_class)
+    public function getPlugin(string $component, string $slot, string $plugin_class): ilPlugin
     {
         if (isset(self::$active_plugins_cache[$component][$slot][$plugin_class])) {
             return self::$active_plugins_cache[$component][$slot][$plugin_class];
         }
 
         foreach (
-            $GLOBALS['ilPluginAdmin']->getActivePluginsForSlot(IL_COMP_SERVICE, $component,
+            $GLOBALS['ilPluginAdmin']->getActivePluginsForSlot("Services", $component,
                 $slot) as $plugin_name
         ) {
-            $plugin = ilPluginAdmin::getPluginObject(IL_COMP_SERVICE, $component, $slot, $plugin_name);
+            $plugin = ilPluginAdmin::getPluginObject("Services", $component, $slot, $plugin_name);
             if (class_exists($plugin_class) && $plugin instanceof $plugin_class) {
                 return (self::$active_plugins_cache[$component][$slot][$plugin_class] = $plugin);
             }

@@ -26,9 +26,6 @@ final class DomDocumentFactory
             throw new InvalidArgumentException('Invalid XML string given');
         }
 
-        if (version_compare(PHP_VERSION, '8.0', '<')) {
-            $entityLoader = libxml_disable_entity_loader(true);
-        }
         $internalErrors = libxml_use_internal_errors(true);
         libxml_clear_errors();
 
@@ -41,9 +38,6 @@ final class DomDocumentFactory
         $loaded = $domDocument->loadXML($xml, $options);
 
         libxml_use_internal_errors($internalErrors);
-        if (version_compare(PHP_VERSION, '8.0', '<')) {
-            libxml_disable_entity_loader($entityLoader);
-        }
 
         if (!$loaded) {
             $error = libxml_get_last_error();

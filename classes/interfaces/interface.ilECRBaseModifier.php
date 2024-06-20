@@ -12,7 +12,7 @@ interface ilECRBaseModifier
      * @param $a_par
      * @return bool
      */
-    public function shouldModifyHtml($a_comp, $a_part, $a_par);
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool;
 
     /**
      * @param $a_comp
@@ -20,6 +20,6 @@ interface ilECRBaseModifier
      * @param $a_par
      * @return string $html
      */
-    public function modifyHtml($a_comp, $a_part, $a_par);
-	
+    public function modifyHtml($a_comp, $a_part, $a_par): string;
+
 }

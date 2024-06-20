@@ -16,8 +16,7 @@ abstract class Base implements ilECRBaseModifier
 {
     use HttpContext;
 
-    /** @var Container */
-    protected $dic;
+    protected Container $dic;
 
     /**
      * ilServicePortalUserInterfaceUIHookGUI constructor.

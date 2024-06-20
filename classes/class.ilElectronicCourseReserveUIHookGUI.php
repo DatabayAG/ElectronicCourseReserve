@@ -13,11 +13,11 @@ use ILIAS\DI\Container;
  */
 class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 {
-    /** @var Container */
-    private $dic;
+    private Container $dic;
+
     /** @var ilECRBaseModifier[]|null */
-    protected static $modifier = null;
-    protected static $tabsRendered = [];
+    protected static ?array $modifier = null;
+    protected static array $tabsRendered = [];
 
     /**
      * ilServicePortalUserInterfaceUIHookGUI constructor.
@@ -29,22 +29,20 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         $this->dic = $DIC;
     }
 
-    public function executeCommand()
+    /**
+     * @throws ilCtrlException
+     */
+    public function executeCommand(): void
     {
         $this->dic->ui()->mainTemplate()->loadStandardTemplate();
 
         $this->dic->ctrl()->saveParameter($this, 'ref_id');
-        $next_class = $this->dic->ctrl()->getNextClass();
 
-        switch (strtolower($next_class)) {
-            default:
-                ilElectronicCourseReservePlugin::getInstance()->includeClass('dispatcher/class.ilECRCommandDispatcher.php');
-                $dispatcher = ilECRCommandDispatcher::getInstance($this);
-                $response = $dispatcher->dispatch($this->dic->ctrl()->getCmd());
-                $this->dic->ui()->mainTemplate()->setContent($response);
-                $this->dic->ui()->mainTemplate()->printToStdout();
-                break;
-        }
+        $dispatcher = ilECRCommandDispatcher::getInstance($this);
+        $response = $dispatcher->dispatch($this->dic->ctrl()->getCmd());
+        $this->dic->ui()->mainTemplate()->setContent($response);
+        $this->dic->ui()->mainTemplate()->printToStdout();
+
     }
 
     /**
@@ -85,8 +83,14 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 
     /**
      * @inheritdoc
+     * @param $a_comp
+     * @param $a_part
+     * @param array $a_par
+     * @throws ilCtrlException
+     * @throws ilDatabaseException
+     * @throws ilObjectNotFoundException
      */
-    public function modifyGUI($a_comp, $a_part, $a_par = array()): void
+    public function modifyGUI($a_comp, $a_part, array $a_par = array()): void
     {
         global $DIC;
 
@@ -211,7 +215,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     /**
      *
      */
-    protected function initModifier()
+    protected function initModifier(): void
     {
         if (
             !isset($this->dic['tpl']) ||
@@ -220,10 +224,8 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
             return;
         }
 
-        if (version_compare(ILIAS_VERSION_NUMERIC, '6.0', '>=')) {
-            if (!isset($this->dic['refinery'])) {
-                return;
-            }
+        if (!isset($this->dic['refinery'])) {
+            return;
         }
 
         if (null !== self::$modifier) {
@@ -231,14 +233,6 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         }
 
         $this->plugin_object = ilElectronicCourseReservePlugin::getInstance();
-        $this->plugin_object->includeClass('modifier/class.ilECRInfoScreenModifier.php');
-        $this->plugin_object->includeClass('modifier/class.ilECRFileAndWebResourceImageGuiModifier.php');
-        $this->plugin_object->includeClass('modifier/class.ilECRBibliographicItemModifier.php');
-        $this->plugin_object->includeClass("modifier/class.ilECRCourseListGuiModifier.php");
-        $this->plugin_object->includeClass("modifier/class.ilECRFolderListGuiModifier.php");
-        $this->plugin_object->includeClass("modifier/class.ilECRilCopyObjectGuiModifier.php");
-        $this->plugin_object->includeClass("modifier/class.ilECRCourseFolderTileGuiModifier.php");
-        $this->plugin_object->includeClass("modifier/class.ilECRFolderContentModifier.php");
 
         self::$modifier = [
             new ilECRCourseListGuiModifier(),
@@ -255,7 +249,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     /**
      * @return bool
      */
-    public function setCreationMode()
+    public function setCreationMode(): bool
     {
         return false;
     }
