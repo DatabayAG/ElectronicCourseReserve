@@ -9,6 +9,7 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveAgreementConfigGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveContentConfigGUI
  * @ilCtrl_calls ilElectronicCourseReserveConfigGUI: ilElectronicCourseReserveDeletionProtocolGUI
+ * @ilCtrl_IsCalledBy ilElectronicCourseReserveConfigGUI: ilAdministrationGUI
  */
 class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
