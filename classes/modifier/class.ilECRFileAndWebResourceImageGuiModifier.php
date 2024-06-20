@@ -11,7 +11,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 
     protected array $object_types = array('file', 'webr');
 
-    protected ilObjectDataCache $data_cache;
+    protected ilObjDataCache $data_cache;
 
 
     protected ilAccessHandler $access;
@@ -53,6 +53,11 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
         return false;
     }
 
+    /**
+     * @param $a_comp
+     * @param $a_part
+     * @param $a_par
+     */
     public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         global $DIC;

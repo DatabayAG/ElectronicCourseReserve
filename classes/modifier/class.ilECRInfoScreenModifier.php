@@ -57,7 +57,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
      * @throws ilException
      * @throws DOMException
      */
-    public function modifyHtml($a_comp, $a_part, $a_par): array|string
+    public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         /** @var Helper $objectHelper */
         $objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];

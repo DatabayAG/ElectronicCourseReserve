@@ -18,8 +18,7 @@ interface ilECRBaseModifier
      * @param $a_comp
      * @param $a_part
      * @param $a_par
-     * @return string $html
      */
-    public function modifyHtml($a_comp, $a_part, $a_par): string;
+    public function modifyHtml($a_comp, $a_part, $a_par): array;
 
 }

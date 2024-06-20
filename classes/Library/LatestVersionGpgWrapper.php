@@ -34,7 +34,8 @@ class LatestVersionGpgWrapper implements GpgWrapper
         bool $learsign = true,
         bool $detach = false,
         bool $binary = false
-    ) {
+    ): GpgSignResult
+    {
         // See: https://d.sb/2016/11/gpg-inappropriate-ioctl-for-device-errors
         $result = $this->coreLibrary->sign($message, $keyId, $passphrase, $learsign, $detach, $binary);
 
