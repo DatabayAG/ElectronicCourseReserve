@@ -630,4 +630,28 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
         throw new ilException($plugin_class . ' plugin not installed!');
     }
+
+    protected function beforeUninstall(): bool
+    {
+        $this->deleteDatabaseTables();
+
+        return true;
+    }
+
+    private function deleteDatabaseTables(): void
+    {
+        $databaseTables = [
+            'ecr_import_history',
+            'ecr_lang_agreements',
+            'ecr_user_acceptance',
+            'ecr_lang_data',
+            'ecr_description',
+            'ecr_folder',
+            'ecr_deletion_log',
+        ];
+
+        foreach ($databaseTables as $databaseTable) {
+            $this->db->dropTable($databaseTable, false);
+        }
+    }
 }
