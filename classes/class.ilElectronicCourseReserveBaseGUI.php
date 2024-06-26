@@ -1,6 +1,7 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\Filesystem\Filesystem;
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use Laminas\Crypt\BlockCipher;
@@ -38,6 +39,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
     protected Renderer $uiRenderer;
 
     protected ilLogger $log;
+    protected Filesystem $filesystem;
 
     /**
      * ilCourseBookingDecisionMakerGUI constructor.
@@ -65,6 +67,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
         $this->lock = $DIC['plugin.esa.locker'];
         $this->encrypter = $DIC['plugin.esa.crypt.blockcipher'];
         $this->objectCache = $DIC['ilObjDataCache'];
+        $this->filesystem = $DIC->filesystem()->storage();
 
         $this->lng->loadLanguageModule('meta');
     }

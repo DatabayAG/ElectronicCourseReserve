@@ -468,7 +468,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             $this->getPluginObject()->setSetting('token_append_to_bibl', (int) $form->getInput('token_append_to_bibl'));
 
             if (strlen($import_path) > 0 && !is_dir(CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $import_path)) {
-                ilUtil::makeDirParents(CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $import_path);
+                $this->filesystem->createDir(CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $import_path);
             }
 
             $this->tpl->setOnScreenMessage("success", $this->lng->txt('saved_successfully'), true);
