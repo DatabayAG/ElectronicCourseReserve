@@ -30,6 +30,11 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     /**
      * @var string
      */
+    const PLUGIN_ID = 'ecr';
+
+    /**
+     * @var string
+     */
     const PNAME = 'ElectronicCourseReserve';
 
     /**
@@ -61,6 +66,18 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     protected static array $active_plugins_check_cache = array();
 
     protected static array $active_plugins_cache = array();
+    private ilComponentFactory $componentFactory;
+
+    public function __construct(ilDBInterface $db, ilComponentRepositoryWrite $component_repository, string $id)
+    {
+        parent::__construct($db, $component_repository, $id);
+
+        global $DIC;
+        /**
+         * @var ilComponentFactory $componentFactory
+         */
+        $this->componentFactory = $DIC["component.factory"];
+    }
 
     public function getPluginName(): string
     {
@@ -235,12 +252,13 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
     public static function getInstance(): ilElectronicCourseReservePlugin
     {
         if (null === self::$instance) {
-            return self::$instance = ilPluginAdmin::getPluginObject(
-                self::CTYPE,
-                self::CNAME,
-                self::SLOT_ID,
-                self::PNAME
-            );
+            global $DIC;
+
+            /**
+             * @var ilComponentFactory $componentFactory
+             */
+            $componentFactory = $DIC["component.factory"];
+            self::$instance = $componentFactory->getPlugin(self::PLUGIN_ID);
         }
 
         return self::$instance;
@@ -592,10 +610,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         }
 
         foreach (
-            $GLOBALS['ilPluginAdmin']->getActivePluginsForSlot("Services", $component,
-                $slot) as $plugin_name
+            $this->componentFactory->getActivePluginsInSlot("Services") as $plugin
         ) {
-            $plugin = ilPluginAdmin::getPluginObject("Services", $component, $slot, $plugin_name);
             if (class_exists($plugin_class) && $plugin instanceof $plugin_class) {
                 return (self::$active_plugins_check_cache[$component][$slot][$plugin_class] = true);
             }
@@ -619,10 +635,8 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         }
 
         foreach (
-            $GLOBALS['ilPluginAdmin']->getActivePluginsForSlot("Services", $component,
-                $slot) as $plugin_name
+            $this->componentFactory->getActivePluginsInSlot("Services") as $plugin
         ) {
-            $plugin = ilPluginAdmin::getPluginObject("Services", $component, $slot, $plugin_name);
             if (class_exists($plugin_class) && $plugin instanceof $plugin_class) {
                 return (self::$active_plugins_cache[$component][$slot][$plugin_class] = $plugin);
             }
