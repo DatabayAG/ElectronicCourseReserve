@@ -202,8 +202,11 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
      * @param $cmd
      * @return string
      */
+
+    //@todo ctrl_classfile Table does not exist anymore
     public function getLinkTarget(array $path, array $params, $cmd): string
     {
+        return "";
         global $DIC;
 
         $ilDB = $DIC->database();
@@ -254,11 +257,25 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         if (null === self::$instance) {
             global $DIC;
 
-            /**
-             * @var ilComponentFactory $componentFactory
-             */
-            $componentFactory = $DIC["component.factory"];
-            self::$instance = $componentFactory->getPlugin(self::PLUGIN_ID);
+            global $DIC;
+
+            /** @var ilComponentRepository $component_repository */
+            if(!isset($DIC['component.repository'])) {
+                $component =  new InitComponentService();
+                $component->init($DIC);
+            }
+            $component_repository = $DIC['component.repository'];
+            /** @var ilComponentFactory $component_factory */
+            $component_factory = $DIC['component.factory'];
+
+            $plugin_info = $component_repository->getComponentByTypeAndName(
+                self::CTYPE,
+                self::CNAME
+            )->getPluginSlotById(self::SLOT_ID)->getPluginByName(self::PNAME);
+
+            self::$instance = $component_factory->getPlugin($plugin_info->getId());
+
+
         }
 
         return self::$instance;
@@ -610,7 +627,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         }
 
         foreach (
-            $this->componentFactory->getActivePluginsInSlot("Services") as $plugin
+            $this->componentFactory->getActivePluginsInSlot($slot) as $plugin
         ) {
             if (class_exists($plugin_class) && $plugin instanceof $plugin_class) {
                 return (self::$active_plugins_check_cache[$component][$slot][$plugin_class] = true);

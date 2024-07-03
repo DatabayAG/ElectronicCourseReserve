@@ -186,7 +186,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
         if ('deletion_timestamp' === $column) {
             $value = ilDatePresentation::formatDate(new ilDateTime($value, IL_CAL_UNIX));
         } elseif ('deletion_message' === $column) {
-            $value = ilUtil::prepareFormOutput($value);
+            $value = ilLegacyFormElementsUtil::prepareFormOutput($value);
         } elseif ('deletion_mode' === $column) {
             $mode = $value;
             $value = $this->parent_obj->getPluginObject()->txt('adm_ecr_tab_del_column_deletion_mode_imported');
