@@ -1,6 +1,9 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
+
 require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
@@ -8,6 +11,19 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
+
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
+
+    public function __construct(?ilElectronicCourseReservePlugin $plugin = null)
+    {
+        parent::__construct($plugin);
+
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
+    }
+
     /**
      * @inheritdoc
      */
@@ -39,9 +55,9 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
 
         $installed_langs = ilLanguage::_getInstalledLanguages();
         foreach ($installed_langs as $lang) {
-            if (isset($_POST[$lang])) {
+            if ($this->httpWrapper->post()->has($lang)) {
                 $translationData->setLangKey($lang);
-                $translationData->setValue(trim(ilUtil::stripSlashes($_POST[$lang])));
+                $translationData->setValue(trim(ilUtil::stripSlashes($this->httpWrapper->post()->retrieve($lang, $this->refinery->kindlyTo()->string()))));
                 $translationData->saveTranslation();
             }
         }

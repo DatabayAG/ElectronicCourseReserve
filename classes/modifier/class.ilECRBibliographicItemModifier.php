@@ -55,6 +55,9 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      */
     protected function isDetailView() : bool
     {
+        if(!$_GET['cmdClass']){
+            return false;
+        }
         return (
             strtolower($_GET['cmdClass']) === strtolower(ilObjBibliographicGUI::class) &&
             strtolower($_GET['cmd']) === 'showdetails'
@@ -66,6 +69,9 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      */
     protected function isListView() : bool
     {
+        if(!$_GET['cmdClass']){
+            return false;
+        }
         return (
                 strtolower($_GET['cmdClass']) === strtolower(ilObjBibliographicGUI::class) &&
                 in_array(

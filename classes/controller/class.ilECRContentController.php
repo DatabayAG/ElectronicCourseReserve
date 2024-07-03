@@ -1,6 +1,8 @@
 <?php
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder;
+use ILIAS\Refinery\Factory;
 use ILIAS\UI\Factory as UIFactory;
 use ILIAS\UI\Renderer as UIRenderer;
 
@@ -22,6 +24,8 @@ class ilECRContentController
     protected ilAccessHandler $access;
     protected UIFactory $uiFactory;
     protected UIRenderer $uiRenderer;
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
 
     /**
      * ilECRContentController constructor.
@@ -42,6 +46,8 @@ class ilECRContentController
         $this->access = $DIC->access();
         $this->uiFactory = $DIC->ui()->factory();
         $this->uiRenderer = $DIC->ui()->renderer();
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
     }
 
     /**
@@ -355,9 +361,15 @@ class ilECRContentController
      */
     public function updateItemSettings(): void
     {
-        $show_description = (int) $_POST['show_description'];
-        $show_image = (int) $_POST['show_image'];
-        $ref_id = (int) $_POST['ref_id'];
+        if($this->httpWrapper->post()->has('show_description')){
+            $show_description = $this->httpWrapper->post()->retrieve('show_description', $this->refinery->kindlyTo()->int());
+        }
+        if($this->httpWrapper->post()->has('show_image')){
+            $show_image = $this->httpWrapper->post()->retrieve('show_image', $this->refinery->kindlyTo()->int());
+        }
+        if($this->httpWrapper->post()->has('ref_id')){
+            $ref_id = $this->httpWrapper->post()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+        }
         if ($ref_id > 0) {
             $this->plugin_object->updateItemData($ref_id, $show_description, $show_image);
         }
