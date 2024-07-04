@@ -1,5 +1,8 @@
 <?php
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
+
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReserveListGUIHelper.php";
 
@@ -10,16 +13,31 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 {
 
     protected ilElectronicCourseReserveListGUIHelper $list_gui_helper;
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
 
     public function __construct()
     {
         $this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
     }
 
     public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
-        $cmd_class = ilUtil::stripSlashes((string) ($_GET['cmdClass'] ?? ''));
-        $cmd = ilUtil::stripSlashes((string) ($_GET['cmd'] ?? ''));
+        if($this->httpWrapper->query()->has("cmdClass")){
+            $cmdClass = $this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string());
+        } else {
+            $cmdClass = "";
+        }
+        if($this->httpWrapper->query()->has("cmd")){
+            $cmd = $this->httpWrapper->query()->retrieve("cmd", $this->refinery->kindlyTo()->string());
+        } else {
+            $cmd = "";
+        }
+        $cmd_class = ilUtil::stripSlashes($cmdClass);
+        $cmd = ilUtil::stripSlashes($cmd);
 
         $template = $a_par['tpl_id'] ?? '';
         if ($template !== 'Services/Table/tpl.table2.html') {

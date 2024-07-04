@@ -1,8 +1,10 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
 use ILIAS\Plugin\ElectronicCourseReserve\Library\LinkBuilder;
 use ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper;
+use ILIAS\Refinery\Factory;
 
 require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php';
 
@@ -12,6 +14,14 @@ require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRBibliographicItemModifier implements ilECRBaseModifier
 {
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
+
+    public function __construct(){
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
+    }
     /**
      * @inheritdoc
      * @throws ilException
@@ -30,7 +40,11 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
             return false;
         }
 
-        $refId = (int) $_GET['ref_id'];
+        if(!$this->httpWrapper->query()->has('ref_id')){
+            return false;
+        }
+        $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+
         if (!$refId) {
             return false;
         }
@@ -55,12 +69,13 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      */
     protected function isDetailView() : bool
     {
-        if(!$_GET['cmdClass']){
+        if(!$this->httpWrapper->query()->has('cmdClass') || !$this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string())){
             return false;
         }
+
         return (
-            strtolower($_GET['cmdClass']) === strtolower(ilObjBibliographicGUI::class) &&
-            strtolower($_GET['cmd']) === 'showdetails'
+            strtolower($this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string())) === strtolower(ilObjBibliographicGUI::class) &&
+            strtolower($this->httpWrapper->query()->retrieve('cmd', $this->refinery->kindlyTo()->string())) === 'showdetails'
         );
     }
 
@@ -69,21 +84,26 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      */
     protected function isListView() : bool
     {
-        if(!$_GET['cmdClass']){
+        if(!$this->httpWrapper->query()->has('cmdClass') || !$this->httpWrapper->query()->has('cmd')){
+            return false;
+        }
+        $cmdClass = $this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string());
+        $cmd = $this->httpWrapper->query()->retrieve('cmd', $this->refinery->kindlyTo()->string());
+        if(!$cmdClass){
             return false;
         }
         return (
-                strtolower($_GET['cmdClass']) === strtolower(ilObjBibliographicGUI::class) &&
+                strtolower($cmdClass) === strtolower(ilObjBibliographicGUI::class) &&
                 in_array(
-                    strtolower($_GET['cmd']),
+                    strtolower($cmd),
                     ['showcontent', 'render', 'view']
                 )
             ) || (
-                strtolower($_GET['cmdClass']) === strtolower(ilRepositoryGUI::class) &&
-                strtolower($_GET['cmd']) === 'render'
+                strtolower($cmdClass) === strtolower(ilRepositoryGUI::class) &&
+                strtolower($cmd) === 'render'
             ) || (
-                strtolower($_GET['cmdClass']) === 'ilbibliographicdetailsgui' &&
-                strtolower($_GET['cmd']) === 'showcontent'
+                strtolower($cmdClass) === 'ilbibliographicdetailsgui' &&
+                strtolower($cmd) === 'showcontent'
             );
     }
 
@@ -207,7 +227,7 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
         /** @var Helper $objectHelper */
         $objectHelper = $GLOBALS['DIC']['plugin.esa.object.helper'];
 
-        $instance = $objectHelper->getInstanceByRefId((int) $_GET['ref_id']);
+        $instance = $objectHelper->getInstanceByRefId($this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int()));
         $parentCrsRefId = $DIC->repositoryTree()->checkForParentType($instance->getRefId(), 'crs', true);
         if (!$parentCrsRefId) {
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];

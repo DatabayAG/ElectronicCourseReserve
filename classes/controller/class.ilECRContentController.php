@@ -86,7 +86,7 @@ class ilECRContentController
     {
         $is_use_agreement_enabled = $this->plugin_object->getSetting('enable_use_agreement');
         if ($is_use_agreement_enabled) {
-            $ref_id = (int) $_GET['ref_id'];
+            $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
             $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
             $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
             if ($ilUserAcceptance->hasUserAcceptedAgreement()) {
@@ -106,7 +106,7 @@ class ilECRContentController
      */
     private function checkUserAcceptance(): bool
     {
-        $ref_id = (int) $_GET['ref_id'];
+        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
         $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
@@ -177,7 +177,7 @@ class ilECRContentController
      */
     public function cancelAcceptance(): void
     {
-        $ref_id = (int) $_GET['ref_id'];
+        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         $this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $ref_id);
         $url = $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view', '');
 
@@ -191,7 +191,7 @@ class ilECRContentController
      */
     public function saveAcceptedUserAgreement(): void
     {
-        $ref_id = (int) $_GET['ref_id'];
+        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
         $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
@@ -213,7 +213,7 @@ class ilECRContentController
      */
     public function showECRContent(): string
     {
-        $ref_id = (int) $_GET['ref_id'];
+        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
         if (!$this->checkUseAgreementCondition()) {
@@ -271,7 +271,7 @@ class ilECRContentController
      */
     public function showECRItemContent(): string
     {
-        $ref_id = (int) $_GET['ref_id'];
+        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
         $item = $this->plugin_object->queryItemData($ref_id);
 
@@ -386,7 +386,7 @@ class ilECRContentController
         $this->checkPermission();
 
         try {
-            $ref_id = (int) $_GET['ref_id'];
+            $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
             $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
             /** @var LinkBuilder $linkBuilder */
@@ -419,7 +419,7 @@ class ilECRContentController
      */
     public function checkPermission(string $permission = 'write'): void
     {
-        $ref_id = (int) $_GET['ref_id'];
+        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
 
         if (!(($obj instanceof ilObjCourse || $obj instanceof ilObjFile || $obj instanceof ilObjLinkResource)

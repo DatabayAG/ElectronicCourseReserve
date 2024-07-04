@@ -1,6 +1,7 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use JetBrains\PhpStorm\NoReturn;
@@ -19,6 +20,7 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
     protected ilLogger $log;
 
     protected ilGpgHomeDirInputGUI $homeDirInputGUI;
+    private WrapperFactory $httpWrapper;
 
     /***
      * ilGpgHomeDirInputGUI constructor.
@@ -48,6 +50,8 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
         $this->homeDirInputGUI = $homeDirInputGUI;
         $this->ctrl = $ctrl;
         $this->log = $log;
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
     }
 
     /**
@@ -55,8 +59,9 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
      */
     #[NoReturn] public function renderKeyList(): void
     {
+        $path = $this->httpWrapper->query()->has('path') ? $this->httpWrapper->query()->retrieve('path', $this->refinery->kindlyTo()->string()) : "";
         $response = new stdClass();
-        $response->html = $this->getKeyListHtml(isset($_GET['path']) && is_string($_GET['path']) ? $_GET['path'] : '');
+        $response->html = $this->getKeyListHtml(is_string($path) ? $path : '');
 
         echo json_encode($response);
         exit();

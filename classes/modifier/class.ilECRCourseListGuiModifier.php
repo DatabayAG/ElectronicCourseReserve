@@ -1,5 +1,8 @@
 <?php
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
+
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReserveListGUIHelper.php";
 
@@ -14,6 +17,8 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
 
 
     protected ilAccessHandler $access;
+    protected WrapperFactory $httpWrapper;
+    protected Factory $refinery;
 
     public function __construct()
     {
@@ -21,6 +26,8 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
         $this->access = $DIC->access();
         $this->data_cache = $DIC['ilObjDataCache'];
         $this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
     }
 
     public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
@@ -32,11 +39,19 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        if (in_array(strtolower($_GET['cmdClass'] ?? ''), array_map('strtolower', [ilObjectCopyGUI::class]), true)) {
+        if($this->httpWrapper->query()->has("cmdClass")){
+            $cmdClass = $this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string());
+        } else {
+            $cmdClass = "";
+        }
+        if (in_array(strtolower($cmdClass), array_map('strtolower', [ilObjectCopyGUI::class]), true)) {
             return false;
         }
 
-        $refId = (int) $_GET['ref_id'];
+        if(!$this->httpWrapper->query()->has('ref_id')){
+            return false;
+        }
+        $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         if (!$refId) {
             return false;
         }
@@ -59,7 +74,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
     public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         $processedHtml = '';
-        $contextRefId = (int) $_GET['ref_id'];
+        $contextRefId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());;
 
         $obj = ilObjectFactory::getInstanceByRefId($contextRefId, false);
         if (!($obj instanceof ilObjCourse) || !$this->access->checkAccess('read', '', $obj->getRefId())) {

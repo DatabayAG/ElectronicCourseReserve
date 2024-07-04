@@ -2,6 +2,8 @@
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\DI\Container;
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
 
 /**
  * Class ilElectronicCourseReserveUIHookGUI
@@ -18,6 +20,8 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     /** @var ilECRBaseModifier[]|null */
     protected static ?array $modifier = null;
     protected static array $tabsRendered = [];
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
 
     /**
      * ilServicePortalUserInterfaceUIHookGUI constructor.
@@ -27,6 +31,8 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
         global $DIC;
 
         $this->dic = $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
     }
 
     /**
@@ -61,7 +67,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 
         $plugin = ilElectronicCourseReservePlugin::getInstance();
 
-        $ref_id = (int) $_GET['ref_id'];
+        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         if ($plugin->isFolderRelevant($ref_id)) {
             $plugin->queryFolderData($ref_id);
         }
@@ -94,16 +100,16 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     {
         global $DIC;
 
-        $isAdminContext = !isset($_GET['baseClass']) || strtolower($_GET['baseClass']) === 'iladministrationgui';
+        $isAdminContext = !$this->httpWrapper->query()->has('baseClass') || $this->httpWrapper->query()->retrieve('baseClass', $this->refinery->kindlyTo()->string()) === 'iladministrationgui';
 
-        if (!$isAdminContext && !isset($_GET['pluginCmd']) && 'tabs' == $a_part && isset($_GET['ref_id'])) {
+        if (!$isAdminContext && !$this->httpWrapper->query()->has('pluginCmd') && 'tabs' == $a_part && $this->httpWrapper->query()->has('ref_id')) {
             $ilCtrl = $DIC->ctrl();
             $ilAccess = $DIC->access();
             $ilUser = $DIC->user();
 
             $this->getPluginObject()->loadLanguageModule();
 
-            $ref_id = (int) $_GET['ref_id'];
+            $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
             $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
             if ($obj instanceof ilObjCourse &&
                 $ilAccess->checkAccess('read', '', $obj->getRefId()) &&

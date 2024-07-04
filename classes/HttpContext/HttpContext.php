@@ -4,6 +4,8 @@
 namespace ILIAS\Plugin\ElectronicCourseReserve\HttpContext;
 
 use ilCtrl;
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
 use ilObjectDataCache;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionClass;
@@ -20,13 +22,28 @@ trait HttpContext
 
     protected ilCtrl $ctrl;
 
+    private WrapperFactory $httpWrapper;
+
+    private Factory $refinery;
+
+    public function __construct()
+    {
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
+    }
+
     /**
      * @param string $class
      * @return bool
      */
     final public function isBaseClass(string $class) : bool
     {
-        $baseClass = (string) ($_GET['baseClass'] ?? '');
+        if($this->httpWrapper->query()->has("baseClass")){
+            $baseClass = $this->httpWrapper->query()->retrieve("baseClass", $this->refinery->kindlyTo()->string());
+        } else {
+            $baseClass = "";
+        }
 
         return strtolower($class) === strtolower($baseClass);
     }
@@ -36,7 +53,7 @@ trait HttpContext
      */
     final public function hasBaseClass() : bool
     {
-        return isset($_GET['baseClass']);
+        return $this->httpWrapper->query()->has('baseClass');
     }
 
     /**
@@ -45,7 +62,11 @@ trait HttpContext
      */
     final public function isCommandClass(string $class) : bool
     {
-        $cmdClass = (string) ($_GET['cmdClass'] ?? '');
+        if($this->httpWrapper->query()->has('cmdClass')) {
+            $cmdClass = $this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string());
+        } else {
+            $cmdClass= "";
+        }
 
         return strtolower($class) === strtolower($cmdClass);
     }
@@ -55,7 +76,7 @@ trait HttpContext
      */
     final public function hasCommandClass() : bool
     {
-        return isset($_GET['cmdClass']);
+        return $this->httpWrapper->query()->has('cmdClass');
     }
 
     /**
@@ -69,7 +90,7 @@ trait HttpContext
         }
 
         return in_array(
-            strtolower($_GET['cmdClass']),
+            strtolower($this->httpWrapper->query()->has('cmdClass') ? $this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string()) : ""),
             array_map(
                 'strtolower',
                 $cmdClasses
@@ -112,7 +133,10 @@ trait HttpContext
      */
     final public function getRefId() : int
     {
-        return (int) ($_GET['ref_id'] ?? 0);
+        if($this->httpWrapper->query()->has('ref_id')){
+            return $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+        }
+        return 0;
     }
 
     /**
@@ -121,7 +145,11 @@ trait HttpContext
     final public function getTargetRefId() : int
     {
         $matches = null;
-        $target = ((string) $_GET['target'] ?? '');
+        if($this->httpWrapper->query()->has('target')){
+            $target = $this->httpWrapper->query()->retrieve('target', $this->refinery->kindlyTo()->string());
+        } else {
+            $target = '';
+        }
         if (preg_match('/^[a-zA-Z0-9]+_(\d+)$/', $target, $matches)) {
             if (is_array($matches) && isset($matches[1]) && is_numeric($matches[1]) && $matches[1] > 0) {
                 return (int) $matches[1];

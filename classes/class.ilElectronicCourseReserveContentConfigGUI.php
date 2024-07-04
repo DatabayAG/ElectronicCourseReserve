@@ -72,13 +72,13 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
      */
     protected function editContent(ilPropertyFormGUI $form = null): void
     {
-        if (!isset($_GET['ecr_lang'])) {
+        if (!$this->httpWrapper->query()->has('ecr_lang')) {
             $this->tpl->setOnScreenMessage("failure", $this->lng->txt('obj_not_found'), true);
             $this->ctrl->redirect($this, 'showTabTranslationTable');
             return;
         }
 
-        $lang_key = trim($_GET['ecr_lang']);
+        $lang_key = trim($this->httpWrapper->query()->retrieve('ecr_lang', $this->refinery->kindlyTo()->string()));
         $lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
         if (!$lang_obj_id) {
             $this->tpl->setOnScreenMessage("failure", $this->lng->txt('obj_not_found'), true);
@@ -153,7 +153,8 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
     {
         $form = new ilPropertyFormGUI();
         $form->setFormAction($this->ctrl->getFormAction($this, 'saveContent'));
-        $form->setTitle($this->getPluginObject()->txt('edit_ecr_content') . ': ' . $this->lng->txt('meta_l_' . $_GET['ecr_lang']));
+        $lang = $this->httpWrapper->query()->has('ecr_lang') ? $this->httpWrapper->query()->retrieve('ecr_lang', $this->refinery->kindlyTo()->string()) : "";
+        $form->setTitle($this->getPluginObject()->txt('edit_ecr_content') . ': ' . $this->lng->txt('meta_l_' . $lang));
 
         $ecr_content_input = new ilTextAreaInputGUI($this->getPluginObject()->txt('ecr_content'), 'ecr_content');
         $ecr_content_input->setRequired(true);
@@ -187,8 +188,8 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
         $ecr_content_input->setPurifier($purifier);
 
         $ecr_lang = new ilHiddenInputGUI('ecr_lang');
-        if (isset($_GET['ecr_lang'])) {
-            $ecr_lang->setValue($_GET['ecr_lang']);
+        if ($this->httpWrapper->query()->has('ecr_lang')) {
+            $ecr_lang->setValue($this->httpWrapper->query()->retrieve('ecr_lang', $this->refinery->kindlyTo()->string()));
         }
 
         $form->addItem($ecr_lang);

@@ -1,5 +1,8 @@
 <?php
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
+
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReserveListGUIHelper.php";
 
@@ -18,12 +21,16 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 
 
     protected bool $modified = false;
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
 
     public function __construct()
     {
         global $DIC;
         $this->access = $DIC->access();
         $this->data_cache = $DIC['ilObjDataCache'];
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
     }
 
     /**
@@ -38,7 +45,10 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        $refId = (int) $_GET['ref_id'];
+        if(!$this->httpWrapper->query()->has('ref_id')){
+            return false;
+        }
+        $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         if (!$refId) {
             return false;
         }
@@ -62,7 +72,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
     {
         global $DIC;
         $plugin = ilElectronicCourseReservePlugin::getInstance();
-        $refId = (int) $_GET['ref_id'];
+        $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());;
         $item_data = $plugin->queryItemData($refId);
         if (is_array($item_data)
             && array_key_exists('icon', $item_data)

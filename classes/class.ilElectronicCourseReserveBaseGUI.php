@@ -2,6 +2,7 @@
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\Filesystem\Filesystem;
+use ILIAS\HTTP\Wrapper\WrapperFactory;
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use Laminas\Crypt\BlockCipher;
@@ -40,6 +41,8 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
 
     protected ilLogger $log;
     protected Filesystem $filesystem;
+    private WrapperFactory $httpWrapper;
+    private \ILIAS\Refinery\Factory $refinery;
 
     /**
      * ilCourseBookingDecisionMakerGUI constructor.
@@ -68,6 +71,8 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
         $this->encrypter = $DIC['plugin.esa.crypt.blockcipher'];
         $this->objectCache = $DIC['ilObjDataCache'];
         $this->filesystem = $DIC->filesystem()->storage();
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
 
         $this->lng->loadLanguageModule('meta');
     }
@@ -77,13 +82,13 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
      */
     public function executeCommand(): void
     {
-        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'ctype', $_GET['ctype']);
-        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'cname', $_GET['cname']);
-        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'slot_id', $_GET['slot_id']);
-        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'plugin_id', $_GET['plugin_id']);
-        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'pname', $_GET['pname']);
+        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'slot_id', $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass(strtolower(get_class($this)), 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
 
-        $this->tpl->setTitle($this->lng->txt('cmps_plugin') . ': ' . $_GET['pname']);
+        $this->tpl->setTitle($this->lng->txt('cmps_plugin') . ': ' . $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
         $this->tpl->setDescription('');
 
         $this->showTabs();
@@ -98,16 +103,16 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
     {
         $this->tabs->clearTargets();
 
-        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'ctype', $_GET['ctype']);
-        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'cname', $_GET['cname']);
-        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'slot_id', $_GET['slot_id']);
-        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'plugin_id', $_GET['plugin_id']);
-        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'pname', $_GET['pname']);
-        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'ctype', $_GET['ctype']);
-        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'cname', $_GET['cname']);
-        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'slot_id', $_GET['slot_id']);
-        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'plugin_id', $_GET['plugin_id']);
-        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'pname', $_GET['pname']);
+        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'slot_id',  $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'slot_id',  $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
 
         $this->showBackTargetTab();
 
@@ -140,7 +145,7 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
      */
     protected function showBackTargetTab(): void
     {
-        if (isset($_GET['plugin_id']) && $_GET['plugin_id']) {
+        if ($this->httpWrapper->query()->has('plugin_id') && $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string())) {
             $this->tabs->setBackTarget(
                 $this->lng->txt('cmps_plugin'),
                 $this->ctrl->getLinkTargetByClass('ilobjcomponentsettingsgui', 'showPlugin')

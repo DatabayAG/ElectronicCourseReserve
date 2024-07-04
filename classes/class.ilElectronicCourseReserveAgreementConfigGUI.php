@@ -1,6 +1,9 @@
 <?php
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
+
 require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
 
 /**
@@ -8,6 +11,18 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
+
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
+
+    public function __construct(?ilElectronicCourseReservePlugin $plugin = null)
+    {
+        parent::__construct($plugin);
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
+    }
+
     /**
      * @inheritdoc
      */
@@ -221,7 +236,11 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
     {
         $this->tabs->activateSubTab('editUserAgreements');
 
-        $language = $_GET['ecr_lang'] ?? '';
+        if($this->httpWrapper->query()->has('ecr_lang')){
+            $language = $this->httpWrapper->query()->retrieve('ecr_lang', $this->refinery->kindlyTo()->string());
+        } else {
+            $language = '';
+        }
         if (null === $form) {
             $form = $this->getUserAgreementForm();
             $this->getUserAgreementValues($form, $language);

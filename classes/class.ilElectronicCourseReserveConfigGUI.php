@@ -1,6 +1,8 @@
 <?php
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
 use JetBrains\PhpStorm\NoReturn;
 
 require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
@@ -15,6 +17,17 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
+    private Factory $refinery;
+    private WrapperFactory $httpWrapper;
+
+    public function __construct(?ilElectronicCourseReservePlugin $plugin = null)
+    {
+        parent::__construct($plugin);
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
+    }
+
     /**
      * @inheritdoc
      */
@@ -44,20 +57,20 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                 $this->ctrl->forwardCommand($gpgHomeDir);
                 break;
             case 'ilfilesystemgui':
-                $this->tpl->setTitle($this->lng->txt('cmps_plugin') . ': ' . $_GET["pname"]);
+                $this->tpl->setTitle($this->lng->txt('cmps_plugin') . ': ' . $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
                 $this->tpl->setDescription("");
 
-                $this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
-                $this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $_GET['cname']);
-                $this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id', $_GET['slot_id']);
-                $this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $_GET['plugin_id']);
-                $this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $_GET['pname']);
+                $this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id',  $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
 
-                $this->ctrl->setParameterByClass(__CLASS__, 'ctype', $_GET['ctype']);
-                $this->ctrl->setParameterByClass(__CLASS__, 'cname', $_GET['cname']);
-                $this->ctrl->setParameterByClass(__CLASS__, 'slot_id', $_GET['slot_id']);
-                $this->ctrl->setParameterByClass(__CLASS__, 'plugin_id', $_GET['plugin_id']);
-                $this->ctrl->setParameterByClass(__CLASS__, 'pname', $_GET['pname']);
+                $this->ctrl->setParameterByClass(__CLASS__, 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass(__CLASS__, 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass(__CLASS__, 'slot_id',  $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass(__CLASS__, 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
+                $this->ctrl->setParameterByClass(__CLASS__, 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
 
                 $this->showTabs();
                 $this->tabs->setSubTabActive('import_directory');
@@ -120,11 +133,11 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
 
         $importDirectory = CLIENT_DATA_DIR . '/' . $this->getPluginObject()->getSetting('import_directory');
         if ($this->isValidDirectory($importDirectory) && is_dir($importDirectory)) {
-            $this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $_GET['ctype']);
-            $this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $_GET['cname']);
-            $this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id', $_GET['slot_id']);
-            $this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $_GET['plugin_id']);
-            $this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $_GET['pname']);
+            $this->ctrl->setParameterByClass('ilfilesystemgui', 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
+            $this->ctrl->setParameterByClass('ilfilesystemgui', 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
+            $this->ctrl->setParameterByClass('ilfilesystemgui', 'slot_id',  $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+            $this->ctrl->setParameterByClass('ilfilesystemgui', 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
+            $this->ctrl->setParameterByClass('ilfilesystemgui', 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
 
             $this->tabs->addSubTab(
                 'import_directory',
@@ -133,7 +146,7 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
             );
         }
 
-        if (strtolower($this->ctrl->getCmd()) === 'listfiles' || strtolower($_GET['cmdClass']) === 'ilfilesystemgui') {
+        if (strtolower($this->ctrl->getCmd()) === 'listfiles' || strtolower($this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string())) === 'ilfilesystemgui') {
             $this->tabs->activateSubTab('import_directory');
         } else {
             $this->tabs->activateSubTab('configure');
@@ -486,12 +499,13 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
      */
     #[NoReturn] protected function doUserAutoComplete(): void
     {
-        if (!isset($_GET['autoCompleteField'])) {
+        if (!$this->httpWrapper->query()->has('autoCompleteField')) {
             $a_fields = array('login', 'firstname', 'lastname', 'email', 'recipients');
             $result_field = 'login';
         } else {
-            $a_fields = array((string) $_GET['autoCompleteField']);
-            $result_field = (string) $_GET['autoCompleteField'];
+            $autoCompleteField = $this->httpWrapper->query()->retrieve('autoCompleteField', $this->refinery->kindlyTo()->string());
+            $a_fields = array($autoCompleteField);
+            $result_field = $autoCompleteField;
         }
 
         $auto = new ilUserAutoComplete();

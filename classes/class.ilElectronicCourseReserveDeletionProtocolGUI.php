@@ -1,6 +1,8 @@
 <?php
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
 use JetBrains\PhpStorm\NoReturn;
 
 require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
@@ -10,6 +12,17 @@ require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseReserveBaseGUI
 {
+
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
+
+    public function __construct(?ilElectronicCourseReservePlugin $plugin = null)
+    {
+        parent::__construct($plugin);
+        global $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
+    }
 
     /**
      * @inheritdoc
@@ -58,9 +71,10 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
 
     #[NoReturn] protected function fetchCourseTitleAutocompletionResults(): void
     {
+        $term = $this->httpWrapper->query()->has('term') ? $this->httpWrapper->query()->retrieve('term', $this->refinery->kindlyTo()->string()) : "";
         $p = new DeletionLogTableProvider($GLOBALS['DIC']->database());
         $crsTitles = $p->getListOfLoggedObjectTitles(
-            ilUtil::stripSlashes($_GET['term'] ?? ''),
+            ilUtil::stripSlashes($term),
             'crs'
         );
 
@@ -71,9 +85,10 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
 
     #[NoReturn] protected function fetchFolderTitleAutocompletionResults(): void
     {
+        $term = $this->httpWrapper->query()->has('term') ? $this->httpWrapper->query()->retrieve('term', $this->refinery->kindlyTo()->string()) : "";
         $p = new DeletionLogTableProvider($GLOBALS['DIC']->database());
         $crsTitles = $p->getListOfLoggedObjectTitles(
-            ilUtil::stripSlashes($_GET['term'] ?? ''),
+            ilUtil::stripSlashes($term),
             'fold'
         );
 

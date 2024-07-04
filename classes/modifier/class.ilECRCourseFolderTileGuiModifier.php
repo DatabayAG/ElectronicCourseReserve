@@ -21,6 +21,8 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
         $this->access = $DIC->access();
         $this->data_cache = $DIC['ilObjDataCache'];
         $this->list_gui_helper = new ilElectronicCourseReserveListGUIHelper();
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
     }
 
     public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
@@ -29,7 +31,12 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        $refId = (int) $_GET['ref_id'];
+        if(!$this->httpWrapper->query()->has('ref_id')){
+            return false;
+        }
+
+        $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+
         if (!$refId) {
             return false;
         }
@@ -50,7 +57,7 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
      */
     public function modifyHtml($a_comp, $a_part, $a_par): array
     {
-        $contextRefId = (int) $_GET['ref_id'];
+        $contextRefId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
 
         $obj = ilObjectFactory::getInstanceByRefId($contextRefId, false);
         if ((!($obj instanceof ilObjCourse) && !($obj instanceof ilObjFolder)) || !$this->access->checkAccess('read', '', $obj->getRefId())) {
