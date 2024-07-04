@@ -14,7 +14,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 
     protected array $object_types = array('file', 'webr');
 
-    protected ilObjDataCache $data_cache;
+    protected ilObjectDataCache $data_cache;
 
 
     protected ilAccessHandler $access;

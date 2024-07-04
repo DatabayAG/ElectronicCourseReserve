@@ -1,5 +1,8 @@
 <?php
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\Refinery\Factory;
+
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
 require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReserveListGUIHelper.php";
 
@@ -14,6 +17,8 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
     protected ilObjectDataCache $data_cache;
 
     protected ilAccessHandler $access;
+    private WrapperFactory $httpWrapper;
+    private Factory $refinery;
 
     public function __construct()
     {

@@ -26,12 +26,7 @@ trait HttpContext
 
     private Factory $refinery;
 
-    public function __construct()
-    {
-        global $DIC;
-        $this->httpWrapper = $DIC->http()->wrapper();
-        $this->refinery = $DIC->refinery();
-    }
+
 
     /**
      * @param string $class

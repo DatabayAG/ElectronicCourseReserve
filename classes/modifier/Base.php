@@ -26,6 +26,9 @@ abstract class Base implements ilECRBaseModifier
         global $DIC;
 
         $this->dic = $DIC;
+        $this->httpWrapper = $DIC->http()->wrapper();
+        $this->refinery = $DIC->refinery();
+
     }
 
     /**

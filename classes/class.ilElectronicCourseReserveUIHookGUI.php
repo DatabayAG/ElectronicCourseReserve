@@ -67,7 +67,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
 
         $plugin = ilElectronicCourseReservePlugin::getInstance();
 
-        $ref_id = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+        $ref_id = $this->httpWrapper->query()->has('ref_id') ? $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int()) : null;
         if ($plugin->isFolderRelevant($ref_id)) {
             $plugin->queryFolderData($ref_id);
         }
