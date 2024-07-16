@@ -243,7 +243,7 @@ abstract class GpgResult
 
 	protected function _no_member ($code, $value)
 	{
-		throw new GpgInvalidMemberError ($this->err, code == 'INV_SGNR' ? 'No signers are usable' : 'No recipients are usable');
+		throw new GpgInvalidMemberError ($this->err, $code === 'INV_SGNR' ? 'No signers are usable' : 'No recipients are usable');
 	}
 
 	protected function _no_seckey ($code, $value)
@@ -923,8 +923,8 @@ class GnuPG implements GpgWrapper
 	 * @param bool $secret List secret keys when true
 	 * @return GpgListKeysResult
 	 */
-	public function listKeys (bool $secret = false)
-	{
+	public function listKeys (bool $secret = false): GpgListKeysResult
+    {
 		return $this->execute (
 			new GpgListKeysResult (),
 			array (
@@ -1045,8 +1045,8 @@ class GnuPG implements GpgWrapper
 	 * @return GpgSignResult
 	 */
 	public function sign ($message, $keyId = null, $passphrase = null,
-                          bool $learsign = true, bool $detach = false, bool $binary = false)
-	{
+                          bool $learsign = true, bool $detach = false, bool $binary = false): GpgSignResult
+    {
 		$args = array ($binary ? '-s' : '-sa');
 		if ($detach)
 			$args [] = '--detach-sign';
