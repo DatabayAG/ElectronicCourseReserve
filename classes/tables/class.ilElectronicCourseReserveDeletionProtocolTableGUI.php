@@ -156,7 +156,6 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
         $foldTitle->readFromSession();
         $this->filter['fold_title'] = $foldTitle->getValue();
 
-        $this->tpl->addJavaScript("./Services/Form/js/Form.js");
         $duration = new ilDateDurationInputGUI($this->parent_obj->getPluginObject()->txt('period'), 'period');
         $duration->setRequired(true);
         $duration->setStartText($this->parent_obj->getPluginObject()->txt('period_from'));

@@ -223,7 +223,7 @@ class ilECRContentController
         $this->printUserAgreementAcceptance();
 
         $this->tpl->setTitle($obj->getTitle());
-        $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
+        $this->tpl->setTitleIcon(ilUtil::getImagePath('standard/icon_crs.svg'));
 
         $this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
         $this->tabs->setBackTarget($this->lng->txt('back'),

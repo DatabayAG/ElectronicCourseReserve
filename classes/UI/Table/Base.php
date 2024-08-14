@@ -220,7 +220,7 @@ abstract class Base extends ilTable2GUI
 
         $this->setData($data['items']);
         if ($this->getExternalSegmentation()) {
-            $this->setMaxCount($data['cnt'][0]); //@todo rausfinden ob das so funktioniert
+            $this->setMaxCount($data['cnt']);
         }
     }
 }

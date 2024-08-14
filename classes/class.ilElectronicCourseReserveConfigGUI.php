@@ -89,8 +89,13 @@ class ilElectronicCourseReserveConfigGUI extends ilElectronicCourseReserveBaseGU
                     });
                     $gui->clearCommands();
                     foreach ($commands as $cmd) {
-                        $gui->addCommand($cmd['object'], $cmd['method'], $cmd['name'], $cmd['single'],
-                            $cmd['allow_dir']);
+                        $gui->addCommand(
+                            $cmd['object'],
+                            $cmd['method'],
+                            $cmd['name'],
+                            $cmd['single'] ?? true,
+                            $cmd['allow_dir'] ?? false
+                        );
                     }
                     $this->ctrl->forwardCommand($gui);
                     return;

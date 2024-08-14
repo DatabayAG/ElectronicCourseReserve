@@ -130,7 +130,7 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
         $html = parent::render($a_mode);
 
         $tpl = $this->plugin->getTemplate('tpl.gpg_keys.html');
-        $tpl->setVariable('LOADER_IMG_SRC', ilUtil::getImagePath('loader.svg'));
+        $tpl->setVariable('LOADER_IMG_SRC', ilUtil::getImagePath('media/loader.svg'));
         $tpl->setVariable('HTML', $this->getKeyListHtml($this->plugin->getSetting('gpg_homedir')));
         $tpl->setVariable('OBSERVABLE_ELEMENT_ID', $this->homeDirInputGUI->getFieldId());
         $tpl->setVariable('URL', $this->ctrl->getLinkTargetByClass(

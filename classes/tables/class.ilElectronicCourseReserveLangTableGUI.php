@@ -46,7 +46,7 @@ class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
     protected function fillRow($a_set): void
     {
         $field = new ilTextInputGUI('', $a_set['lang_key']);
-        $field->setValue($a_set['value']);
+        $field->setValue($a_set['value'] ?? '');
 
         $this->tpl->setVariable('LANG_KEY', ilLegacyFormElementsUtil::prepareFormOutput($this->lng->txt('meta_l_' . $a_set['lang_key'])));
         $this->tpl->setVariable('TRANSLATION_FIELD', $field->getToolbarHTML());

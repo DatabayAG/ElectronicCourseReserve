@@ -124,7 +124,7 @@ abstract class DatabaseProvider implements Provider
         if (isset($params['limit'])) {
             $cnt_sql = "SELECT COUNT(*) cnt FROM ($query) subquery";
             $row_cnt = $this->db->fetchAssoc($this->db->query($cnt_sql));
-            $data['cnt'] = $row_cnt['cnt'];
+            $data['cnt'] = (int) $row_cnt['cnt'];
         }
 
         return $data;

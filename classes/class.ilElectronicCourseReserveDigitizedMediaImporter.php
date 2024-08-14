@@ -83,15 +83,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     {
         global $DIC;
 
-        $factory = null;
-        if (isset($GLOBALS['DIC']['mail.mime.sender.factory'])) {
-            $factory = $GLOBALS['DIC']['mail.mime.sender.factory'];
-        } elseif (isset($GLOBALS['mail.mime.sender.factory'])) {
-            $factory = $GLOBALS['mail.mime.sender.factory'];
-        }
-
-        $this->from = $factory->system();
-
+        $this->from = $DIC->mail()->mime()->senderFactory()->system();
 
         $this->pluginObj = ilElectronicCourseReservePlugin::getInstance();
         $this->lock = $DIC['plugin.esa.locker'];
@@ -136,7 +128,9 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $this->logger->info('Started determination with file pattern.');
 
             $dir = $this->getImportDir();
-            $this->filesystem->createDir($dir);
+            if (!$this->filesystem->hasDir($dir)) {
+                $this->filesystem->createDir($dir);
+            }
 
             $iter = new RegexIterator(
                 new DirectoryIterator($dir),
@@ -403,17 +397,18 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     protected function moveXmlToBackupFolder(string $path_to_file): bool
     {
         if (file_exists($path_to_file)) {
-            $dir = CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . self::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
-            if (!is_dir($dir)) {
+            $dir = self::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
+            if (!$this->filesystem->hasDir($dir)) {
                 $this->filesystem->createDir($dir);
             }
             try {
                 if (file_exists($path_to_file)) {
-                    copy($path_to_file, $dir . DIRECTORY_SEPARATOR . basename($path_to_file));
-                    if (file_exists($dir . DIRECTORY_SEPARATOR . basename($path_to_file))) {
-                        if (self::DELETE_FILES) {
-                            unlink($path_to_file);
-                        }
+                    $absolute_dir = CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . $dir;
+
+                    copy($path_to_file, $absolute_dir . DIRECTORY_SEPARATOR . basename($path_to_file));
+
+                    if (file_exists($absolute_dir . DIRECTORY_SEPARATOR . basename($path_to_file)) && self::DELETE_FILES) {
+                        unlink($path_to_file);
                     }
                 }
                 return true;
@@ -731,6 +726,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      */
     protected function ensureUserRelatedPreconditions(): void
     {
+        // TODO @tjoussen / @mboldt This thas to be replaced with an appropriate call to an ILIAS core API
         if ($this->user->hasToAcceptTermsOfService()) {
             throw new ilException('The passed ILIAS user has to accept the user agreement.');
         }

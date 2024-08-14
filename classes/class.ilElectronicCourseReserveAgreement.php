@@ -15,7 +15,7 @@ class ilElectronicCourseReserveAgreement
 
     public ilObjUser $user;
 
-    protected int $agreement_id;
+    protected ?int $agreement_id = null;
 
     protected string $agreement;
 
@@ -47,7 +47,7 @@ class ilElectronicCourseReserveAgreement
         );
 
         if ($row = $this->db->fetchAssoc($res)) {
-            $this->agreement_id = $row['agreement_id'];
+            $this->agreement_id = (int) $row['agreement_id'];
             $this->lang = $row['lang'];
             $this->agreement = $row['agreement'];
             $this->time_created = $row['time_created'];
@@ -71,7 +71,7 @@ class ilElectronicCourseReserveAgreement
             ]
         );
 
-        $this->log->info('ecr_lang_agreements: User-id (' . $this->user->getId() . ') created agreement_id (' . $this->getAgreementId() . ')');
+        $this->log->info('ecr_lang_agreements: User-id (' . $this->user->getId() . ') created agreement_id (' . $next_id . ')');
     }
 
     private function deactivateAgreements(): void
@@ -87,7 +87,7 @@ class ilElectronicCourseReserveAgreement
     }
 
 
-    public function getAgreementId(): int
+    public function getAgreementId(): ?int
     {
         return $this->agreement_id;
     }

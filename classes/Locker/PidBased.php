@@ -53,9 +53,9 @@ class PidBased implements LockerInterface
      */
     protected function writeLockedState(): void
     {
-        $this->settings->set('esa_cron_lock_status', 1);
-        $this->settings->set('esa_cron_lock_ts', time());
-        $this->settings->set('esa_cron_lock_pid', getmypid());
+        $this->settings->set('esa_cron_lock_status', '1');
+        $this->settings->set('esa_cron_lock_ts', (string) time());
+        $this->settings->set('esa_cron_lock_pid', (string) getmypid());
     }
 
     /**
@@ -63,14 +63,14 @@ class PidBased implements LockerInterface
      */
     public function acquireLock(): bool
     {
-        if (!$this->settings->get('esa_cron_lock_status', 0)) {
+        if (!$this->settings->get('esa_cron_lock_status', '0')) {
             $this->writeLockedState();
             return true;
         }
 
         $pid = $this->settings->get('esa_cron_lock_pid');
         if ($pid && $this->isRunning($pid)) {
-            $lastLockTimestamp = $this->settings->get('esa_cron_lock_ts', time());
+            $lastLockTimestamp = $this->settings->get('esa_cron_lock_ts', (string) time());
             if ($lastLockTimestamp > time() - (60 * 60 * 3)) {
                 return false;
             }
@@ -85,7 +85,7 @@ class PidBased implements LockerInterface
      */
     public function isLocked(): bool
     {
-        return (bool) $this->settings->get('esa_cron_lock_status', 0);
+        return (bool) $this->settings->get('esa_cron_lock_status', '0');
     }
 
     /**
@@ -93,8 +93,8 @@ class PidBased implements LockerInterface
      */
     public function releaseLock(): void
     {
-        $this->settings->set('esa_cron_lock_status', 0);
-        $this->settings->set('esa_cron_lock_ts', null);
-        $this->settings->set('esa_cron_lock_pid', null);
+        $this->settings->set('esa_cron_lock_status', '0');
+        $this->settings->delete('esa_cron_lock_ts');
+        $this->settings->delete('esa_cron_lock_pid');
     }
 }
