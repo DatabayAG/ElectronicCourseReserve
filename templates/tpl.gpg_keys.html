@@ -1,49 +1,49 @@
 <div id="gpg-key-container">{HTML}</div>
 <script>
-    (function ($) {
-        var deferredCallbackFactory = (function () {
-            var namespaces = {};
+  document.addEventListener('DOMContentLoaded', function () {
+    const deferredCallbackFactory = (function () {
+      let namespaces = {};
 
-            return function (ns) {
-                if (!namespaces.hasOwnProperty(ns)) {
-                    namespaces[ns] = (function () {
-                        var timer = 0;
+      return function (ns) {
+        if (!namespaces.hasOwnProperty(ns)) {
+          namespaces[ns] = (function () {
+            let timer = 0;
 
-                        return function (callback, ms) {
-                            clearTimeout(timer);
-                            timer = setTimeout(callback, ms);
-                        };
-                    })();
-                }
-
-                return namespaces[ns];
+            return function (callback, ms) {
+              clearTimeout(timer);
+              timer = setTimeout(callback, ms);
             };
-        })();
-        
-        var lastValue = $("#{OBSERVABLE_ELEMENT_ID}").val(); 
+          })();
+        }
 
-        $("#{OBSERVABLE_ELEMENT_ID}").on('keyup keydown blur', function () {
-            var observable = $(this);
-            
-            if (lastValue === observable.val()) {
-            	return;
-            }
+        return namespaces[ns];
+      };
+    })();
 
-            lastValue = observable.val();
+    let lastValue = $("#{OBSERVABLE_ELEMENT_ID}").val();
 
-            deferredCallbackFactory('onHomeDirChanged')(function () {
-                $.ajax({
-                    method: "GET",
-                    dataType: "json",
-                    data: { path : observable.val() },
-                    url: "{URL}",
-                    beforeSend: function () {
-                        $("#gpg-key-container").html($('<img src="{LOADER_IMG_SRC}" >'));
-                    }
-                }).done(function (r) {
-                    $("#gpg-key-container").html(r.html);
-                });
-            }, 500);
+    $("#{OBSERVABLE_ELEMENT_ID}").on('keyup keydown blur', function () {
+      let observable = $(this);
+
+      if (lastValue === observable.val()) {
+        return;
+      }
+
+      lastValue = observable.val();
+
+      deferredCallbackFactory('onHomeDirChanged')(function () {
+        $.ajax({
+          method: "GET",
+          dataType: "json",
+          data: { path: observable.val() },
+          url: "{URL}",
+          beforeSend: function () {
+            $("#gpg-key-container").html($('<img src="{LOADER_IMG_SRC}" >'));
+          }
+        }).done(function (r) {
+          $("#gpg-key-container").html(r.html);
         });
-    })(jQuery);
+      }, 500);
+    });
+  });
 </script>
