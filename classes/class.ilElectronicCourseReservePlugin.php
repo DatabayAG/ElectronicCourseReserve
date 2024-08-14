@@ -263,7 +263,7 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         }
 
         foreach ($groles as $role_id) {
-            if ($rbacreview->isAssigned($usr_id, $role_id)) {
+            if ($rbacreview->isAssigned($usr_id, (int) $role_id)) {
                 return true;
             }
         }
