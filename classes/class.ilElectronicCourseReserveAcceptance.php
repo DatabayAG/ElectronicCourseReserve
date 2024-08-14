@@ -34,7 +34,9 @@ class ilElectronicCourseReserveAcceptance
     {
         $res = $this->db->queryF(
             'SELECT * FROM ecr_user_acceptance WHERE ref_id = %s AND user_id = %s',
-            array('integer', 'integer'), array($this->ref_id, $this->user_id));
+            array('integer', 'integer'),
+            array($this->ref_id, $this->user_id)
+        );
 
         if ($this->db->numRows($res) > 0) {
             return true;
@@ -59,19 +61,24 @@ class ilElectronicCourseReserveAcceptance
 
     public function saveUserAcceptance(): void
     {
-        $this->db->insert('ecr_user_acceptance',
+        $this->db->insert(
+            'ecr_user_acceptance',
             array(
                 'ref_id' => array('integer', $this->ref_id),
                 'user_id' => array('integer', $this->user_id),
                 'agreement_id' => array('integer', $this->getAgreementId()),
                 'time_accepted' => array('integer', time())
-            ));
+            )
+        );
     }
 
     public function getAgreementId(): int
     {
-        $res = $this->db->queryF('SELECT agreement_id FROM ecr_lang_agreements WHERE is_active = %s AND lang = %s',
-            array('integer', 'text'), array(1, $this->user->getLanguage()));
+        $res = $this->db->queryF(
+            'SELECT agreement_id FROM ecr_lang_agreements WHERE is_active = %s AND lang = %s',
+            array('integer', 'text'),
+            array(1, $this->user->getLanguage())
+        );
 
         while ($row = $this->db->fetchAssoc($res)) {
             $this->agreement_id = $row['agreement_id'];

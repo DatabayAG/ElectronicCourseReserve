@@ -11,7 +11,6 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 {
-
     protected ilElectronicCourseReserveListGUIHelper $list_gui_helper;
     private WrapperFactory $httpWrapper;
     private Factory $refinery;
@@ -26,12 +25,12 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 
     public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
-        if($this->httpWrapper->query()->has("cmdClass")){
+        if($this->httpWrapper->query()->has("cmdClass")) {
             $cmdClass = $this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string());
         } else {
             $cmdClass = "";
         }
-        if($this->httpWrapper->query()->has("cmd")){
+        if($this->httpWrapper->query()->has("cmd")) {
             $cmd = $this->httpWrapper->query()->retrieve("cmd", $this->refinery->kindlyTo()->string());
         } else {
             $cmd = "";
@@ -41,7 +40,7 @@ class ilECRilCopyObjectGuiModifier implements ilECRBaseModifier
 
         $template = $a_par['tpl_id'] ?? '';
         if ($template !== 'Services/Table/tpl.table2.html') {
-           return false;
+            return false;
         }
 
         if (strtolower($cmd_class) === 'ilobjectcopygui' && $cmd !== 'initTargetSelection') {

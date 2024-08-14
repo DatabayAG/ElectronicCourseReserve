@@ -11,7 +11,6 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
 {
-
     protected ilElectronicCourseReserveListGUIHelper $list_gui_helper;
 
     protected ilObjectDataCache $data_cache;
@@ -36,7 +35,7 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        if(!$this->httpWrapper->query()->has('ref_id')){
+        if(!$this->httpWrapper->query()->has('ref_id')) {
             return false;
         }
 

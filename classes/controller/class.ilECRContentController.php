@@ -90,9 +90,13 @@ class ilECRContentController
             $obj = ilObjectFactory::getInstanceByRefId($ref_id, false);
             $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
             if ($ilUserAcceptance->hasUserAcceptedAgreement()) {
-                $this->tpl->setOnScreenMessage("info", sprintf($this->plugin_object->txt('agr_accepted_on'),
-                    ilDatePresentation::formatDate(new ilDateTime($ilUserAcceptance->getAcceptanceTimestamp(),
-                        IL_CAL_UNIX))));
+                $this->tpl->setOnScreenMessage("info", sprintf(
+                    $this->plugin_object->txt('agr_accepted_on'),
+                    ilDatePresentation::formatDate(new ilDateTime(
+                        $ilUserAcceptance->getAcceptanceTimestamp(),
+                        IL_CAL_UNIX
+                    ))
+                ));
             }
         }
     }
@@ -149,15 +153,19 @@ class ilECRContentController
         $confirmBtn = $this->uiRenderer->render(
             $this->uiFactory->button()->standard(
                 $this->lng->txt('confirm'),
-                $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'],
-                    'ilECRContentController.saveAcceptedUserAgreement')
+                $this->ctrl->getLinkTargetByClass(
+                    ['ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'],
+                    'ilECRContentController.saveAcceptedUserAgreement'
+                )
             )
         );
         $cancelBtn = $this->uiRenderer->render(
             $this->uiFactory->button()->standard(
                 $this->lng->txt('cancel'),
-                $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'],
-                    'ilECRContentController.cancelAcceptance')
+                $this->ctrl->getLinkTargetByClass(
+                    ['ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'],
+                    'ilECRContentController.cancelAcceptance'
+                )
             )
         );
 
@@ -196,8 +204,11 @@ class ilECRContentController
 
         $ilUserAcceptance = new ilElectronicCourseReserveAcceptance($obj->getRefId());
         $ilUserAcceptance->saveUserAcceptance();
-        $url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
-            'ilECRContentController.showECRContent', '');
+        $url = $this->ctrl->getLinkTargetByClass(
+            array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
+            'ilECRContentController.showECRContent',
+            ''
+        );
 
         $this->tpl->setOnScreenMessage("success", $this->plugin_object->txt('ecr_accepted_agreement'), true);
 
@@ -226,8 +237,10 @@ class ilECRContentController
         $this->tpl->setTitleIcon(ilUtil::getImagePath('standard/icon_crs.svg'));
 
         $this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $obj->getRefId());
-        $this->tabs->setBackTarget($this->lng->txt('back'),
-            $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view'));
+        $this->tabs->setBackTarget(
+            $this->lng->txt('back'),
+            $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'), 'view')
+        );
 
         $ecr_content = ilElectronicCourseReserveLangData::lookupEcrContentByLangKey($this->user->getLanguage());
         $html = ilRTE::_replaceMediaObjectImageSrc($ecr_content, 1);
@@ -254,8 +267,10 @@ class ilECRContentController
         $form->setTitle($this->plugin_object->txt('ecr_title'));
 
         $link = new ilNonEditableValueGUI($this->plugin_object->txt('ecr_url_search_system'), 'ecr', true);
-        $url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
-            'ilECRContentController.performRedirect');
+        $url = $this->ctrl->getLinkTargetByClass(
+            array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
+            'ilECRContentController.performRedirect'
+        );
         $link->setValue('<a href="' . $url . '&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>');
 
         $link->setInfo($this->plugin_object->txt('ecr_desc'));
@@ -289,8 +304,10 @@ class ilECRContentController
                 $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_file.svg'));
             }
             $this->ctrl->setParameterByClass('ilObjFileGUI', 'ref_id', $obj->getRefId());
-            $this->tabs->setBackTarget($this->lng->txt('back'),
-                $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjFileGUI'), 'infoScreen'));
+            $this->tabs->setBackTarget(
+                $this->lng->txt('back'),
+                $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjFileGUI'), 'infoScreen')
+            );
         } else {
             if ($obj->getType() === 'webr') {
                 if (array_key_exists('show_image', $item)
@@ -302,8 +319,10 @@ class ilECRContentController
                     $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_webr.svg'));
                 }
                 $this->ctrl->setParameterByClass('ilObjLinkResourceGUI', 'ref_id', $obj->getRefId());
-                $this->tabs->setBackTarget($this->lng->txt('back'),
-                    $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjLinkResourceGUI'), 'infoScreen'));
+                $this->tabs->setBackTarget(
+                    $this->lng->txt('back'),
+                    $this->ctrl->getLinkTargetByClass(array('ilRepositoryGUI', 'ilObjLinkResourceGUI'), 'infoScreen')
+                );
             }
         }
 
@@ -350,8 +369,10 @@ class ilECRContentController
      */
     protected function replacePlaceholder($html): string
     {
-        $url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
-            'ilECRContentController.performRedirect');
+        $url = $this->ctrl->getLinkTargetByClass(
+            array('ilUIPluginRouterGUI', 'ilElectronicCourseReserveUIHookGUI'),
+            'ilECRContentController.performRedirect'
+        );
         $esa_url = '<a href="' . $url . '&pluginCmd=perform" target="_blank">' . $this->plugin_object->getSetting('url_search_system') . '</a>';
         return str_replace('###URL_ESA###', $esa_url, $html);
     }
@@ -361,13 +382,13 @@ class ilECRContentController
      */
     public function updateItemSettings(): void
     {
-        if($this->httpWrapper->post()->has('show_description')){
+        if($this->httpWrapper->post()->has('show_description')) {
             $show_description = $this->httpWrapper->post()->retrieve('show_description', $this->refinery->kindlyTo()->int());
         }
-        if($this->httpWrapper->post()->has('show_image')){
+        if($this->httpWrapper->post()->has('show_image')) {
             $show_image = $this->httpWrapper->post()->retrieve('show_image', $this->refinery->kindlyTo()->int());
         }
-        if($this->httpWrapper->post()->has('ref_id')){
+        if($this->httpWrapper->post()->has('ref_id')) {
             $ref_id = $this->httpWrapper->post()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         }
         if ($ref_id > 0) {
@@ -392,7 +413,7 @@ class ilECRContentController
             /** @var LinkBuilder $linkBuilder */
             $linkBuilder = $GLOBALS['DIC']['plugin.esa.library.linkbuilder'];
 
-            if($obj instanceof ilObjCourse){
+            if($obj instanceof ilObjCourse) {
                 $url = $linkBuilder->getLibraryOrderLink($obj);
 
                 ilUtil::redirect($url);

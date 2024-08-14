@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\Data\Factory as DataTypeFactory;
@@ -20,47 +21,47 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     /**
      * @var string
      */
-    const ITEM_TYPE_FILE = 'file';
+    public const ITEM_TYPE_FILE = 'file';
 
     /**
      * @var string
      */
-    const ITEM_TYPE_URL = 'url';
+    public const ITEM_TYPE_URL = 'url';
 
     /**
      * @var string
      */
-    const IMPORT_DIR = 'ecr_import';
+    public const IMPORT_DIR = 'ecr_import';
 
     /**
      * @var string
      */
-    const BACKUP_DIR = 'ecr_import_backup';
+    public const BACKUP_DIR = 'ecr_import_backup';
 
     /**
      * @var string
      */
-    const PATH_TO_IMPORT_XSD = 'import.xsd';
+    public const PATH_TO_IMPORT_XSD = 'import.xsd';
 
     /**
      * @var string
      */
-    const PATH_TO_DELETE_XSD = 'deletion.xsd';
+    public const PATH_TO_DELETE_XSD = 'deletion.xsd';
 
     /**
      * @var string
      */
-    const IMAGE_DIR = 'ecr_images';
+    public const IMAGE_DIR = 'ecr_images';
 
     /**
      * @var boolean
      */
-    const DELETE_FILES = true;
+    public const DELETE_FILES = true;
 
     /**
      * @var string
      */
-    const ESA_FOLDER_IMPORT_PREFIX = 'esa_';
+    public const ESA_FOLDER_IMPORT_PREFIX = 'esa_';
 
 
     protected Log $logger;
@@ -203,7 +204,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                                 $this->deleteFolder($folderRefId);
                             } else {
                                 $items = $this->pluginObj->getImportedFolderItems($folderRefId);
-                                $itemRefIds = array_map(static function (array $item) : int {
+                                $itemRefIds = array_map(static function (array $item): int {
                                     return (int) $item['ref_id'];
                                 }, $items);
 
@@ -234,7 +235,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
 
                     $partialSuccesses = array_filter(
                         $partialSuccesses,
-                        static function (stdClass $deletionProtocol) : bool {
+                        static function (stdClass $deletionProtocol): bool {
                             return property_exists($deletionProtocol, 'finished') && $deletionProtocol->finished === true;
                         }
                     );
@@ -384,7 +385,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     protected function cleanUpFileSystem(): void
     {
         $purger = new Purger(
-            $this->logger, CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . self::BACKUP_DIR
+            $this->logger,
+            CLIENT_DATA_DIR . DIRECTORY_SEPARATOR . self::BACKUP_DIR
         );
         $purger->purge();
     }
@@ -452,21 +454,27 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         if ($parsed_item->getOverwrite() == 1) {
             $fold = new ilObjFolder($ref_id);
             if ($parsed_item->getLabel() != $fold->getTitle()) {
-                $this->logger->info(sprintf('Title for folder (ref_id: %s), get updated from "%s" to "%s".', $ref_id,
-                    $fold->getTitle(), $parsed_item->getItem()->getLabel()));
+                $this->logger->info(sprintf(
+                    'Title for folder (ref_id: %s), get updated from "%s" to "%s".',
+                    $ref_id,
+                    $fold->getTitle(),
+                    $parsed_item->getItem()->getLabel()
+                ));
                 $fold->setTitle($parsed_item->getLabel());
                 $fold->update();
             }
         } else {
-            $this->logger->info(sprintf('Title for folder (ref_id: %s), is not updated overwrite is disabled in xml.',
-                $ref_id));
+            $this->logger->info(sprintf(
+                'Title for folder (ref_id: %s), is not updated overwrite is disabled in xml.',
+                $ref_id
+            ));
         }
     }
 
     /**
      * @throws ilFileUtilsException|FileNamePolicyException|ilException
      */
-    protected function createFileItem(ilElectronicCourseReserveContainer $parsed_item, string $raw_xml) : bool
+    protected function createFileItem(ilElectronicCourseReserveContainer $parsed_item, string $raw_xml): bool
     {
         global $DIC;
 
@@ -509,8 +517,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             if ($folder_ref_id === 0) {
                 $this->logger->info('Could not find/create course/folder structure, skipping item.');
             } else {
-                $this->logger->info(sprintf('File %s not found for item %s, skipping item creation.',
-                    $parsed_item->getItem()->getFile(), $parsed_item->getLabel()));
+                $this->logger->info(sprintf(
+                    'File %s not found for item %s, skipping item creation.',
+                    $parsed_item->getItem()->getFile(),
+                    $parsed_item->getLabel()
+                ));
             }
             return false;
         }
@@ -620,13 +631,20 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                         }
                     }
                 } else {
-                    $this->logger->warn(sprintf('File of type %s, is not a valid icon type, skipping icon for course ref id %s and folder import id %s.',
-                        $extension, $parsed_item->getCrsRefId(), $parsed_item->getFolderImportId()));
+                    $this->logger->warn(sprintf(
+                        'File of type %s, is not a valid icon type, skipping icon for course ref id %s and folder import id %s.',
+                        $extension,
+                        $parsed_item->getCrsRefId(),
+                        $parsed_item->getFolderImportId()
+                    ));
                 }
             } else {
-                $this->logger->warn(sprintf('No file found either under the absolute or relative path for file %s in course %s and folder %s.',
-                    $parsed_item->getItem()->getIcon(), $parsed_item->getCrsRefId(),
-                    $parsed_item->getFolderImportId()));
+                $this->logger->warn(sprintf(
+                    'No file found either under the absolute or relative path for file %s in course %s and folder %s.',
+                    $parsed_item->getItem()->getIcon(),
+                    $parsed_item->getCrsRefId(),
+                    $parsed_item->getFolderImportId()
+                ));
             }
 
         }
@@ -717,7 +735,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     {
         global $DIC;
         $DIC->database()->manipulate(
-            'DELETE ecr.* FROM ecr_description ecr LEFT JOIN object_reference ON object_reference.ref_id = ecr.ref_id WHERE object_reference.ref_id IS NULL');
+            'DELETE ecr.* FROM ecr_description ecr LEFT JOIN object_reference ON object_reference.ref_id = ecr.ref_id WHERE object_reference.ref_id IS NULL'
+        );
         $this->logger->info('Removed deleted entries from table ers_description.');
     }
 
@@ -737,15 +756,18 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @return int
      * @throws ilException
      */
-    protected function ensureCorrectCourseAndFolderStructure(ilElectronicCourseReserveContainer $parsed_item) : int
+    protected function ensureCorrectCourseAndFolderStructure(ilElectronicCourseReserveContainer $parsed_item): int
     {
         $crs_ref_id = $parsed_item->getCrsRefId();
         $folder_import_id = $parsed_item->getFolderImportId();
         $folder_import_id_prefix = self::ESA_FOLDER_IMPORT_PREFIX . $folder_import_id;
 
         if ($crs_ref_id === null || $crs_ref_id === 0 || $folder_import_id === null || $folder_import_id === 0) {
-            $this->logger->info(sprintf('Import id (%s) or Course Ref id (%s) was not set, skipping this one.',
-                $folder_import_id_prefix, $crs_ref_id));
+            $this->logger->info(sprintf(
+                'Import id (%s) or Course Ref id (%s) was not set, skipping this one.',
+                $folder_import_id_prefix,
+                $crs_ref_id
+            ));
             return 0;
         }
 
@@ -760,8 +782,10 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $this->logger->info(sprintf('Found course for ref_id %s, looking for folder.', $crs_ref_id));
             $folder_obj_id = ilObject::_lookupObjIdByImportId($folder_import_id_prefix);
             if ($folder_obj_id === 0) {
-                $this->logger->info(sprintf('Folder with Import id (%s) not found creating new folder.',
-                    $folder_import_id_prefix));
+                $this->logger->info(sprintf(
+                    'Folder with Import id (%s) not found creating new folder.',
+                    $folder_import_id_prefix
+                ));
                 return $this->createFolder($parsed_item, $folder_import_id_prefix, $crs_ref_id);
             } else {
                 if ($ilObjDataCache->lookupType($folder_obj_id) === 'fold') {
@@ -774,8 +798,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                         if ($parent === $crs_ref_id) {
                             return $ref_id;
                         } else {
-                            $this->logger->info(sprintf('Folder with Import id (%s) not at the correct course %s.',
-                                $folder_import_id_prefix, $crs_ref_id));
+                            $this->logger->info(sprintf(
+                                'Folder with Import id (%s) not at the correct course %s.',
+                                $folder_import_id_prefix,
+                                $crs_ref_id
+                            ));
                         }
                     } else {
                         if ($ref_id > 0 && ilObject::_isInTrash($ref_id)) {
@@ -783,8 +810,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                         }
                     }
                 } else {
-                    $this->logger->info(sprintf('Object with Import id (%s) is not of type folder (%s).',
-                        $folder_import_id_prefix, $ilObjDataCache->lookupType($folder_obj_id)));
+                    $this->logger->info(sprintf(
+                        'Object with Import id (%s) is not of type folder (%s).',
+                        $folder_import_id_prefix,
+                        $ilObjDataCache->lookupType($folder_obj_id)
+                    ));
                 }
             }
         } else {
@@ -792,8 +822,11 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                 $this->logger->info(sprintf('Object with ref_id (%s) is in trash, skipping.', $crs_ref_id));
             } else {
                 if ($crs_obj_id > 0 && $ilObjDataCache->lookupType($crs_obj_id) !== 'crs') {
-                    $this->logger->info(sprintf('Ref id (%s) does not belong to a course its a %s instead, skipping.',
-                        $crs_ref_id, $ilObjDataCache->lookupType($crs_obj_id)));
+                    $this->logger->info(sprintf(
+                        'Ref id (%s) does not belong to a course its a %s instead, skipping.',
+                        $crs_ref_id,
+                        $ilObjDataCache->lookupType($crs_obj_id)
+                    ));
                 } else {
                     if ($crs_obj_id == 0) {
                         $this->logger->info(sprintf('No course found with ref_id %s, skipping.', $crs_ref_id));
@@ -804,7 +837,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         return 0;
     }
 
-    protected function sendMailOnDeletionError(string $msg,  ?array $deletionProtocols = null, string $attachment = null): void
+    protected function sendMailOnDeletionError(string $msg, ?array $deletionProtocols = null, string $attachment = null): void
     {
         if ((int) $this->pluginObj->getSetting('is_del_mail_enabled') === 1) {
             $mail = new ilMimeMail();
@@ -934,7 +967,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      * @param int $refId
      * @param int[]|null $childrenRefIds
      */
-    private function deleteFolder(int $refId, ?array $childrenRefIds = null) : void
+    private function deleteFolder(int $refId, ?array $childrenRefIds = null): void
     {
         global $DIC;
 

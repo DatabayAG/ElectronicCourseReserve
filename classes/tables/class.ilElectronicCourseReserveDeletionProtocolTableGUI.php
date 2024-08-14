@@ -59,7 +59,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
     /**
      * @inheritDoc#
      */
-    protected function getColumnDefinition() : array
+    protected function getColumnDefinition(): array
     {
         if ($this->cachedColumnDefinition !== []) {
             return $this->cachedColumnDefinition;
@@ -175,7 +175,7 @@ class ilElectronicCourseReserveDeletionProtocolTableGUI extends \ILIAS\Plugin\El
      * @return string
      * @throws ilDateTimeException
      */
-    protected function formatCellValue(string $column, array $row) : string
+    protected function formatCellValue(string $column, array $row): string
     {
         $value = parent::formatCellValue($column, $row);
 

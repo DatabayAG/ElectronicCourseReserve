@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\Plugin\ElectronicCourseReserve\UI\Table\Data\DatabaseProvider;
@@ -12,7 +14,7 @@ class DeletionLogTableProvider extends DatabaseProvider
     /**
      * @inheritDoc
      */
-    protected function getSelectPart(array $params, array $filter) : string
+    protected function getSelectPart(array $params, array $filter): string
     {
         $fields = [
             'del_log.deletion_mode',
@@ -33,7 +35,7 @@ class DeletionLogTableProvider extends DatabaseProvider
     /**
      * @inheritDoc
      */
-    protected function getFromPart(array $params, array $filter) : string
+    protected function getFromPart(array $params, array $filter): string
     {
         $joins = [];
 
@@ -51,7 +53,7 @@ class DeletionLogTableProvider extends DatabaseProvider
     /**
      * @inheritDoc
      */
-    protected function getWherePart(array $params, array $filter) : string
+    protected function getWherePart(array $params, array $filter): string
     {
         $where = [];
 
@@ -86,7 +88,7 @@ class DeletionLogTableProvider extends DatabaseProvider
     /**
      * @inheritDoc
      */
-    protected function getGroupByPart(array $params, array $filter) : string
+    protected function getGroupByPart(array $params, array $filter): string
     {
         return '';
     }
@@ -94,7 +96,7 @@ class DeletionLogTableProvider extends DatabaseProvider
     /**
      * @inheritDoc
      */
-    protected function getHavingPart(array $params, array $filter) : string
+    protected function getHavingPart(array $params, array $filter): string
     {
         return '';
     }
@@ -102,7 +104,7 @@ class DeletionLogTableProvider extends DatabaseProvider
     /**
      * @inheritDoc
      */
-    protected function getOrderByPart(array $params, array $filter) : string
+    protected function getOrderByPart(array $params, array $filter): string
     {
         if (isset($params['order_field'])) {
             if (!is_string($params['order_field'])) {
@@ -110,8 +112,10 @@ class DeletionLogTableProvider extends DatabaseProvider
             }
 
             if (
-                !in_array($params['order_field'],
-                ['crs_title', 'fold_title', 'deletion_timestamp', 'deletion_mode'])
+                !in_array(
+                    $params['order_field'],
+                    ['crs_title', 'fold_title', 'deletion_timestamp', 'deletion_mode']
+                )
             ) {
                 $params['order_field'] = 'deletion_timestamp';
             }
@@ -141,7 +145,7 @@ class DeletionLogTableProvider extends DatabaseProvider
      * @param string $objectType
      * @return string[]
      */
-    public function getListOfLoggedObjectTitles(string $term, string $objectType) : array
+    public function getListOfLoggedObjectTitles(string $term, string $objectType): array
     {
         $joinColumn = 'ecr_deletion_log.crs_ref_id ';
         if ('fold' === $objectType) {

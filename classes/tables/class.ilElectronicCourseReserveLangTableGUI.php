@@ -5,7 +5,6 @@
  */
 class ilElectronicCourseReserveLangTableGUI extends ilTable2GUI
 {
-
     /**
      * @var ilCtrl
      */

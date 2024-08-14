@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\UI\Table\Data;
@@ -29,28 +31,28 @@ abstract class DatabaseProvider implements Provider
      * @param array<string, mixed> $filter
      * @return string
      */
-    abstract protected function getSelectPart(array $params, array $filter) : string;
+    abstract protected function getSelectPart(array $params, array $filter): string;
 
     /**
      * @param array<string, mixed> $params
      * @param array<string, mixed> $filter
      * @return string
      */
-    abstract protected function getFromPart(array $params, array $filter) : string;
+    abstract protected function getFromPart(array $params, array $filter): string;
 
     /**
      * @param array<string, mixed> $params
      * @param array<string, mixed> $filter
      * @return string
      */
-    abstract protected function getWherePart(array $params, array $filter) : string;
+    abstract protected function getWherePart(array $params, array $filter): string;
 
     /**
      * @param array<string, mixed> $params
      * @param array<string, mixed> $filter
      * @return string
      */
-    abstract protected function getGroupByPart(array $params, array $filter) : string;
+    abstract protected function getGroupByPart(array $params, array $filter): string;
 
     /**
      * @param array<string, mixed> $params
@@ -58,14 +60,14 @@ abstract class DatabaseProvider implements Provider
      * @return string
      * @abstract
      */
-    abstract protected function getHavingPart(array $params, array $filter) : string;
+    abstract protected function getHavingPart(array $params, array $filter): string;
 
     /**
      * @param array<string, mixed> $params
      * @param array<string, mixed> $filter
      * @return string
      */
-    abstract protected function getOrderByPart(array $params, array $filter) : string;
+    abstract protected function getOrderByPart(array $params, array $filter): string;
 
     /**
      * @param array<string, mixed> $params
@@ -73,7 +75,7 @@ abstract class DatabaseProvider implements Provider
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getList(array $params, array $filter) : array
+    public function getList(array $params, array $filter): array
     {
         $data = [
             'items' => [],

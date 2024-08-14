@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation;
@@ -26,7 +28,7 @@ final class ValidationResult
     /**
      * @return Result
      */
-    public function result() : Result
+    public function result(): Result
     {
         return $this->result;
     }

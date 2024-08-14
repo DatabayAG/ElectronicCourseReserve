@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging;
@@ -100,7 +101,8 @@ class Log implements Logger
     public function log(int $priority, mixed $message, array $extra = array()): void
     {
         if (($priority < 0) || ($priority >= count(self::getPriorities()))) {
-            throw new ilException(sprintf('$priority must be an integer > 0 and < %d; received %s',
+            throw new ilException(sprintf(
+                '$priority must be an integer > 0 and < %d; received %s',
                 count(self::getPriorities()),
                 var_export($priority, 1)
             ));

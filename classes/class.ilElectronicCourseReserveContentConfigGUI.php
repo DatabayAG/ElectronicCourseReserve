@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\HTTP\Wrapper\WrapperFactory;
@@ -11,7 +12,6 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
-
     private WrapperFactory $httpWrapper;
     private Factory $refinery;
 
@@ -114,8 +114,12 @@ class ilElectronicCourseReserveContentConfigGUI extends ilElectronicCourseReserv
         $lang_key = $form->getInput('ecr_lang');
         $lang_obj_id = ilElectronicCourseReserveLangData::lookupObjIdByLangKey($lang_key);
 
-        ilElectronicCourseReserveRTEHelper::moveMediaObjects($lang_obj_id, $form->getInput('ecr_content'),
-            'ecr_content~:html', 'ecr_content:html');
+        ilElectronicCourseReserveRTEHelper::moveMediaObjects(
+            $lang_obj_id,
+            $form->getInput('ecr_content'),
+            'ecr_content~:html',
+            'ecr_content:html'
+        );
 
         $oldMediaObjects = ilObjMediaObject::_getMobsOfObject('ecr_content:html', $lang_obj_id);
         $curMediaObjects = ilRTE::_getMediaObjects($form->getInput('ecr_content'));

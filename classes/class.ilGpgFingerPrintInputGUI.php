@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\HTTP\Wrapper\WrapperFactory;
@@ -35,13 +36,13 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
      */
     public function __construct(
         ilElectronicCourseReservePlugin $plugin,
-        ilGpgHomeDirInputGUI            $homeDirInputGUI,
-        ilCtrl                          $ctrl,
-        ilLogger                        $log,
-        Factory                         $uiFactory,
-        Renderer                        $uiRenderer,
-        string                          $a_title = '',
-        string                          $a_postvar = ''
+        ilGpgHomeDirInputGUI $homeDirInputGUI,
+        ilCtrl $ctrl,
+        ilLogger $log,
+        Factory $uiFactory,
+        Renderer $uiRenderer,
+        string $a_title = '',
+        string $a_postvar = ''
     ) {
         parent::__construct($a_title, $a_postvar);
         $this->plugin = $plugin;
@@ -135,7 +136,9 @@ class ilGpgFingerPrintInputGUI extends ilTextInputGUI
         $tpl->setVariable('OBSERVABLE_ELEMENT_ID', $this->homeDirInputGUI->getFieldId());
         $tpl->setVariable('URL', $this->ctrl->getLinkTargetByClass(
             ['ilAdministrationGUI', 'ilobjcomponentsettingsgui', 'ilElectronicCourseReserveConfigGUI', self::class],
-            'renderKeyList', '', true
+            'renderKeyList',
+            '',
+            true
         ));
 
         return $html . $tpl->get();

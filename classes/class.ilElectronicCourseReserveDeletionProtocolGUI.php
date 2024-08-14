@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\HTTP\Wrapper\WrapperFactory;
@@ -12,7 +13,6 @@ require_once dirname(__FILE__) . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseReserveBaseGUI
 {
-
     private WrapperFactory $httpWrapper;
     private Factory $refinery;
 
@@ -37,7 +37,7 @@ class ilElectronicCourseReserveDeletionProtocolGUI extends ilElectronicCourseRes
      * @throws ilCtrlException
      * @throws ilException
      */
-    private function getProtocolTable() : ilElectronicCourseReserveDeletionProtocolTableGUI
+    private function getProtocolTable(): ilElectronicCourseReserveDeletionProtocolTableGUI
     {
         return new ilElectronicCourseReserveDeletionProtocolTableGUI($this, 'showProtocol');
     }

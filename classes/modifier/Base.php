@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\DI\Container;
@@ -34,7 +36,7 @@ abstract class Base implements ilECRBaseModifier
     /**
      * @return array<string,string>
      */
-    final protected function getUnmodifiedContent() : array
+    final protected function getUnmodifiedContent(): array
     {
         return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
     }
@@ -44,7 +46,7 @@ abstract class Base implements ilECRBaseModifier
      * @param bool $wrapInDocument
      * @return DOMDocument
      */
-    final protected function getDocumentForHtml(string $html, bool $wrapInDocument = true) : DOMDocument
+    final protected function getDocumentForHtml(string $html, bool $wrapInDocument = true): DOMDocument
     {
         $document = new DOMDocument('1.0', 'utf-8');
         $document->preserveWhiteSpace = true;
@@ -63,7 +65,7 @@ abstract class Base implements ilECRBaseModifier
      * @param bool $bodyOnly
      * @return array<string,string>
      */
-    final protected function getDocumentContentAsUiHookOutput(DOMDocument $document, bool $bodyOnly = true) : array
+    final protected function getDocumentContentAsUiHookOutput(DOMDocument $document, bool $bodyOnly = true): array
     {
         if ($bodyOnly) {
             $processedHtml = $document->saveHTML($document->getElementsByTagName('body')->item(0));

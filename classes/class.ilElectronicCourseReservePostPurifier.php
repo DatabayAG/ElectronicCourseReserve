@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2009 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 /**
@@ -35,7 +36,7 @@ class ilElectronicCourseReservePostPurifier extends ilHtmlPurifierAbstractLibWra
      * @return    HTMLPurifier_Config Instance of HTMLPurifier_Config
      *
      */
-    protected function getPurifierConfigInstance() : HTMLPurifier_Config
+    protected function getPurifierConfigInstance(): HTMLPurifier_Config
     {
         $config = HTMLPurifier_Config::createDefault();
         $config->set('HTML.DefinitionID', 'ilias electroniccoursereserve post');
@@ -56,4 +57,3 @@ class ilElectronicCourseReservePostPurifier extends ilHtmlPurifierAbstractLibWra
         return $config;
     }
 }
-

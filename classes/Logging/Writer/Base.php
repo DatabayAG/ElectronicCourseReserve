@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging\Writer;
@@ -12,7 +13,7 @@ use ILIAS\Plugin\ElectronicCourseReserve\Logging;
  */
 abstract class Base implements Logging\Writer
 {
-    const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%): %message% %extra%';
+    public const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%): %message% %extra%';
 
     /**
      * @param array $message

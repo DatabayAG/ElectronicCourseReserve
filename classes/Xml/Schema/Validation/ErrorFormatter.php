@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation;
@@ -18,7 +20,7 @@ final class ErrorFormatter
      * @param LibXMLError $error The LibXMLError which should be formatted.
      * @return string A string representing the given LibXMLError.
      */
-    private function formatError(LibXMLError $error) : string
+    private function formatError(LibXMLError $error): string
     {
         return implode(',', [
             'level=' . $error->level,
@@ -38,11 +40,11 @@ final class ErrorFormatter
      * @param LibXMLError[] $errors An array of errors.
      * @return string A string representing the errors. An empty string will be returned if there were no errors in the array.
      */
-    public function formatErrors(array $errors) : string
+    public function formatErrors(array $errors): string
     {
         $text = '';
 
-        array_walk($errors, function (LibXMLError $error) : void {
+        array_walk($errors, function (LibXMLError $error): void {
         });
 
         foreach ($errors as $error) {

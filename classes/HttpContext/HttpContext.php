@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\HttpContext;
@@ -32,9 +34,9 @@ trait HttpContext
      * @param string $class
      * @return bool
      */
-    final public function isBaseClass(string $class) : bool
+    final public function isBaseClass(string $class): bool
     {
-        if($this->httpWrapper->query()->has("baseClass")){
+        if($this->httpWrapper->query()->has("baseClass")) {
             $baseClass = $this->httpWrapper->query()->retrieve("baseClass", $this->refinery->kindlyTo()->string());
         } else {
             $baseClass = "";
@@ -46,7 +48,7 @@ trait HttpContext
     /**
      * @return bool
      */
-    final public function hasBaseClass() : bool
+    final public function hasBaseClass(): bool
     {
         return $this->httpWrapper->query()->has('baseClass');
     }
@@ -55,12 +57,12 @@ trait HttpContext
      * @param string $class
      * @return bool
      */
-    final public function isCommandClass(string $class) : bool
+    final public function isCommandClass(string $class): bool
     {
         if($this->httpWrapper->query()->has('cmdClass')) {
             $cmdClass = $this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string());
         } else {
-            $cmdClass= "";
+            $cmdClass = "";
         }
 
         return strtolower($class) === strtolower($cmdClass);
@@ -69,7 +71,7 @@ trait HttpContext
     /**
      * @return bool
      */
-    final public function hasCommandClass() : bool
+    final public function hasCommandClass(): bool
     {
         return $this->httpWrapper->query()->has('cmdClass');
     }
@@ -78,7 +80,7 @@ trait HttpContext
      * @param string[] $cmdClasses
      * @return bool
      */
-    final public function isOneOfCommandClasses(array $cmdClasses) : bool
+    final public function isOneOfCommandClasses(array $cmdClasses): bool
     {
         if (!$this->hasCommandClass()) {
             return false;
@@ -97,7 +99,7 @@ trait HttpContext
      * @param string[] $commands
      * @return bool
      */
-    final public function isOneOfCommands(array $commands) : bool
+    final public function isOneOfCommands(array $commands): bool
     {
         return in_array(
             strtolower((string) $this->ctrl->getCmd()),
@@ -112,23 +114,23 @@ trait HttpContext
      * @param string[] $commands
      * @return bool
      */
-    final public function isOneOfPluginCommandsLike(array $commands) : bool
+    final public function isOneOfPluginCommandsLike(array $commands): bool
     {
         return count(array_filter($commands, function (string $command) {
             if (class_exists($command)) {
                 $command = (new ReflectionClass($command))->getShortName();
             }
 
-            return str_contains(strtolower((string)$this->ctrl->getCmd()), strtolower($command));
+            return str_contains(strtolower((string) $this->ctrl->getCmd()), strtolower($command));
         })) > 0;
     }
 
     /**
      * @return int
      */
-    final public function getRefId() : int
+    final public function getRefId(): int
     {
-        if($this->httpWrapper->query()->has('ref_id')){
+        if($this->httpWrapper->query()->has('ref_id')) {
             return $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
         }
         return 0;
@@ -137,10 +139,10 @@ trait HttpContext
     /**
      * @return int
      */
-    final public function getTargetRefId() : int
+    final public function getTargetRefId(): int
     {
         $matches = null;
-        if($this->httpWrapper->query()->has('target')){
+        if($this->httpWrapper->query()->has('target')) {
             $target = $this->httpWrapper->query()->retrieve('target', $this->refinery->kindlyTo()->string());
         } else {
             $target = '';
@@ -158,7 +160,7 @@ trait HttpContext
      * @param int $objId
      * @return bool
      */
-    final public function isObjectOfId(int $objId) : bool
+    final public function isObjectOfId(int $objId): bool
     {
         $refId = $this->getRefId();
         if ($refId <= 0) {
@@ -172,7 +174,7 @@ trait HttpContext
      * @param string $type
      * @return bool
      */
-    final public function isObjectOfType(string $type) : bool
+    final public function isObjectOfType(string $type): bool
     {
         $refId = $this->getRefId();
         if ($refId <= 0) {
@@ -188,7 +190,7 @@ trait HttpContext
      * @param string $type
      * @return bool
      */
-    final public function isTargetObjectOfType(string $type) : bool
+    final public function isTargetObjectOfType(string $type): bool
     {
         $refId = $this->getTargetRefId();
         if ($refId <= 0) {

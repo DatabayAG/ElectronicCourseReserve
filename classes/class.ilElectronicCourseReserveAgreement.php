@@ -8,7 +8,6 @@ use ILIAS\DI\LoggingServices;
  */
 class ilElectronicCourseReserveAgreement
 {
-
     public ilDBInterface $db;
 
     public ilLogger|LoggingServices $log;

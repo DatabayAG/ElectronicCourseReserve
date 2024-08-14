@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\HTTP\Wrapper\WrapperFactory as WrapperFactoryAlias;
@@ -13,7 +14,6 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRInfoScreenModifier implements ilECRBaseModifier
 {
-
     protected ilObjectDataCache $data_cache;
 
 
@@ -43,11 +43,11 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
             return false;
         }
 
-        if(!in_array(strtolower($this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string())),['ilinfoscreengui', 'ilnotegui',] )) {
+        if(!in_array(strtolower($this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string())), ['ilinfoscreengui', 'ilnotegui',])) {
             return false;
         }
 
-        if(!$this->httpWrapper->query()->has('ref_id')){
+        if(!$this->httpWrapper->query()->has('ref_id')) {
             return false;
         }
         $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
@@ -82,7 +82,7 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
             return ['mode' => ilUIHookPluginGUI::KEEP, 'html' => ''];
         }
 
-        $firstInfoScreenSection  = null;
+        $firstInfoScreenSection = null;
         for ($i = 0; $i < 10; $i++) {
             $elm = $dom->getElementById('infoscreen_section_' . $i);
             if ($elm) {
