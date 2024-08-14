@@ -848,7 +848,7 @@ class GnuPG implements GpgWrapper
 		$cmd = implode (' ', $cmd);
 
 		//echo ">>> " . escapeshellcmd ($this->binary) . ' ' . $cmd . "\n";
-		$stdinHandle = fopen('data://text/plain;base64,'. base64_encode($stdin), 'r');
+		$stdinHandle = fopen('data://text/plain;base64,'. base64_encode((string) $stdin), 'r');
 
 		$process = proc_open (
 			escapeshellcmd ($this->binary) . ' ' . $cmd,
