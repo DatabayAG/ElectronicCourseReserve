@@ -168,59 +168,6 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
         return $ilSetting->get('ecr_' . $keyword, '');
     }
 
-    /**
-     * @param array $path
-     * @param array $params
-     * @param $cmd
-     * @return string
-     */
-
-    //@todo ctrl_classfile Table does not exist anymore
-    public function getLinkTarget(array $path, array $params, $cmd): string
-    {
-        return '';
-        global $DIC;
-
-        $ilDB = $DIC->database();
-
-        $class_IN_ctrlClasses = $ilDB->in('class', $path, false, 'text');
-
-        $query = "
-            SELECT    class, cid
-           
-            FROM    ctrl_classfile
-           
-            WHERE    $class_IN_ctrlClasses
-        ";
-
-        $resultSet = $ilDB->query($query);
-
-        $ctrlClasses = array_flip($path);
-
-        $commandNodeIds = [];
-
-        while ($dataSet = $ilDB->fetchAssoc($resultSet)) {
-            $commandNodeIds[$ctrlClasses[$dataSet['class']]] = $dataSet['cid'];
-        }
-
-        ksort($commandNodeIds);
-
-        $params = array_merge([
-            'cmd' => $cmd,
-            'baseClass' => $path[0],
-            'cmdClass' => $path[count($path) - 1],
-            'cmdNode' => implode(':', $commandNodeIds)
-        ], $params);
-
-        $target = 'ilias.php';
-
-        foreach ($params as $paramName => $paramValue) {
-            $target = ilUtil::appendUrlParameterString($target, "$paramName=$paramValue");
-        }
-
-        return $target;
-    }
-
     public static function getInstance(): self
     {
         global $DIC;

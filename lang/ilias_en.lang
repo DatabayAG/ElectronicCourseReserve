@@ -13,7 +13,7 @@ ecr_url_search_system_info#:#Please enter the URL to the research system.
 ecr_url_search_system_invalid#:#The entered URL ist not valid.
 ecr_crypt_gpg_missing#:#The pear Crypt_GPG package is missing. This package provides an object oriented interface to GNU Privacy Guard (GnuPG). It requires the GnuPG executable to be on the system.
 ecr_sign_error_occured#:#An error occured. Please contact your administrator.
-ecr_soap_activation_required#:#Please <a href="%1$s">enable the administration via SOAP</a>.
+ecr_soap_activation_required#:#Please enable the administration via SOAP in the ILIAS setup.
 limit_to_groles#:#Limit access to certain global Roles
 global_roles#:#Global Roles
 global_roles_info#:#Please choose the global roles access to the 'Electronic Course Reserve' tab in courses is granted for. Please keep in mind that ILIAS users additionally <span style="font-weight: bold">must</span> have the permission to edit the contents of the respective courses.

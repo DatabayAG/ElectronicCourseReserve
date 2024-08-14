@@ -13,7 +13,7 @@ ecr_url_search_system_info#:#Bitte tragen Sie hier einen gültigen URL zum Reche
 ecr_url_search_system_invalid#:#Der eingetragene URL zum Recherchesystem ist nicht gültig.
 ecr_crypt_gpg_missing#:#Bitte installieren Sie das Pear-Paket Crypt_GPG. Dieses bietet eine objektorientierte Schnittstelle zu GNU Privacy Guard (GnuPG). Crypt_GPG setzt das ausführbare Programm GnuPG voraus.
 ecr_sign_error_occured#:#Es ist ein Fehler aufgetreten. Bitte kontaktieren Sie den Administrator.
-ecr_soap_activation_required#:#Bitte <a href="%1$s">aktivieren Sie SOAP</a>.
+ecr_soap_activation_required#:#Bitte aktivieren Sie SOAP via ILIAS-Setup.
 limit_to_groles#:#Zugriff auf bestimmte globale Rollen beschränken
 global_roles#:#Globale Rollen
 global_roles_info#:#Wählen Sie hier jene globale Rollen, für die der Zugriff auf den Tab 'Elektronischer Semesterapparat' gewährt werden soll. Bitte beachten Sie, dass die jeweiligen Benutzer auch die Berechtigung besitzen müssen, die Einstellungen des Kurses zu bearbeiten.  
