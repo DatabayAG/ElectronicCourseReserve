@@ -1,7 +1,8 @@
 {
     "require": {
-        "php": "^8.2",
-        "laminas/laminas-crypt": "^3.11"
+        "php": ">=8.1 <8.3",
+        "psr/container": "1.1.2",
+        "laminas/laminas-crypt": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
