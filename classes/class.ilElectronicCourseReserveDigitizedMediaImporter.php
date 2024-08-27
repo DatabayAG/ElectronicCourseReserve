@@ -3,8 +3,10 @@
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\Data\Factory as DataTypeFactory;
+use ILIAS\Data\Result\Ok;
 use ILIAS\Filesystem\Filesystem;
 use ILIAS\Filesystem\Stream\Streams;
+use ILIAS\LegalDocuments\Conductor;
 use ILIAS\Plugin\ElectronicCourseReserve\Filesystem\Purger;
 use ILIAS\Plugin\ElectronicCourseReserve\Logging\Log;
 use ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\PathResolver;
@@ -78,7 +80,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     protected ILIAS\Plugin\ElectronicCourseReserve\Locker\LockerInterface $lock;
     private Filesystem $filesystem;
     private ilCronManager $cronManager;
-
+    private Conductor $legalDocuments;
 
     public function __construct()
     {
@@ -93,6 +95,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         $this->cronManager = $DIC->cron()->manager();
 
         $this->logger = $DIC['plugin.esa.cronjob.logger'];
+        $this->legalDocuments = $DIC['legalDocuments'];
     }
 
     /**
@@ -745,9 +748,13 @@ class ilElectronicCourseReserveDigitizedMediaImporter
      */
     protected function ensureUserRelatedPreconditions(): void
     {
-        // TODO @tjoussen / @mboldt This thas to be replaced with an appropriate call to an ILIAS core API
-        if ($this->user->hasToAcceptTermsOfService()) {
-            throw new ilException('The passed ILIAS user has to accept the user agreement.');
+        $can = $this->legalDocuments
+            ->canUseSoapApi()
+            ->applyTo(new Ok($this->user))
+            ->except(fn($error) => new Error(is_string($error) ? $error : $error->getMessage()));
+
+        if (!$can->isOk()) {
+            throw new ilException($can->error());
         }
     }
 
