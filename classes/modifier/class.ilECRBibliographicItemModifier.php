@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\HTTP\Wrapper\WrapperFactory;
@@ -17,7 +18,8 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
     private WrapperFactory $httpWrapper;
     private Factory $refinery;
 
-    public function __construct(){
+    public function __construct()
+    {
         global $DIC;
         $this->httpWrapper = $DIC->http()->wrapper();
         $this->refinery = $DIC->refinery();
@@ -40,7 +42,7 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
             return false;
         }
 
-        if(!$this->httpWrapper->query()->has('ref_id')){
+        if(!$this->httpWrapper->query()->has('ref_id')) {
             return false;
         }
         $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
@@ -67,9 +69,9 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
     /**
      * @return bool
      */
-    protected function isDetailView() : bool
+    protected function isDetailView(): bool
     {
-        if(!$this->httpWrapper->query()->has('cmdClass') || !$this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string())){
+        if(!$this->httpWrapper->query()->has('cmdClass') || !$this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string())) {
             return false;
         }
 
@@ -82,29 +84,29 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
     /**
      * @return bool
      */
-    protected function isListView() : bool
+    protected function isListView(): bool
     {
-        if(!$this->httpWrapper->query()->has('cmdClass') || !$this->httpWrapper->query()->has('cmd')){
+        if(!$this->httpWrapper->query()->has('cmdClass') || !$this->httpWrapper->query()->has('cmd')) {
             return false;
         }
         $cmdClass = $this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string());
         $cmd = $this->httpWrapper->query()->retrieve('cmd', $this->refinery->kindlyTo()->string());
-        if(!$cmdClass){
+        if(!$cmdClass) {
             return false;
         }
         return (
-                strtolower($cmdClass) === strtolower(ilObjBibliographicGUI::class) &&
-                in_array(
-                    strtolower($cmd),
-                    ['showcontent', 'render', 'view']
-                )
-            ) || (
-                strtolower($cmdClass) === strtolower(ilRepositoryGUI::class) &&
-                strtolower($cmd) === 'render'
-            ) || (
-                strtolower($cmdClass) === 'ilbibliographicdetailsgui' &&
-                strtolower($cmd) === 'showcontent'
-            );
+            strtolower($cmdClass) === strtolower(ilObjBibliographicGUI::class) &&
+            in_array(
+                strtolower($cmd),
+                ['showcontent', 'render', 'view']
+            )
+        ) || (
+            strtolower($cmdClass) === strtolower(ilRepositoryGUI::class) &&
+            strtolower($cmd) === 'render'
+        ) || (
+            strtolower($cmdClass) === 'ilbibliographicdetailsgui' &&
+            strtolower($cmd) === 'showcontent'
+        );
     }
 
     /**
@@ -112,7 +114,7 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      * @param array $a_par
      * @return array
      */
-    protected function manipulateListView(ilObjCourse $crs, array $a_par) : array
+    protected function manipulateListView(ilObjCourse $crs, array $a_par): array
     {
 
         $libs = ilBiblLibrary::get();
@@ -177,7 +179,7 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
      * @param array $a_par
      * @return array
      */
-    protected function manipulateDetailView(ilObjCourse $crs, array $a_par) : array
+    protected function manipulateDetailView(ilObjCourse $crs, array $a_par): array
     {
         $dom = new DOMDocument("1.0", "utf-8");
         $dom->preserveWhiteSpace = true;

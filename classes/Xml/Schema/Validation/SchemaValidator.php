@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema\Validation;
@@ -53,7 +55,7 @@ final class SchemaValidator
      * A call to this function will begin a new error logging context. Every call must have
      * a corresponding call to end().
      */
-    private function beginLogging() : void
+    private function beginLogging(): void
     {
         if (!function_exists('libxml_use_internal_errors')) {
             return;
@@ -77,7 +79,7 @@ final class SchemaValidator
     /**
      * Append current XML errors to the current stack level.
      */
-    private function addErrors() : void
+    private function addErrors(): void
     {
         $currentErrors = libxml_get_errors();
         libxml_clear_errors();
@@ -90,7 +92,7 @@ final class SchemaValidator
      * End error logging.
      * @return LibXMLError[] An array with the LibXMLErrors which has occurred since begin() was called.
      */
-    private function endLogging() : array
+    private function endLogging(): array
     {
         // Check whether the error access functions are present
         if (!function_exists('libxml_use_internal_errors')) {
@@ -123,8 +125,7 @@ final class SchemaValidator
         string $pathToSchema,
         bool $addedFallbackNamespace = false,
         string $fallbackNamespaceUri = ''
-    ): ValidationResult
-    {
+    ): ValidationResult {
         $this->beginLogging();
 
         libxml_set_external_entity_loader(
@@ -194,7 +195,7 @@ final class SchemaValidator
      * @return ValidationResult
      * @throws InvalidArgumentException
      */
-    public function validate(DOMDocument|string $xml, string $schemaFile, string $fallbackNamespaceUri = '') : ValidationResult
+    public function validate(DOMDocument|string $xml, string $schemaFile, string $fallbackNamespaceUri = ''): ValidationResult
     {
         if (!is_string($xml) && !($xml instanceof DOMDocument)) {
             throw new InvalidArgumentException('Invalid XML input.');

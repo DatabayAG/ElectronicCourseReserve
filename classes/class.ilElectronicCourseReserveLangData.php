@@ -8,8 +8,6 @@
 
 class ilElectronicCourseReserveLangData
 {
-
-
     public static array $ecr_lang_data = array();
 
     public ilDBInterface $db;
@@ -58,17 +56,17 @@ class ilElectronicCourseReserveLangData
 
     public function saveTranslation(): void
     {
-        $this->db->replace('ecr_lang_data',
-            array
-            (
+        $this->db->replace(
+            'ecr_lang_data',
+            array(
                 'ecr_content' => array('clob', $ecr_content = self::lookupEcrContentByLangKey($this->getLangKey())),
                 'value' => array('text', $this->getValue())
             ),
-            array
-            (
+            array(
                 'lang_key' => array('text', $this->getLangKey()),
                 'identifier' => array('text', $this->identifier)
-            ));
+            )
+        );
     }
 
     /**
@@ -111,8 +109,11 @@ class ilElectronicCourseReserveLangData
     {
         global $DIC;
 
-        $res = $DIC->database()->queryF('SELECT obj_id FROM object_data WHERE title = %s',
-            array('text'), array(trim($lang_key)));
+        $res = $DIC->database()->queryF(
+            'SELECT obj_id FROM object_data WHERE title = %s',
+            array('text'),
+            array(trim($lang_key))
+        );
 
         if ($row = $DIC->database()->fetchAssoc($res)) {
             return $row['obj_id'];
@@ -129,8 +130,11 @@ class ilElectronicCourseReserveLangData
     {
         global $DIC;
 
-        $res = $DIC->database()->queryF('SELECT ecr_content FROM ecr_lang_data WHERE lang_key = %s',
-            array('text'), array(trim($lang_key)));
+        $res = $DIC->database()->queryF(
+            'SELECT ecr_content FROM ecr_lang_data WHERE lang_key = %s',
+            array('text'),
+            array(trim($lang_key))
+        );
 
         if ($row = $DIC->database()->fetchAssoc($res)) {
             return $row['ecr_content'];
@@ -147,14 +151,14 @@ class ilElectronicCourseReserveLangData
     {
         global $DIC;
 
-        $DIC->database()->update('ecr_lang_data',
-            array
-            (
+        $DIC->database()->update(
+            'ecr_lang_data',
+            array(
                 'ecr_content' => array('clob', $ecr_content)
             ),
-            array
-            (
+            array(
                 'lang_key' => array('text', $lang_key),
-            ));
+            )
+        );
     }
 }

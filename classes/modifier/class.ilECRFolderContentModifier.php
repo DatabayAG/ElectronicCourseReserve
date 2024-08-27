@@ -18,7 +18,7 @@ class ilECRFolderContentModifier extends Base
      * @param int $refId
      * @throws ilCtrlException
      */
-    private function initRendering(int $refId) : void
+    private function initRendering(int $refId): void
     {
         $this->folderGui = new ilObjCategoryGUI([], $refId);
     }
@@ -27,7 +27,7 @@ class ilECRFolderContentModifier extends Base
      * @inheritDoc
      * @throws ilDatabaseException|ilCtrlException|ilObjectNotFoundException
      */
-    public function shouldModifyHtml($a_comp, $a_part, $a_par) : bool
+    public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         $refId = $this->getRefId();
         if (0 === $refId) {
@@ -81,7 +81,7 @@ class ilECRFolderContentModifier extends Base
     /**
      * @inheritDoc
      */
-    public function modifyHtml($a_comp, $a_part, $a_par) : array
+    public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         self::$contentModified = true;
 
@@ -90,7 +90,7 @@ class ilECRFolderContentModifier extends Base
             $refId = $this->getTargetRefId();
         }
 
-        $message =  ilElectronicCourseReservePlugin::getInstance()->getFolderDeletionMessage($refId);
+        $message = ilElectronicCourseReservePlugin::getInstance()->getFolderDeletionMessage($refId);
 
         if ($a_par['tpl_id'] === 'Services/Container/tpl.container_page.html') {
             return [

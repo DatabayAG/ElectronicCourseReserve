@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Library;
@@ -70,28 +71,28 @@ class LinkBuilder
 
     public function getLibraryUrlParameters(ilObjCourse $container): array
     {
-        $default_auth = $this->settings->get('auth_mode') ? $this->settings->get('auth_mode') : ilAuthUtils::AUTH_LOCAL;
+        $default_auth = $this->settings->get('auth_mode') ?: ilAuthUtils::AUTH_LOCAL;
         $usr_id = $this->user->getLogin();
 
         if (
-            strlen(trim($this->user->getExternalAccount())) &&
+            trim($this->user->getExternalAccount()) !== '' &&
             !(
                 (
-                    $this->user->getAuthMode() == 'default' &&
-                    $default_auth == ilAuthUtils::AUTH_LOCAL
+                    $this->user->getAuthMode() === 'default' &&
+                    (int) $default_auth === ilAuthUtils::AUTH_LOCAL
                 ) ||
-                $this->user->getAuthMode(true) == ilAuthUtils::AUTH_LOCAL
+                (int) $this->user->getAuthMode(true) === ilAuthUtils::AUTH_LOCAL
             )
         ) {
             $usr_id = $this->user->getExternalAccount();
         }
 
-        $params = array(
+        $params = [
             'ref_id' => $container->getRefId(),
             'usr_id' => $usr_id,
             'ts' => time(),
             'email' => $this->user->getEmail()
-        );
+        ];
 
         if ($this->plugin->getSetting('token_append_obj_title')) {
             $params['iltitle'] = $container->getTitle();

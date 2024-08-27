@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Xml;
@@ -20,7 +22,7 @@ final class DomDocumentFactory
      * @return DOMDocument
      * @throws InvalidArgumentException|RuntimeException|UnparseableXmlException
      */
-    public function fromString(string $xml) : DOMDocument
+    public function fromString(string $xml): DOMDocument
     {
         if (trim($xml) === '') {
             throw new InvalidArgumentException('Invalid XML string given');

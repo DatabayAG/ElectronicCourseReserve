@@ -39,7 +39,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        if($this->httpWrapper->query()->has("cmdClass")){
+        if($this->httpWrapper->query()->has("cmdClass")) {
             $cmdClass = $this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string());
         } else {
             $cmdClass = "";
@@ -48,7 +48,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        if(!$this->httpWrapper->query()->has('ref_id')){
+        if(!$this->httpWrapper->query()->has('ref_id')) {
             return false;
         }
         $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
@@ -74,7 +74,8 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
     public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         $processedHtml = '';
-        $contextRefId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());;
+        $contextRefId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+        ;
 
         $obj = ilObjectFactory::getInstanceByRefId($contextRefId, false);
         if (!($obj instanceof ilObjCourse) || !$this->access->checkAccess('read', '', $obj->getRefId())) {
@@ -95,12 +96,12 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
 
         if (count($itemData) > 0) {
             $elements = [];
-            $refIds   = [];
+            $refIds = [];
 
             $linksWithRefIds = $xpath->query("//li/a[contains(@href, 'ref_id')]");
             if ($linksWithRefIds->length > 0) {
                 foreach ($linksWithRefIds as $linksWithRefId) {
-                    $action  = $linksWithRefId->getAttribute('href');
+                    $action = $linksWithRefId->getAttribute('href');
                     $matches = null;
 
                     if (preg_match('/item_ref_id=(\d+)/', $action, $matches)) {
@@ -109,7 +110,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
                         }
 
                         $refIds[$matches[1]] = $matches[1];
-                        $elements[]          = $linksWithRefId;
+                        $elements[] = $linksWithRefId;
                         continue;
                     }
 
@@ -118,7 +119,7 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
                             continue;
                         }
                         $refIds[$matches[1]] = $matches[1];
-                        $elements[]          = $linksWithRefId;
+                        $elements[] = $linksWithRefId;
                     }
                 }
             }

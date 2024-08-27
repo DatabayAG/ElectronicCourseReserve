@@ -1,9 +1,9 @@
 <?php
+
 /* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 class ilElectronicCourseReserveHistoryEntity
 {
-
     protected int $ref_id;
 
     protected int $target_ref_id;

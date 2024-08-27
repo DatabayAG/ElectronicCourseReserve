@@ -3,7 +3,6 @@
 
 class ilElectronicCourseReserveListGUIHelper
 {
-
     public array $actions_to_remove = array('cut', 'initTargetSelection', 'link');
 
     /**

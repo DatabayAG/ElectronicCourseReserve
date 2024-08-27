@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\DI\Container;
@@ -121,8 +122,10 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                 $DIC->tabs()->addTab(
                     'ecr_tab_title',
                     $this->getPluginObject()->ecr_txt('ecr_tab_title'),
-                    $ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__],
-                        'ilECRContentController.showECRContent')
+                    $ilCtrl->getLinkTargetByClass(
+                        ['ilUIPluginRouterGUI', __CLASS__],
+                        'ilECRContentController.showECRContent'
+                    )
                 );
                 self::$tabsRendered['ecr_tab_title'] = true;
             } else {
@@ -137,8 +140,10 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
                     $DIC->tabs()->addTab(
                         'ecr_tab_title',
                         $this->getPluginObject()->txt('ecr_tab_title'),
-                        $ilCtrl->getLinkTargetByClass(['ilUIPluginRouterGUI', __CLASS__],
-                            'ilECRContentController.showECRItemContent')
+                        $ilCtrl->getLinkTargetByClass(
+                            ['ilUIPluginRouterGUI', __CLASS__],
+                            'ilECRContentController.showECRItemContent'
+                        )
                     );
                     self::$tabsRendered['ecr_tab_title'] = true;
                 }
@@ -149,7 +154,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     /**
      * @return bool
      */
-    private function shouldRenderCustomCourseTabs() : bool
+    private function shouldRenderCustomCourseTabs(): bool
     {
         $isBlackListedCommandClass = (
             (
@@ -176,7 +181,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
     /**
      * @return bool
      */
-    final public function hasCommandClass() : bool
+    final public function hasCommandClass(): bool
     {
         return isset($this->dic->http()->request()->getQueryParams()['cmdClass']);
     }
@@ -185,7 +190,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
      * @param string[] $commands
      * @return bool
      */
-    final public function isOneOfCommands(array $commands) : bool
+    final public function isOneOfCommands(array $commands): bool
     {
         return in_array(
             strtolower((string) $this->dic->ctrl()->getCmd()),
@@ -200,7 +205,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
      * @param string $class
      * @return bool
      */
-    final public function isBaseClass(string $class) : bool
+    final public function isBaseClass(string $class): bool
     {
         $baseClass = (string) ($this->dic->http()->request()->getQueryParams()['baseClass'] ?? '');
 
@@ -211,7 +216,7 @@ class ilElectronicCourseReserveUIHookGUI extends ilUIHookPluginGUI
      * @param string $class
      * @return bool
      */
-    final public function isCommandClass(string $class) : bool
+    final public function isCommandClass(string $class): bool
     {
         $cmdClass = (string) ($this->dic->http()->request()->getQueryParams()['cmdClass'] ?? '');
 

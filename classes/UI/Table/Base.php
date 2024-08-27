@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\UI\Table;
@@ -48,7 +50,7 @@ abstract class Base extends ilTable2GUI
      * @param Provider $provider
      * @return $this
      */
-    public function withProvider(Provider $provider) : self
+    public function withProvider(Provider $provider): self
     {
         $clone = clone $this;
         $clone->provider = $provider;
@@ -59,7 +61,7 @@ abstract class Base extends ilTable2GUI
     /**
      * @return Provider|null
      */
-    public function getProvider() : ? Provider
+    public function getProvider(): ?Provider
     {
         return $this->provider;
     }
@@ -68,7 +70,7 @@ abstract class Base extends ilTable2GUI
      * @param array $params
      * @param array $filter
      */
-    protected function onBeforeDataFetched(array &$params, array &$filter) : void
+    protected function onBeforeDataFetched(array &$params, array &$filter): void
     {
     }
 
@@ -76,14 +78,14 @@ abstract class Base extends ilTable2GUI
      * This method can be used to add some field values dynamically or manipulate existing values of the table row array
      * @param array $row
      */
-    protected function prepareRow(array &$row) : void
+    protected function prepareRow(array &$row): void
     {
     }
 
     /**
      * @param array $data
      */
-    protected function preProcessData(array &$data) : void
+    protected function preProcessData(array &$data): void
     {
     }
 
@@ -93,7 +95,7 @@ abstract class Base extends ilTable2GUI
      * @param array  $row
      * @return string
      */
-    protected function formatCellValue(string $column, array $row) : string
+    protected function formatCellValue(string $column, array $row): string
     {
         if (is_scalar($row[$column])) {
             return trim((string) $row[$column]);
@@ -107,7 +109,7 @@ abstract class Base extends ilTable2GUI
      */
     public function getSelectableColumns(): array
     {
-        $optionalColumns = array_filter($this->getColumnDefinition(), static function (array $column) : bool {
+        $optionalColumns = array_filter($this->getColumnDefinition(), static function (array $column): bool {
             return isset($column['optional']) && $column['optional'];
         });
 
@@ -123,7 +125,7 @@ abstract class Base extends ilTable2GUI
      * @param int $index
      * @return bool
      */
-    protected function isColumnVisible(int $index) : bool
+    protected function isColumnVisible(int $index): bool
     {
         $columnDefinition = $this->getColumnDefinition();
         if (array_key_exists($index, $columnDefinition)) {
@@ -170,12 +172,12 @@ abstract class Base extends ilTable2GUI
     /**
      * @return array
      */
-    abstract protected function getColumnDefinition() : array;
+    abstract protected function getColumnDefinition(): array;
 
     /**
      *
      */
-    public function populate() : void
+    public function populate(): void
     {
         if ($this->getExternalSegmentation() && $this->getExternalSorting()) {
             $this->determineOffsetAndOrder();
@@ -220,7 +222,7 @@ abstract class Base extends ilTable2GUI
 
         $this->setData($data['items']);
         if ($this->getExternalSegmentation()) {
-            $this->setMaxCount($data['cnt'][0]); //@todo rausfinden ob das so funktioniert
+            $this->setMaxCount($data['cnt']);
         }
     }
 }

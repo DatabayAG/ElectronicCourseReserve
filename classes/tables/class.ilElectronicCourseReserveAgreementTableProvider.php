@@ -17,8 +17,11 @@ class ilElectronicCourseReserveAgreementTableProvider
 
     public function getTableData(): array
     {
-        $res = $this->db->queryF('SELECT * FROM ecr_lang_agreements WHERE is_active = %s ORDER BY time_created DESC',
-            array('integer'), array(1));
+        $res = $this->db->queryF(
+            'SELECT * FROM ecr_lang_agreements WHERE is_active = %s ORDER BY time_created DESC',
+            array('integer'),
+            array(1)
+        );
 
         $data = [];
         while ($row = $this->db->fetchAssoc($res)) {

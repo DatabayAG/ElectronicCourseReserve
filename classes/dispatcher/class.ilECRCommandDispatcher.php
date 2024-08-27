@@ -56,21 +56,21 @@ class ilECRCommandDispatcher
         return new $controller($controller);
     }
 
-//    /**
-//     * @return string
-//     */
+    //    /**
+    //     * @return string
+    //     */
     protected function getControllerPath()  //@todo rausfinden wieso das auskommentiert
     {
-//
-//
-//		$path = $this->getCoreController()->getPluginObject()->getDirectory() .
-//			DIRECTORY_SEPARATOR .
-//			'classes' .
-//			DIRECTORY_SEPARATOR .
-//			'controller' .
-//			DIRECTORY_SEPARATOR;
-//
-//		return $path;
+        //
+        //
+        //		$path = $this->getCoreController()->getPluginObject()->getDirectory() .
+        //			DIRECTORY_SEPARATOR .
+        //			'classes' .
+        //			DIRECTORY_SEPARATOR .
+        //			'controller' .
+        //			DIRECTORY_SEPARATOR;
+        //
+        //		return $path;
     }
 
     /**

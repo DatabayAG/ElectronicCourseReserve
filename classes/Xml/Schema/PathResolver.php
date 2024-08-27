@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /* Copyright (c) 1998-2021 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Xml\Schema;
@@ -27,7 +29,7 @@ final class PathResolver
      * @param string $filename
      * @return string
      */
-    public function resolvePath(string $filename) : string
+    public function resolvePath(string $filename): string
     {
         return $this->plugin->getDirectory() . '/xsd/' . $filename;
     }

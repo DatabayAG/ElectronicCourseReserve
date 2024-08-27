@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\Filesystem\Filesystem;
@@ -105,12 +106,12 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
 
         $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
         $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
-        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'slot_id',  $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'slot_id', $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
         $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
         $this->ctrl->setParameterByClass('ilobjcomponentsettingsgui', 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
         $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'ctype', $this->httpWrapper->query()->retrieve('ctype', $this->refinery->kindlyTo()->string()));
         $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'cname', $this->httpWrapper->query()->retrieve('cname', $this->refinery->kindlyTo()->string()));
-        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'slot_id',  $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
+        $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'slot_id', $this->httpWrapper->query()->retrieve('slot_id', $this->refinery->kindlyTo()->string()));
         $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'plugin_id', $this->httpWrapper->query()->retrieve('plugin_id', $this->refinery->kindlyTo()->string()));
         $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'pname', $this->httpWrapper->query()->retrieve('pname', $this->refinery->kindlyTo()->string()));
 
@@ -119,23 +120,28 @@ abstract class ilElectronicCourseReserveBaseGUI extends ilPluginConfigGUI
         $this->ctrl->setParameterByClass('ilElectronicCourseReserveConfigGUI', 'id', '');
 
         $this->tabs->addTarget(
-            'settings', $this->ctrl->getLinkTargetByClass('ilElectronicCourseReserveConfigGUI'),
-            '', ['ilElectronicCourseReserveConfigGUI', 'ilelectroniccoursereserveconfiggui', 'ilfilesystemgui']
+            'settings',
+            $this->ctrl->getLinkTargetByClass('ilElectronicCourseReserveConfigGUI'),
+            '',
+            ['ilElectronicCourseReserveConfigGUI', 'ilelectroniccoursereserveconfiggui', 'ilfilesystemgui']
         );
         $this->tabs->addTarget(
             'ui_uihk_ecr_use_agreement',
             $this->ctrl->getLinkTargetByClass('ilElectronicCourseReserveAgreementConfigGUI'),
-            '', 'ilElectronicCourseReserveAgreementConfigGUI'
+            '',
+            'ilElectronicCourseReserveAgreementConfigGUI'
         );
         $this->tabs->addTarget(
             'ui_uihk_ecr_adm_ecr_tab_title',
             $this->ctrl->getLinkTargetByClass('ilElectronicCourseReserveContentConfigGUI'),
-            '', 'ilElectronicCourseReserveContentConfigGUI'
+            '',
+            'ilElectronicCourseReserveContentConfigGUI'
         );
         $this->tabs->addTarget(
             'ui_uihk_ecr_adm_ecr_tab_del_protocol',
             $this->ctrl->getLinkTargetByClass(ilElectronicCourseReserveDeletionProtocolGUI::class),
-            '', ilElectronicCourseReserveDeletionProtocolGUI::class
+            '',
+            ilElectronicCourseReserveDeletionProtocolGUI::class
         );
     }
 

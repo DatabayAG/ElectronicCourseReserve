@@ -8,7 +8,6 @@
  */
 class ilElectronicCourseReserveRTEHelper
 {
-
     /**
      * @param     $content_id
      * @param     $content

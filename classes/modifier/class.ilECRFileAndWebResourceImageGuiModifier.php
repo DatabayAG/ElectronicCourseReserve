@@ -11,7 +11,6 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
 {
-
     protected array $object_types = array('file', 'webr');
 
     protected ilObjectDataCache $data_cache;
@@ -45,7 +44,7 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        if(!$this->httpWrapper->query()->has('ref_id')){
+        if(!$this->httpWrapper->query()->has('ref_id')) {
             return false;
         }
         $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
@@ -72,7 +71,8 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
     {
         global $DIC;
         $plugin = ilElectronicCourseReservePlugin::getInstance();
-        $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());;
+        $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+        ;
         $item_data = $plugin->queryItemData($refId);
         if (is_array($item_data)
             && array_key_exists('icon', $item_data)
@@ -81,8 +81,10 @@ class ilECRFileAndWebResourceImageGuiModifier implements ilECRBaseModifier
             && $item_data['show_image'] == 1) {
 
             $replace = '#headerimage';
-            if (array_key_exists('icon_type',
-                    $item_data) && $item_data['icon_type'] === ilElectronicCourseReservePlugin::ICON_URL) {
+            if (array_key_exists(
+                'icon_type',
+                $item_data
+            ) && $item_data['icon_type'] === ilElectronicCourseReservePlugin::ICON_URL) {
                 $with = $item_data['icon'];
             } else {
                 $with = ILIAS_WEB_DIR . DIRECTORY_SEPARATOR . CLIENT_ID . DIRECTORY_SEPARATOR . $item_data['icon'];

@@ -11,8 +11,6 @@ require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilECRFolderListGuiModifier implements ilECRBaseModifier
 {
-
-
     protected ilElectronicCourseReserveListGUIHelper $list_gui_helper;
 
     protected ilObjectDataCache $data_cache;
@@ -42,7 +40,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
             return false;
         }
 
-        if(!$this->httpWrapper->query()->has('ref_id')){
+        if(!$this->httpWrapper->query()->has('ref_id')) {
             return false;
         }
         $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
@@ -96,7 +94,7 @@ class ilECRFolderListGuiModifier implements ilECRBaseModifier
                 $elements = [];
 
                 foreach ($linksWithRefIds as $linksWithRefId) {
-                    $action  = $linksWithRefId->getAttribute('href');
+                    $action = $linksWithRefId->getAttribute('href');
                     $matches = null;
 
                     if (preg_match('/item_ref_id=(\d+)/', $action, $matches)) {

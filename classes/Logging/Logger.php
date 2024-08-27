@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 namespace ILIAS\Plugin\ElectronicCourseReserve\Logging;
@@ -14,14 +15,14 @@ interface Logger
      * @link  http://tools.ietf.org/html/rfc3164
      */
 
-    const EMERG = 0;
-    const ALERT = 1;
-    const CRIT = 2;
-    const ERR = 3;
-    const WARN = 4;
-    const NOTICE = 5;
-    const INFO = 6;
-    const DEBUG = 7;
+    public const EMERG = 0;
+    public const ALERT = 1;
+    public const CRIT = 2;
+    public const ERR = 3;
+    public const WARN = 4;
+    public const NOTICE = 5;
+    public const INFO = 6;
+    public const DEBUG = 7;
 
     /**
      * @param string $message
@@ -77,6 +78,8 @@ interface Logger
      * @param array $extra
      * @return void
      */
-    public function debug(string $message,
-                          array $extra = array()): void;
+    public function debug(
+        string $message,
+        array $extra = array()
+    ): void;
 }

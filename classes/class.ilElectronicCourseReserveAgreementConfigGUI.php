@@ -1,4 +1,5 @@
 <?php
+
 /* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use ILIAS\HTTP\Wrapper\WrapperFactory;
@@ -11,7 +12,6 @@ require_once __DIR__ . '/class.ilElectronicCourseReserveBaseGUI.php';
  */
 class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseReserveBaseGUI
 {
-
     private WrapperFactory $httpWrapper;
     private Factory $refinery;
 
@@ -236,7 +236,7 @@ class ilElectronicCourseReserveAgreementConfigGUI extends ilElectronicCourseRese
     {
         $this->tabs->activateSubTab('editUserAgreements');
 
-        if($this->httpWrapper->query()->has('ecr_lang')){
+        if($this->httpWrapper->query()->has('ecr_lang')) {
             $language = $this->httpWrapper->query()->retrieve('ecr_lang', $this->refinery->kindlyTo()->string());
         } else {
             $language = '';
