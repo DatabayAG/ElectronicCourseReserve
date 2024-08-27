@@ -86,7 +86,7 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
             $itemData = $plugin->getRelevantCourseAndFolderData($obj->getRefId());
 
             if (count($itemData) > 0) {
-                $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']/a");
+                $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']//a");
                 if ($linkedTitleNodeList->length > 0) {
                     foreach ($linkedTitleNodeList as $linkedTitleNode) {
                         /** @var $linkedTitleNode DOMElement */
@@ -101,10 +101,7 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                                 $elements[] = $linkedTitleNode->parentNode->parentNode;
                             }
 
-                            if (preg_match('/ref_id=(\d+)/', $action, $matches)) {
-                                if (!array_key_exists($matches[1], $itemData)) {
-                                    continue;
-                                }
+                            if ($this->isPluginItemDataRefId($action, $itemData)) {
                                 $elements[] = $linkedTitleNode->parentNode->parentNode;
                             }
                         }
@@ -115,21 +112,13 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
             $itemData = $plugin->getItemData();
 
             if (count($itemData) > 0) {
-                // TODO @tjoussen / @mboldt At least this xpath query has to be adapted for ILIAS 9.x
-                $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']/a");
+                $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']//a");
                 if ($linkedTitleNodeList->length > 0) {
                     foreach ($linkedTitleNodeList as $linkedTitleNode) {
                         /** @var $linkedTitleNode DOMElement */
                         if ($linkedTitleNode->hasAttribute('href')) {
                             $action = $linkedTitleNode->getAttribute('href');
-                            $matches = null;
-                            if (preg_match('/ref_id=(\d+)|_(\d+)/', $action, $matches)) {
-                                if (
-                                    !array_key_exists($matches[1], $itemData) &&
-                                    !array_key_exists($matches[2], $itemData)
-                                ) {
-                                    continue;
-                                }
+                            if ($this->isPluginItemDataRefId($action, $itemData)) {
                                 $elements[] = $linkedTitleNode->parentNode->parentNode;
                             }
                         }
@@ -137,7 +126,7 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
                 }
             }
 
-            $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']//div[@class='card-title']//span[@data-list-item-id]");
+            $linkedTitleNodeList = $xpath->query("//div[@class='il-card thumbnail']//div[contains(concat(' ', normalize-space(@class), ' '), ' card-title ')]//span[@data-list-item-id]");
             if ($linkedTitleNodeList->length > 0) {
                 foreach ($linkedTitleNodeList as $linkedTitleNode) {
                     /** @var $linkedTitleNode DOMElement */
@@ -181,5 +170,23 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
         }
 
         return ['mode' => ilUIHookPluginGUI::REPLACE, 'html' => $processedHtml];
+    }
+
+    private function isPluginItemDataRefId(string $action, array $itemData): bool
+    {
+        if (!preg_match('/ref_id=(\d+)|_(\d+)|goto\.php\/\w{3,4}\/(\d+)|go\/\w{3,4}\/(\d+)/', $action, $matches)) {
+            return false;
+        }
+
+        if (
+            !array_key_exists($matches[1], $itemData) &&
+            !array_key_exists($matches[2], $itemData) &&
+            !array_key_exists($matches[3], $itemData) &&
+            !array_key_exists($matches[4], $itemData)
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }
