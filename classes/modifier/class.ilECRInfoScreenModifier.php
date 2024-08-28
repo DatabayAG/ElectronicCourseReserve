@@ -1,22 +1,30 @@
 <?php
 
-/* Copyright (c) 1998-2018 ILIAS open source, Extended GPL, see docs/LICENSE */
+/**
+ * This file is part of ILIAS, a powerful learning management system
+ * published by ILIAS open source e-Learning e.V.
+ *
+ * ILIAS is licensed with the GPL-3.0,
+ * see https://www.gnu.org/licenses/gpl-3.0.en.html
+ * You should have received a copy of said license along with the
+ * source code, too.
+ *
+ * If this is not the case or you just want to try ILIAS, you'll find
+ * us at:
+ * https://www.ilias.de
+ * https://github.com/ILIAS-eLearning
+ *
+ *********************************************************************/
+
+declare(strict_types=1);
 
 use ILIAS\HTTP\Wrapper\WrapperFactory as WrapperFactoryAlias;
 use ILIAS\Plugin\ElectronicCourseReserve\Objects\Helper;
 use ILIAS\Refinery\Factory as FactoryAlias;
 
-require_once "Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php";
-
-/**
- * Class ilECRInfoScreenModifier
- * @author Nadia Matuschek <nmatuschek@databay.de>
- */
 class ilECRInfoScreenModifier implements ilECRBaseModifier
 {
     protected ilObjectDataCache $data_cache;
-
-
     protected ilAccessHandler $access;
     protected WrapperFactoryAlias $httpWrapper;
     protected FactoryAlias $refinery;
@@ -30,12 +38,9 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
         $this->refinery = $DIC->refinery();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
-        if ($a_par['tpl_id'] != 'Services/InfoScreen/tpl.infoscreen.html') {
+        if ($a_par['tpl_id'] !== 'Services/InfoScreen/tpl.infoscreen.html') {
             return false;
         }
 
@@ -43,11 +48,11 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
             return false;
         }
 
-        if(!in_array(strtolower($this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string())), ['ilinfoscreengui', 'ilnotegui',])) {
+        if (!in_array(strtolower($this->httpWrapper->query()->retrieve("cmdClass", $this->refinery->kindlyTo()->string())), ['ilinfoscreengui', 'ilnotegui',])) {
             return false;
         }
 
-        if(!$this->httpWrapper->query()->has('ref_id')) {
+        if (!$this->httpWrapper->query()->has('ref_id')) {
             return false;
         }
         $refId = $this->httpWrapper->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
@@ -65,11 +70,6 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
         return true;
     }
 
-    /**
-     * @inheritdoc
-     * @throws ilException
-     * @throws DOMException
-     */
     public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         /** @var Helper $objectHelper */
@@ -84,9 +84,11 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
 
         $firstInfoScreenSection = null;
         for ($i = 0; $i < 10; $i++) {
+            // The index is not always 1, so we make 10 attempts to retrieve a matching element
             $elm = $dom->getElementById('infoscreen_section_' . $i);
             if ($elm) {
                 $firstInfoScreenSection = $elm;
+                break;
             }
         }
 
@@ -95,13 +97,13 @@ class ilECRInfoScreenModifier implements ilECRBaseModifier
         }
 
         $row = $dom->createElement('div');
-        $row->setAttribute('class', 'form-group');
+        $row->setAttribute('class', 'form-group row');
         $plugin = ilElectronicCourseReservePlugin::getInstance();
         $label = $dom->createElement('div', $plugin->txt('crs_ref_id'));
-        $label->setAttribute('class', 'il_InfoScreenProperty control-label col-xs-3');
+        $label->setAttribute('class', 'il_InfoScreenProperty control-label col-sm-4 col-md-3 col-lg-2');
         $value = $dom->createElement('div');
-        $value->setAttribute('class', 'il_InfoScreenPropertyValue col-xs-9');
-        $value->nodeValue = $instance->getRefId();
+        $value->setAttribute('class', 'il_InfoScreenPropertyValue col-sm-8 col-md-9 col-lg-10');
+        $value->nodeValue = (string) $instance->getRefId();
         $row->appendChild($label);
         $row->appendChild($value);
 
