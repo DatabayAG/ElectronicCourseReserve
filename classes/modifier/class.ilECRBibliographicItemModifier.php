@@ -93,30 +93,36 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
 
     protected function isListView(): bool
     {
-        // TODO: Links like http://localhost.php8-1/ilias/9x/ilias.php?baseClass=ilrepositorygui&cmd=render&ref_id=148 should be considred as LIST VIEW context
-        if (!$this->httpWrapper->query()->has('cmdClass') || !$this->httpWrapper->query()->has('cmd')) {
+        if (!$this->httpWrapper->query()->has('cmd')) {
             return false;
         }
+        $cmd = strtolower($this->httpWrapper->query()->retrieve('cmd', $this->refinery->kindlyTo()->string()));
 
-        $cmdClass = $this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string());
-        $cmd = $this->httpWrapper->query()->retrieve('cmd', $this->refinery->kindlyTo()->string());
+        if ($cmd === 'render' && $this->httpWrapper->query()->has('baseClass')) {
+            $base_class = strtolower(
+                $this->httpWrapper->query()->retrieve('baseClass', $this->refinery->kindlyTo()->string())
+            );
+            if ($base_class === strtolower(ilRepositoryGUI::class)) {
+                return true;
+            }
+        }
 
-        if (!$cmdClass) {
+        if (!$this->httpWrapper->query()->has('cmdClass')) {
             return false;
         }
+        $cmdClass = strtolower(
+            $this->httpWrapper->query()->retrieve('cmdClass', $this->refinery->kindlyTo()->string())
+        );
 
         return (
-            strtolower($cmdClass) === strtolower(ilObjBibliographicGUI::class) &&
+            $cmdClass === strtolower(ilObjBibliographicGUI::class) &&
             in_array(
-                strtolower($cmd),
+                $cmd,
                 ['showcontent', 'render', 'view']
             )
         ) || (
-            strtolower($cmdClass) === strtolower(ilRepositoryGUI::class) &&
-            strtolower($cmd) === 'render'
-        ) || (
-            strtolower($cmdClass) === 'ilbibliographicdetailsgui' &&
-            strtolower($cmd) === 'showcontent'
+            $cmdClass === strtolower(ilRepositoryGUI::class) &&
+            $cmd === 'render'
         );
     }
 
