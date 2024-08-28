@@ -1,39 +1,40 @@
 <?php
 
-use ILIAS\Plugin\ElectronicCourseReserve\HttpContext\HttpContext;
-
-require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/modifier/Base.php';
-require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/interfaces/interface.ilECRBaseModifier.php';
-require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ElectronicCourseReserve/classes/class.ilElectronicCourseReserveListGUIHelper.php';
-
 /**
- * Class ilECRFolderContentModifier
- */
+ * This file is part of ILIAS, a powerful learning management system
+ * published by ILIAS open source e-Learning e.V.
+ *
+ * ILIAS is licensed with the GPL-3.0,
+ * see https://www.gnu.org/licenses/gpl-3.0.en.html
+ * You should have received a copy of said license along with the
+ * source code, too.
+ *
+ * If this is not the case or you just want to try ILIAS, you'll find
+ * us at:
+ * https://www.ilias.de
+ * https://github.com/ILIAS-eLearning
+ *
+ *********************************************************************/
+
+declare(strict_types=1);
+
 class ilECRFolderContentModifier extends Base
 {
-    private ilContainerGUI $folderGui;
     private static bool $contentModified = false;
 
-    /**
-     * @param int $refId
-     * @throws ilCtrlException
-     */
+    private ilContainerGUI $folderGui;
+
     private function initRendering(int $refId): void
     {
         $this->folderGui = new ilObjCategoryGUI([], $refId);
     }
 
-    /**
-     * @inheritDoc
-     * @throws ilDatabaseException|ilCtrlException|ilObjectNotFoundException
-     */
     public function shouldModifyHtml($a_comp, $a_part, $a_par): bool
     {
         $refId = $this->getRefId();
-        if (0 === $refId) {
+        if ($refId <= 0) {
             $refId = $this->getTargetRefId();
         }
-
         if ($refId <= 0) {
             return false;
         }
@@ -42,23 +43,23 @@ class ilECRFolderContentModifier extends Base
             return false;
         }
 
-        $isMainTemplate = (
+        $is_main_template = (
             $a_part === 'template_show' &&
             isset($a_par['tpl_id']) &&
-            $a_par['tpl_id'] === 'tpl.main.html'
+            $a_par['tpl_id'] === 'src/UI/templates/default/Layout/tpl.standardpage.html'
         );
 
-        $isRelevantTemplate = (
+        $is_page_editor_content_template = (
             $a_part === 'template_get' &&
             isset($a_par['tpl_id']) &&
             $a_par['tpl_id'] === 'Services/Container/tpl.container_page.html'
         );
 
-        if (!$isRelevantTemplate && !$isMainTemplate) {
+        if (!$is_page_editor_content_template && !$is_main_template) {
             return false;
         }
 
-        $isFolder = 'fold' === $this->dic['ilObjDataCache']->lookupType($this->dic['ilObjDataCache']->lookupObjId($refId));
+        $isFolder = $this->dic['ilObjDataCache']->lookupType($this->dic['ilObjDataCache']->lookupObjId($refId)) === 'fold';
         if (!$isFolder) {
             return false;
         }
@@ -74,19 +75,16 @@ class ilECRFolderContentModifier extends Base
             !$this->folderGui->isActiveItemOrdering() &&
             !$this->folderGui->isActiveOrdering() &&
             !$this->folderGui->isMultiDownloadEnabled() &&
-            !$_SESSION['clipboard']
+            !ilSession::get('clipboard')
         );
     }
 
-    /**
-     * @inheritDoc
-     */
     public function modifyHtml($a_comp, $a_part, $a_par): array
     {
         self::$contentModified = true;
 
         $refId = $this->getRefId();
-        if (0 === $refId) {
+        if ($refId === 0) {
             $refId = $this->getTargetRefId();
         }
 
@@ -103,8 +101,8 @@ class ilECRFolderContentModifier extends Base
         $uploadScriptsById = [];
         $a_par['html'] = preg_replace_callback(
             '#<script type="text/x-tmpl"[\s\S]*?</script>#i',
-            static function ($matches) use (&$uploadScriptsById) {
-                $id = '###' . md5(uniqid((string) rand(), true)) . '###';
+            static function ($matches) use (&$uploadScriptsById): string {
+                $id = '###' . md5(uniqid((string) mt_rand(), true)) . '###';
 
                 $uploadScriptsById[$id] = $matches[0];
 
