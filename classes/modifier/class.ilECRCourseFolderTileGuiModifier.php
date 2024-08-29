@@ -174,19 +174,8 @@ class ilECRCourseFolderTileGuiModifier implements ilECRBaseModifier
 
     private function isPluginItemDataRefId(string $action, array $itemData): bool
     {
-        if (!preg_match('/ref_id=(\d+)|_(\d+)|goto\.php\/\w{3,4}\/(\d+)|go\/\w{3,4}\/(\d+)/', $action, $matches)) {
-            return false;
-        }
+        $ref_id =  RefIdExtractor::getPluginItemDataRefId($action);
 
-        if (
-            !array_key_exists($matches[1], $itemData) &&
-            !array_key_exists($matches[2], $itemData) &&
-            !array_key_exists($matches[3], $itemData) &&
-            !array_key_exists($matches[4], $itemData)
-        ) {
-            return false;
-        }
-
-        return true;
+        return isset($itemData[$ref_id]);
     }
 }
