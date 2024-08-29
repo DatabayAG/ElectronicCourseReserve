@@ -61,6 +61,8 @@ class ilElectronicCourseReserveListGUIHelper
                     return (int) $matches[1];
                 }
             }
+
+            return (int) RefIdExtractor::getPluginItemDataRefId($url_with_ref_id);
         }
         return 0;
     }
