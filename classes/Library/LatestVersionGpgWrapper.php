@@ -43,7 +43,7 @@ class LatestVersionGpgWrapper implements GpgWrapper
                 is_string($result->err) &&
                 $result->err !== '' &&
                 is_string($result->data) &&
-                is_string($result->data) !== ''
+                $result->data !== ''
             ) {
                 if (
                     strpos($result->err, 'wird als voreingestellter geheimer Signaturschlüssel benutzt') !== false ||

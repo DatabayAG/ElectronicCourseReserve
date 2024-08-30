@@ -40,6 +40,10 @@ class ilECRCourseListGuiModifier implements ilECRBaseModifier
             return false;
         }
 
+        if (in_array(strtolower($_GET['cmdClass'] ?? ''), array_map('strtolower', [ilObjectCopyGUI::class]), true)) {
+            return false;
+        }
+
         $refId = (int) $_GET['ref_id'];
         if (!$refId) {
             return false;

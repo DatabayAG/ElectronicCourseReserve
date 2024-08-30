@@ -114,7 +114,6 @@ class ilECRBibliographicItemModifier implements ilECRBaseModifier
                 return $lib->getShowInList();
             });
         } else {
-            require_once 'Modules/Bibliographic/classes/Admin/class.ilBibliographicSetting.php';
             $libs = ilBibliographicSetting::getAll();
             $libsShownInList = array_filter($libs, function (ilBibliographicSetting $lib) {
                 return $lib->getShowInList();

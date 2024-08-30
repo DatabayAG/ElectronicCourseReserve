@@ -117,7 +117,6 @@ class Log implements Logger
             $message = var_export($message, true);
         }
 
-        require_once 'Services/Calendar/classes/class.ilDateTime.php';
         $timestamp = new \ilDateTime(time(), IL_CAL_UNIX);
 
         $priorities = self::getPriorities();
