@@ -78,7 +78,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     public ?ilElectronicCourseReservePlugin $pluginObj = null;
 
     protected ILIAS\Plugin\ElectronicCourseReserve\Locker\LockerInterface $lock;
-    private Filesystem $filesystem;
+    private Filesystem $filesystem_data;
+    private Filesystem $filesystem_web;
     private ilCronManager $cronManager;
     private Conductor $legalDocuments;
 
@@ -91,7 +92,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         $this->pluginObj = ilElectronicCourseReservePlugin::getInstance();
         $this->lock = $DIC['plugin.esa.locker'];
         $this->user = $DIC->user();
-        $this->filesystem = $DIC->filesystem()->storage();
+        $this->filesystem_data = $DIC->filesystem()->storage();
+        $this->filesystem_web = $DIC->filesystem()->web();
         $this->cronManager = $DIC->cron()->manager();
 
         $this->logger = $DIC['plugin.esa.cronjob.logger'];
@@ -132,8 +134,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $this->logger->info('Started determination with file pattern.');
 
             $dir = $this->getImportDir();
-            if (!$this->filesystem->hasDir($dir)) {
-                $this->filesystem->createDir($dir);
+            if (!$this->filesystem_data->hasDir($dir)) {
+                $this->filesystem_data->createDir($dir);
             }
 
             $iter = new RegexIterator(
@@ -403,8 +405,8 @@ class ilElectronicCourseReserveDigitizedMediaImporter
     {
         if (file_exists($path_to_file)) {
             $dir = self::BACKUP_DIR . DIRECTORY_SEPARATOR . date("Y-m-d");
-            if (!$this->filesystem->hasDir($dir)) {
-                $this->filesystem->createDir($dir);
+            if (!$this->filesystem_data->hasDir($dir)) {
+                $this->filesystem_data->createDir($dir);
             }
             try {
                 if (file_exists($path_to_file)) {
@@ -622,6 +624,21 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                         $dir = $this->getImageFolder($new_obj_ref_id);
                         $filename = basename($parsed_item->getItem()->getIcon());
                         $target = $dir . DIRECTORY_SEPARATOR . $filename;
+
+                        if (!is_writable($target)) {
+                            $this->logger->warn(
+                                sprintf(
+                                    'Target path %s is not writable, skipping icon for ref id %s '
+                                        . '(crs_ref_id: %s/folder_ref_id: %s).',
+                                    $target,
+                                    $new_obj_ref_id,
+                                    $parsed_item->getCrsRefId(),
+                                    $parsed_item->getFolderImportId()
+                                )
+                            );
+                            return ['icon' => '', 'icon_type' => ''];
+                        }
+
                         if (file_exists($file)) {
                             copy($file, $target);
                         }
@@ -672,15 +689,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         return $resolved_file_path;
     }
 
-    /**
-     * @param int $new_obj_ref_id
-     * @return string
-     */
     protected function getImageFolder(int $new_obj_ref_id): string
     {
-        $dir = CLIENT_WEB_DIR . DIRECTORY_SEPARATOR . self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id . DIRECTORY_SEPARATOR;
-        $this->filesystem->createDir($dir);
-        return $dir;
+        $dir = self::IMAGE_DIR . DIRECTORY_SEPARATOR . $new_obj_ref_id;
+        if (!$this->filesystem_web->hasDir($dir)) {
+            $this->filesystem_web->createDir($dir);
+        }
+
+        return CLIENT_WEB_DIR . DIRECTORY_SEPARATOR . $dir;
     }
 
     /**
