@@ -544,8 +544,18 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         $folder_ref_id = $this->ensureCorrectCourseAndFolderStructure($parsed_item);
         if (strlen($parsed_item->getItem()->getUrl()) > 0 &&
             $folder_ref_id != 0) {
+
+            $title = $parsed_item->getLabel();
+            if(mb_strlen($title) > 127) {
+                $this->logger->warn(sprintf(
+                    'Title for item %s is too long, it will be truncated to 127 characters.',
+                    $parsed_item->getLabel()
+                ));
+                $title = mb_substr($title, 0, 127);
+            }
+
             $new_link = new ilObjLinkResource();
-            $new_link->setTitle($parsed_item->getLabel());
+            $new_link->setTitle($title);
             $new_link->create();
             $new_link->createReference();
             $new_link->putInTree($folder_ref_id);
