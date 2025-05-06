@@ -5,7 +5,7 @@ ecr_desc#:#Please click on this link to be redirected to the search system.
 ecr_gpg_homedir#:#Home Directory
 ecr_gpg_homedir_info#:#This plugins depends on <span style="font-weight:bold">GnuPG</span> (<a href="https://wiki.ubuntuusers.de/GnuPG/" target="_blank" rel="noopener noreferrer">https://wiki.ubuntuusers.de/GnuPG/</a>). Please insert the absolute server path to your <span style="font-weight:bold">GnuPG</span> home directory. The key used for signing the data to be transported to the search system is read from that directory. <span style="color:red;font-weight:bold">Important: The directory must be writeable by the user php is executed with (e.g. wwwrun, www-data, etc.).</span>
 ecr_sign_key_fingerprint#:#Fingerprint (Key)
-ecr_sign_key_fingerprint_info#:#Please enter the fingerprint of the key used for signing the data. A list of possible keys should be listed here if the directory entered above and it's files can be read by ILIAS.  
+ecr_sign_key_fingerprint_info#:#Please enter the fingerprint of the key used for signing the data. A list of possible keys should be listed here if the directory entered above and it's files can be read by ILIAS.
 ecr_sign_key_passphrase#:#Passphrase
 ecr_sign_key_passphrase_info#:#Please insert the passphrase for the key entered above.
 ecr_url_search_system#:#Research System URL
@@ -20,7 +20,7 @@ global_roles_info#:#Please choose the global roles access to the 'Electronic Cou
 crs_ref_id#:#Course-RefId
 use_agreement#:#Use Agreement
 use_agreements#:#Use Agreements
-edit_use_agreement#:#Edit User Agreement 
+edit_use_agreement#:#Edit User Agreement
 add_use_agreement#:#Add User Agreement
 enable_use_agreement#:#Enable User Agreement
 adm_ecr_tab_title#:#Electronic Course Reserve in Courses
@@ -48,8 +48,8 @@ import_directory#:#Import Directory
 import_directory_info#:#Please enter the a directory name (has to be readable and writable by the user PHP is executed with) where ILIAS should read files for the imports. The path <span style="font-weight: bold">must</span> be entered as a <span style="font-weight: bold">relative</span> directory path, located below your external data directory (e.g. 'esa_import'). The XML and image files to be imported <span style="font-weight: bold">must</span> be stored in this directory. ILIAS will try to create this directory when saving this form.<br>Your configured path is: <br/>%s
 import_directory_info_perms#:#The entered import directory does not exists, or ILIAS does not have read and write permissions for this directory.
 error_move_mail#:#There was an error moving "%s" to backup dir.
-error_create_file_mail#:#There was an error creating the file item for course ref id %s and folder import id %s. 
-error_create_url_mail#:#There was an error creating the url item for course ref id %s and folder import id %s. 
+error_create_file_mail#:#There was an error creating the file item for course ref id %s and folder import id %s.
+error_create_url_mail#:#There was an error creating the url item for course ref id %s and folder import id %s.
 show_description#:#Show Description
 show_image#:#Show Image
 error_with_xml_validation#:#There were problems with the validation of %s. %s
@@ -61,7 +61,7 @@ released_lock#:#The lock has been removed.
 form_header_import#:#Import-Process
 form_header_access#:#Zugriff
 ecr_contents_adm_tbl_head#:#Here you can globally defined the translation for the 'Electronic Course Reserve' tab in courses. Furthermore you can manage the contents of this tab via the TinyMCE editor.
-ecr_example_url#:#Example URL 
+ecr_example_url#:#Example URL
 ecr_example_url_info#:#This is an example URL based on the current configuration. Please <span style="font-weight: bold">don't</span> use this link for obligatory orders.
 ecr_accepted_agreement#:#The user agreement has been accepted.
 error_with_import_item#:#Electronic Course Reserve: Problem while processing import XML manifest
@@ -90,3 +90,4 @@ del_folder_metric_num_obj_d#:#Number of deleted objects: %s
 period#:#Period
 period_from#:#From
 period_until#:#Until
+err_agreement_lng_missing#:#The user agreement could not be found in the user's language.

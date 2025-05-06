@@ -18,11 +18,11 @@ class ilElectronicCourseReserveAgreement
 
     protected string $agreement;
 
-    protected string $lang;
+    protected string $lang = '';
 
-    protected int $time_created;
+    protected int $time_created = -1;
 
-    protected int $is_active;
+    protected int $is_active = -1;
 
     public function __construct()
     {
@@ -31,6 +31,8 @@ class ilElectronicCourseReserveAgreement
         $this->db = $DIC->database();
         $this->log = $DIC->logger()->root();
         $this->user = $DIC->user();
+
+        $this->agreement = ilElectronicCourseReservePlugin::getInstance()->txt('err_agreement_lng_missing');
     }
 
     /**
