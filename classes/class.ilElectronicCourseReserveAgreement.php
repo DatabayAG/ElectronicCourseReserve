@@ -16,13 +16,13 @@ class ilElectronicCourseReserveAgreement
 
     protected ?int $agreement_id = null;
 
-    protected string $agreement;
+    protected string $agreement = '';
 
-    protected string $lang;
+    protected string $lang = '';
 
-    protected int $time_created;
+    protected int $time_created = 0;
 
-    protected int $is_active;
+    protected int $is_active = 0;
 
     public function __construct()
     {
