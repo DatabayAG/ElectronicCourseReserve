@@ -156,10 +156,10 @@ class ilElectronicCourseReservePlugin extends ilUserInterfaceHookPlugin
 
         $ilSetting = $DIC['ilSetting'];
 
-        $ilSetting->set('ecr_' . $keyword, $value);
+        $ilSetting->set('ecr_' . $keyword, (string) $value);
     }
 
-    public function getSetting(string $keyword): mixed
+    public function getSetting(string $keyword): string
     {
         global $DIC;
 
