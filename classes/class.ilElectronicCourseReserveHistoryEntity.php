@@ -4,14 +4,13 @@
 
 class ilElectronicCourseReserveHistoryEntity
 {
-    protected int $ref_id;
+    protected int $ref_id = 0;
 
-    protected int $target_ref_id;
+    protected int $target_ref_id = 0;
 
-    protected string $job_number;
+    protected string $job_number = '';
 
-
-    protected int $timestamp;
+    protected int $timestamp = 0;
 
     /**
      * @param string $job_number

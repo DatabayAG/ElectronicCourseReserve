@@ -9,7 +9,7 @@ class ilElectronicCourseReserveAcceptance
     protected int $ref_id;
     protected int $user_id;
 
-    protected int $agreement_id;
+    protected ?int $agreement_id = null;
 
     protected ilDBInterface $db;
     protected ilObjUser $user;
@@ -66,13 +66,13 @@ class ilElectronicCourseReserveAcceptance
             array(
                 'ref_id' => array('integer', $this->ref_id),
                 'user_id' => array('integer', $this->user_id),
-                'agreement_id' => array('integer', $this->getAgreementId()),
+                'agreement_id' => array('integer', (int) $this->getAgreementId()),
                 'time_accepted' => array('integer', time())
             )
         );
     }
 
-    public function getAgreementId(): int
+    public function getAgreementId(): ?int
     {
         $res = $this->db->queryF(
             'SELECT agreement_id FROM ecr_lang_agreements WHERE is_active = %s AND lang = %s',
