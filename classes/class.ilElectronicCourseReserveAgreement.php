@@ -14,6 +14,8 @@ class ilElectronicCourseReserveAgreement
 
     public ilObjUser $user;
 
+    protected string $system_lang;
+
     protected ?int $agreement_id = null;
 
     protected string $agreement = '';
@@ -31,6 +33,7 @@ class ilElectronicCourseReserveAgreement
         $this->db = $DIC->database();
         $this->log = $DIC->logger()->root();
         $this->user = $DIC->user();
+        $this->system_lang = $DIC->language()->getDefaultLanguage();
     }
 
     /**
@@ -51,6 +54,12 @@ class ilElectronicCourseReserveAgreement
             $this->agreement = $row['agreement'];
             $this->time_created = $row['time_created'];
             $this->is_active = $row['is_active'];
+        } else {
+            $this->log->warning('ecr_lang_agreements: User-id (' . $this->user->getId() . '), unable to load by lang ' . $lang);
+
+            if ($lang !== $this->system_lang) {
+                $this->loadByLang($this->system_lang);
+            }
         }
     }
 
