@@ -545,7 +545,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
         if (strlen($parsed_item->getItem()->getUrl()) > 0 &&
             $folder_ref_id != 0) {
 
-            $title = $parsed_item->getLabel();
+            $title = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $parsed_item->getLabel());
             if(mb_strlen($title) > 127) {
                 $this->logger->warn(sprintf(
                     'Title for item %s is too long, it will be truncated to 127 characters.',
