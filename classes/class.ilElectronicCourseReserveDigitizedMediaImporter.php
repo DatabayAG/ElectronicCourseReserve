@@ -553,6 +553,14 @@ class ilElectronicCourseReserveDigitizedMediaImporter
                 ));
                 $title = mb_substr($title, 0, 127);
             }
+            $item_title = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $parsed_item->getItem()->getLabel());
+            if(mb_strlen($item_title) > 127) {
+                $this->logger->warn(sprintf(
+                    'Item-Title for item %s is too long, it will be truncated to 127 characters.',
+                    $item_title
+                ));
+                $item_title = mb_substr($item_title, 0, 127);
+            }
 
             $new_link = new ilObjLinkResource();
             $new_link->setTitle($title);
@@ -561,7 +569,7 @@ class ilElectronicCourseReserveDigitizedMediaImporter
             $new_link->putInTree($folder_ref_id);
             $new_link->setPermissions($folder_ref_id);
             $link_repo = new ilWebLinkDatabaseRepository($new_link->getId());
-            $link_item = new ilWebLinkDraftItem(false, $parsed_item->getItem()->getLabel(), null, $parsed_item->getItem()->getUrl(), true, []);
+            $link_item = new ilWebLinkDraftItem(false, $item_title, null, $parsed_item->getItem()->getUrl(), true, []);
             $link_repo->createItem($link_item);
             $this->writeDescriptionToDB($parsed_item, $new_link->getRefId(), $raw_xml, $folder_ref_id);
             return true;
